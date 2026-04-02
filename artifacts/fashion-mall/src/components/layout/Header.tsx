@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag } from 'lucide-react';
-import { siteSettings } from '@/data/siteSettings';
+import { Menu, X, ShoppingBag, Settings } from 'lucide-react';
+import { useAdminData } from '@/context/AdminDataContext';
 
 export default function Header() {
+  const { siteSettings } = useAdminData();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [location] = useLocation();
@@ -44,14 +45,14 @@ export default function Header() {
                   isTransparent ? 'text-white' : 'text-stone-900'
                 }`}
               >
-                FASHION
+                {(siteSettings.name || 'FASHION BRAS').split(' ')[0].toUpperCase()}
               </span>
               <span
                 className={`text-xs tracking-[0.35em] font-light transition-colors duration-300 ${
                   isTransparent ? 'text-amber-300' : 'text-amber-600'
                 }`}
               >
-                BRAS
+                {(siteSettings.name || 'FASHION BRAS').split(' ').slice(1).join(' ').toUpperCase() || 'BRAS'}
               </span>
             </motion.div>
           </Link>
@@ -86,13 +87,25 @@ export default function Header() {
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <ShoppingBag
               size={20}
               className={`hidden md:block transition-colors duration-300 ${
                 isTransparent ? 'text-white/80' : 'text-stone-600'
               }`}
             />
+            <Link href="/admin">
+              <motion.span
+                title="Painel Admin"
+                className={`hidden md:flex items-center justify-center w-8 h-8 transition-colors duration-300 cursor-pointer ${
+                  isTransparent
+                    ? 'text-white/60 hover:text-white'
+                    : 'text-stone-400 hover:text-amber-700'
+                } ${location === '/admin' ? (isTransparent ? 'text-white' : 'text-amber-700') : ''}`}
+              >
+                <Settings size={17} />
+              </motion.span>
+            </Link>
             <button
               className={`md:hidden transition-colors duration-300 ${
                 isTransparent ? 'text-white' : 'text-stone-900'
@@ -127,6 +140,11 @@ export default function Header() {
                   </span>
                 </Link>
               ))}
+              <Link href="/admin">
+                <span className="text-sm tracking-widest uppercase font-medium cursor-pointer block py-2 text-amber-600 border-t border-stone-100 mt-2 pt-4">
+                  Admin
+                </span>
+              </Link>
             </nav>
           </motion.div>
         )}

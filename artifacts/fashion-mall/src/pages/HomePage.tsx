@@ -5,9 +5,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
 import BlogCard from '@/components/cards/BlogCard';
-import { storesData } from '@/data/storesData';
-import { blogPostsData } from '@/data/blogPostsData';
-import { partnersData } from '@/data/partnersData';
+import { useAdminData } from '@/context/AdminDataContext';
 
 const heroImages = [
   'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80',
@@ -217,7 +215,8 @@ function StatsSection() {
 }
 
 function FeaturedStoresSection() {
-  const featured = storesData.filter((s) => s.featured);
+  const { stores } = useAdminData();
+  const featured = stores.filter((s) => s.featured);
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-stone-50">
       <div className="max-w-7xl mx-auto">
@@ -248,6 +247,7 @@ function FeaturedStoresSection() {
 }
 
 function PartnersSection() {
+  const { partners } = useAdminData();
   return (
     <section className="py-16 px-4 border-y border-stone-100">
       <div className="max-w-7xl mx-auto">
@@ -255,7 +255,7 @@ function PartnersSection() {
           Marcas & Parceiros
         </p>
         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
-          {partnersData.map((partner, i) => (
+          {partners.map((partner, i) => (
             <motion.span
               key={partner.id}
               initial={{ opacity: 0 }}
@@ -274,7 +274,8 @@ function PartnersSection() {
 }
 
 function BlogPreviewSection() {
-  const posts = blogPostsData.slice(0, 3);
+  const { blogPosts } = useAdminData();
+  const posts = blogPosts.slice(0, 3);
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">

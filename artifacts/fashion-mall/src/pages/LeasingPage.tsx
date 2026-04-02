@@ -2,13 +2,14 @@ import { motion } from 'framer-motion';
 import { MapPin, Users, Shield, Zap, TrendingUp, Star, Check } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import LeasingForm from '@/components/forms/LeasingForm';
-import { leasingBenefits, spaceTypes, testimonials, leasingDifferentials } from '@/data/leasingData';
+import { useAdminData } from '@/context/AdminDataContext';
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   MapPin, Users, Shield, Zap, TrendingUp, Star,
 };
 
 export default function LeasingPage() {
+  const { leasingBenefits, spaceTypes, testimonials, leasingDifferentials } = useAdminData();
   return (
     <MainLayout>
       {/* Header */}

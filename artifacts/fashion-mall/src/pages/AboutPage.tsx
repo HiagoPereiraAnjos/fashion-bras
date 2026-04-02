@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
-import { aboutData } from '@/data/aboutData';
+import { useAdminData } from '@/context/AdminDataContext';
 
 export default function AboutPage() {
+  const { aboutData } = useAdminData();
   return (
     <MainLayout>
       {/* Header */}

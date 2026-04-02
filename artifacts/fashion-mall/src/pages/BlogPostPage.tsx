@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, CalendarDays, User } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import BlogCard from '@/components/cards/BlogCard';
-import { blogPostsData } from '@/data/blogPostsData';
+import { useAdminData } from '@/context/AdminDataContext';
 
 export default function BlogPostPage() {
+  const { blogPosts } = useAdminData();
   const { slug } = useParams<{ slug: string }>();
-  const post = blogPostsData.find((p) => p.slug === slug);
+  const post = blogPosts.find((p) => p.slug === slug);
 
   if (!post) {
     return (
@@ -26,11 +27,11 @@ export default function BlogPostPage() {
     );
   }
 
-  const related = blogPostsData
+  const related = blogPosts
     .filter((p) => p.slug !== post.slug && p.category === post.category)
     .slice(0, 3);
 
-  const fallbackRelated = blogPostsData
+  const fallbackRelated = blogPosts
     .filter((p) => p.slug !== post.slug)
     .slice(0, 3);
 

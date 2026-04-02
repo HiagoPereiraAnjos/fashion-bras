@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import MainLayout from '@/layouts/MainLayout';
 import BlogCard from '@/components/cards/BlogCard';
-import { blogPostsData, blogCategories } from '@/data/blogPostsData';
+import { blogCategories } from '@/data/blogPostsData';
+import { useAdminData } from '@/context/AdminDataContext';
 
 export default function BlogPage() {
+  const { blogPosts } = useAdminData();
   const [activeCategory, setActiveCategory] = useState('Todos');
-  const featured = blogPostsData.find((p) => p.featured);
-  const rest = blogPostsData.filter((p) => !p.featured);
+  const featured = blogPosts.find((p) => p.featured);
+  const rest = blogPosts.filter((p) => !p.featured);
 
   const filtered = useMemo(() => {
     if (activeCategory === 'Todos') return rest;

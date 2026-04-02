@@ -3,14 +3,15 @@ import { motion } from 'framer-motion';
 import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
 import StoreFilters from '@/components/filters/StoreFilters';
-import { storesData } from '@/data/storesData';
+import { useAdminData } from '@/context/AdminDataContext';
 
 export default function StoresPage() {
+  const { stores } = useAdminData();
   const [search, setSearch] = useState('');
   const [segment, setSegment] = useState('todos');
 
   const filtered = useMemo(() => {
-    return storesData.filter((store) => {
+    return stores.filter((store) => {
       const matchSearch =
         search === '' ||
         store.name.toLowerCase().includes(search.toLowerCase()) ||

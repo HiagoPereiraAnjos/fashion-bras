@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Phone, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
-import { storesData } from '@/data/storesData';
+import { useAdminData } from '@/context/AdminDataContext';
 import StoreCard from '@/components/cards/StoreCard';
 
 export default function StoreDetailPage() {
+  const { stores } = useAdminData();
   const { id } = useParams<{ id: string }>();
-  const store = storesData.find((s) => s.id === id);
+  const store = stores.find((s) => s.id === id);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
   if (!store) {
@@ -28,7 +29,7 @@ export default function StoreDetailPage() {
     );
   }
 
-  const related = storesData.filter((s) => s.id !== store.id && s.segmentSlug === store.segmentSlug).slice(0, 3);
+  const related = stores.filter((s) => s.id !== store.id && s.segmentSlug === store.segmentSlug).slice(0, 3);
 
   const prevImage = () => setGalleryIndex((i) => (i - 1 + store.images.length) % store.images.length);
   const nextImage = () => setGalleryIndex((i) => (i + 1) % store.images.length);
