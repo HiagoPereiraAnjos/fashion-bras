@@ -1,0 +1,222 @@
+import type { Store } from '@/types';
+
+export const storesData: Store[] = [
+  {
+    id: 'aria-moda',
+    name: 'Aria Moda',
+    segment: 'Moda Feminina',
+    segmentSlug: 'feminina',
+    floor: 'Piso 1',
+    description: 'Elegância e sofisticação para a mulher contemporânea.',
+    longDescription:
+      'A Aria Moda traz ao Fashion Bras uma coleção cuidadosamente curada para a mulher que valoriza o estilo sem abrir mão do conforto. Com peças atemporais e coleções sazonais inspiradas nas principais semanas de moda, a loja oferece uma experiência de compra única com atendimento personalizado e consultoria de imagem.',
+    phone: '(11) 91234-5678',
+    instagram: '@aria.moda',
+    featured: true,
+    images: [
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80',
+      'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80',
+    ],
+  },
+  {
+    id: 'brutal-homme',
+    name: 'Brutal Homme',
+    segment: 'Moda Masculina',
+    segmentSlug: 'masculina',
+    floor: 'Piso 1',
+    description: 'Estilo urbano e refinado para o homem moderno.',
+    longDescription:
+      'Brutal Homme é a referência em moda masculina no Fashion Bras. Com um mix perfeito entre o clássico e o contemporâneo, a loja apresenta ternos sob medida, coleções casuais premium e acessórios selecionados. O atendimento especializado garante que cada cliente encontre o look ideal para qualquer ocasião.',
+    phone: '(11) 92345-6789',
+    instagram: '@brutalhomme',
+    featured: true,
+    images: [
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80',
+      'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80',
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    ],
+  },
+  {
+    id: 'petit-monde',
+    name: 'Petit Monde',
+    segment: 'Moda Infantil',
+    segmentSlug: 'infantil',
+    floor: 'Piso 2',
+    description: 'Moda divertida e de qualidade para os pequenos.',
+    longDescription:
+      'A Petit Monde acredita que as crianças merecem o melhor em estilo e conforto. Com coleções que combinam praticidade para os pais e alegria para os filhos, a loja trabalha com tecidos certificados, modelos pensados para o movimento e designs que encantam. Do recém-nascido ao pré-adolescente.',
+    phone: '(11) 93456-7890',
+    instagram: '@petitmonde.kids',
+    images: [
+      'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80',
+      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80',
+      'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80',
+    ],
+  },
+  {
+    id: 'sole-story',
+    name: 'Sole Story',
+    segment: 'Calçados & Bolsas',
+    segmentSlug: 'calcados',
+    floor: 'Piso 1',
+    description: 'Calçados e bolsas que contam histórias de estilo.',
+    longDescription:
+      'Na Sole Story, cada passo é uma declaração de estilo. A loja reúne as melhores marcas nacionais e internacionais de calçados femininos e masculinos, além de uma seleção exclusiva de bolsas e acessórios de couro. Com atendimento especializado e tamanhos para todos, a experiência de compra é sempre especial.',
+    phone: '(11) 94567-8901',
+    instagram: '@solestory.oficial',
+    featured: true,
+    images: [
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
+      'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80',
+      'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80',
+    ],
+  },
+  {
+    id: 'aurum-accessories',
+    name: 'Aurum Accessories',
+    segment: 'Acessórios',
+    segmentSlug: 'acessorios',
+    floor: 'Piso 2',
+    description: 'Joias e acessórios que elevam qualquer look.',
+    longDescription:
+      'Aurum é o templo dos acessórios premium no Fashion Bras. Semijoias folheadas a ouro, bijuterias artesanais, lenços de seda, óculos de sol e muito mais. Cada peça é escolhida com cuidado para complementar e elevar qualquer conjunto, transformando o simples em extraordinário.',
+    phone: '(11) 95678-9012',
+    instagram: '@aurum.acessorios',
+    images: [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+      'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80',
+    ],
+  },
+  {
+    id: 'move-sport',
+    name: 'Move Sport',
+    segment: 'Esportes & Lifestyle',
+    segmentSlug: 'esportes',
+    floor: 'Piso 2',
+    description: 'Performance e estilo para o seu lifestyle ativo.',
+    longDescription:
+      'Move Sport é a loja para quem vive em movimento. Com as principais marcas de moda esportiva do mercado, a loja oferece roupas e calçados para academia, corrida, yoga, crossfit e esportes ao ar livre. O conceito vai além do vestuário esportivo — é um lifestyle de bem-estar e movimento.',
+    phone: '(11) 96789-0123',
+    instagram: '@movesport.br',
+    images: [
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+      'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80',
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80',
+    ],
+  },
+  {
+    id: 'casa-moderna',
+    name: 'Casa Moderna',
+    segment: 'Casa & Decoração',
+    segmentSlug: 'casa',
+    floor: 'Piso 3',
+    description: 'Decoração e lifestyle para um lar com personalidade.',
+    longDescription:
+      'Casa Moderna traz ao Fashion Bras um conceito único: moda para a sua casa. Com itens de decoração, cama, mesa e banho de alto padrão, velas aromáticas, aromatizadores e objetos de design contemporâneo, a loja transforma qualquer ambiente em um espaço de elegância e bem-estar.',
+    phone: '(11) 97890-1234',
+    instagram: '@casamoderna.decor',
+    images: [
+      'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80',
+      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80',
+      'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80',
+    ],
+  },
+  {
+    id: 'luna-feminina',
+    name: 'Luna Feminina',
+    segment: 'Moda Feminina',
+    segmentSlug: 'feminina',
+    floor: 'Piso 1',
+    description: 'Moda feminina autêntica para todas as ocasiões.',
+    longDescription:
+      'Luna Feminina celebra a diversidade e a autenticidade da mulher brasileira. Com coleções que transitam entre o casual chic e o social elegante, a loja é um espaço de afirmação e estilo. Tamanhos inclusivos, peças atemporais e uma equipe de consultoras prontas para ajudar na composição de looks perfeitos.',
+    phone: '(11) 98901-2345',
+    instagram: '@lunafeminina',
+    images: [
+      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80',
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
+    ],
+  },
+  {
+    id: 'vivo-homme',
+    name: 'Vivo Homme',
+    segment: 'Moda Masculina',
+    segmentSlug: 'masculina',
+    floor: 'Piso 2',
+    description: 'O melhor do streetwear e do smart casual masculino.',
+    longDescription:
+      'Vivo Homme é para o homem que quer se vestir bem sem esforço. Com um conceito moderno e descolado, a loja traz as principais tendências do streetwear internacional adaptadas ao estilo brasileiro. Sneakers exclusivos, camisetas premium, moletons e jaquetas que combinam atitude com sofisticação.',
+    phone: '(11) 90012-3456',
+    instagram: '@vivohomme',
+    images: [
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80',
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
+    ],
+  },
+  {
+    id: 'infantis-bras',
+    name: 'Infantis Bras',
+    segment: 'Moda Infantil',
+    segmentSlug: 'infantil',
+    floor: 'Piso 2',
+    description: 'Roupas sustentáveis e duráveis para crianças felizes.',
+    longDescription:
+      'Infantis Bras nasceu com a missão de vestir as crianças com responsabilidade. Com foco em materiais orgânicos, tingimentos naturais e processos de produção sustentáveis, a loja oferece roupas lindas, confortáveis e boas para o planeta. Porque cuidar do futuro começa pelo presente.',
+    phone: '(11) 91123-4567',
+    instagram: '@infantisbras',
+    images: [
+      'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80',
+      'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80',
+      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80',
+    ],
+  },
+  {
+    id: 'passarela-shoes',
+    name: 'Passarela Shoes',
+    segment: 'Calçados & Bolsas',
+    segmentSlug: 'calcados',
+    floor: 'Piso 3',
+    description: 'Tendências internacionais em calçados e acessórios.',
+    longDescription:
+      'Passarela Shoes traz ao Fashion Bras o melhor das passarelas mundiais em forma de calçado. Com edições limitadas, colaborações especiais e modelos exclusivos, a loja é ponto de referência para colecionadores e fashionistas que querem se destacar com originalidade e bom gosto refinado.',
+    phone: '(11) 92234-5678',
+    instagram: '@passarelashoes',
+    images: [
+      'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80',
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
+    ],
+  },
+  {
+    id: 'bijou-elite',
+    name: 'Bijou Elite',
+    segment: 'Acessórios',
+    segmentSlug: 'acessorios',
+    floor: 'Piso 1',
+    description: 'Semijoias e acessórios de luxo acessível.',
+    longDescription:
+      'Bijou Elite é o lar das peças que fazem a diferença. Com uma curadoria exclusiva de semijoias, relógios, óculos de grau e sol, a loja atende um público que valoriza o detalhe e busca qualidade acima de tudo. Cada peça é um investimento em estilo e personalidade.',
+    phone: '(11) 93345-6789',
+    instagram: '@bijouelte.oficial',
+    images: [
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80',
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+      'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80',
+    ],
+  },
+];
+
+export const storeSegments = [
+  { label: 'Todos', slug: 'todos' },
+  { label: 'Moda Feminina', slug: 'feminina' },
+  { label: 'Moda Masculina', slug: 'masculina' },
+  { label: 'Moda Infantil', slug: 'infantil' },
+  { label: 'Calçados & Bolsas', slug: 'calcados' },
+  { label: 'Acessórios', slug: 'acessorios' },
+  { label: 'Esportes & Lifestyle', slug: 'esportes' },
+  { label: 'Casa & Decoração', slug: 'casa' },
+];
