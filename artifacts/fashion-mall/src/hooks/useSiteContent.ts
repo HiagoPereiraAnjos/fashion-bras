@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
 import { useAdminData } from '@/context/content/ContentProvider';
 import { buildSiteContentSnapshot } from '@/services/content/siteContent';
+import type { SiteContentSnapshot } from '@/types';
 
-export function useSiteContent() {
+export function useSiteContent(): SiteContentSnapshot {
   const {
     stores,
     blogPosts,
     partners,
     siteSettings,
+    homeContent,
     leasingBenefits,
     spaceTypes,
     testimonials,
@@ -23,6 +25,7 @@ export function useSiteContent() {
         blogPosts,
         partners,
         siteSettings,
+        homeContent,
         leasingBenefits,
         spaceTypes,
         testimonials,
@@ -34,6 +37,7 @@ export function useSiteContent() {
       blogPosts,
       partners,
       siteSettings,
+      homeContent,
       leasingBenefits,
       spaceTypes,
       testimonials,

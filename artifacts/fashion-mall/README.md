@@ -1,97 +1,86 @@
 # Fashion Bras Frontend - Technical README
 
-## 1) Visao geral
-Este pacote (`artifacts/fashion-mall`) contem o frontend SPA do Fashion Bras (site institucional + painel admin frontend-only).
+## 1) Visao geral do projeto
+Este pacote (`artifacts/fashion-mall`) contem o frontend SPA do Fashion Bras:
+- site publico (home, lojas, blog, locacao, sobre)
+- painel administrativo frontend-only (`/admin`)
 
 Estado atual:
-- Sem backend e sem API remota.
-- Persistencia local via `localStorage`.
-- Mocks como base padrao (fallback).
-- UI publica e admin consumindo a mesma camada de dados (`useSiteContent`).
+- sem backend
+- sem API real
+- persistencia local em `localStorage`
+- fallback de conteudo via mocks em `src/data/content`
+- fonte unica de leitura da UI via `useSiteContent()`
 
-Objetivo arquitetural:
-- Manter o projeto simples hoje.
-- Permitir troca de persistencia (local -> Supabase) sem reescrever paginas e componentes.
+Meta de arquitetura:
+- manter simplicidade agora
+- permitir troca de persistencia (local -> Supabase) sem reescrever UI
 
-## 2) Stack utilizada
-Core:
-- React 19
-- TypeScript
+## 2) Stack usada
+- React 19 + TypeScript
 - Vite 7
-- Wouter (roteamento)
+- Wouter (roteamento SPA)
 - Tailwind CSS 4
 - Framer Motion
 - Lucide React
 
-Build/dev plugins:
+Plugins/build:
 - `@vitejs/plugin-react`
 - `@tailwindcss/vite`
-- plugins Replit de desenvolvimento (`runtime-error-modal`, `cartographer`, `dev-banner`)
+- `@tailwindcss/typography`
+- plugins Replit (`runtime-error-modal`, `cartographer`, `dev-banner`)
 
 ## 3) Estrutura de pastas
 ```text
-artifacts/fashion-mall/
-  src/
-    App.tsx
-    main.tsx
-    index.css
+src/
+  components/
+    cards/
+    feedback/
+    filters/
+    forms/
+    layout/
+  context/
+    AdminDataContext.tsx
+    content/ContentProvider.tsx
+  data/content/
+  features/admin/
     components/
-      cards/
-      filters/
-      forms/
       layout/
-    data/
-      content/
-    context/
-      AdminDataContext.tsx              # alias de compatibilidade para admin
-      content/
-        ContentProvider.tsx
-    hooks/
-      useSiteContent.ts
-    features/
-      admin/
-        components/
-          tabs/
-          shared/
-        constants/
-    layouts/
-    pages/
-    seo/
-    services/
-      content/
-        adapters/storage/
-        mappers/
-        repositories/
-        types/
-    types/domain/
-    utils/
-  vite.config.ts
-  tsconfig.json
+      sections/
+      shared/
+    constants/
+    types/
+  hooks/
+  layouts/
+  pages/
+  seo/
+  services/content/
+    adapters/storage/
+    mappers/
+    repositories/
+    defaults.ts
+    selectors.ts
+    siteContent.ts
+    index.ts
+  types/domain/
+  utils/
 ```
 
-Resumo por camada:
-- `data/content`: mocks/defaults da fase atual.
-- `services/content/repositories`: contrato e implementacao de acesso a dados.
-- `context/content/ContentProvider`: estado global (admin/site).
-- `services/content`: seletores e snapshot de conteudo para UI.
-- `features/admin`: UI do painel administrativo, modular por aba.
-- `pages` e `components`: camada de apresentacao.
+Resumo rapido:
+- `pages` e `components`: apresentacao
+- `features/admin`: edicao de conteudo
+- `context/content`: estado global e escrita
+- `services/content`: snapshot, seletores e repositorio
+- `types/domain`: contratos centrais
 
 ## 4) Como rodar o frontend
-Pre requisitos:
+Pre-requisitos:
 - Node.js 22+
 - pnpm 10+
 
-Do workspace raiz (`fashion-bras`):
+No workspace raiz (`fashion-bras`):
 ```bash
 pnpm install
-```
-
-### CMD (Windows)
-```bat
-set PORT=4173
-set BASE_PATH=/
-pnpm --filter @workspace/fashion-mall dev
 ```
 
 ### PowerShell (Windows)
@@ -101,11 +90,14 @@ $env:BASE_PATH='/'
 pnpm.cmd --filter @workspace/fashion-mall dev
 ```
 
-Observacao:
-- `vite.config.ts` exige `PORT` e `BASE_PATH`.
-- Em PowerShell, se houver bloqueio de script para `pnpm`, use `pnpm.cmd`.
+### CMD (Windows)
+```bat
+set PORT=4173
+set BASE_PATH=/
+pnpm --filter @workspace/fashion-mall dev
+```
 
-Build local:
+Build:
 ```powershell
 $env:PORT='4173'
 $env:BASE_PATH='/'
@@ -119,72 +111,77 @@ $env:BASE_PATH='/'
 pnpm.cmd --filter @workspace/fashion-mall typecheck
 ```
 
+Observacoes:
+- `vite.config.ts` exige `PORT` e `BASE_PATH`
+- em PowerShell, use `pnpm.cmd` se houver bloqueio de policy
+
 ## 5) Como funciona a camada de dados atual
 Fluxo atual:
-1. Defaults vem de `data/content/*`.
-2. `ContentProvider` inicializa cada secao com:
-   - valor salvo no repositorio (`loadSection`) ou
-   - fallback padrao (`getDefaultSection`).
-3. Admin salva via `set*` no contexto.
-4. `set*` persiste no repositorio (`saveSection`) e atualiza estado em memoria.
-5. Paginas usam `useSiteContent`, que monta um snapshot derivado em `buildSiteContentSnapshot`.
+1. Defaults saem de `src/data/content/*`
+2. `ContentProvider` carrega cada secao:
+   - `repository.loadSection(section)` ou
+   - fallback `getDefaultSection(section)`
+3. Admin salva via setters do contexto (`setStores`, `setHomeContent`, etc.)
+4. Setter atualiza estado e persiste no repositorio
+5. UI publica le snapshot derivado por `useSiteContent()` + `buildSiteContentSnapshot()`
 
-Pontos chave:
-- Contrato unico: `ContentRepository`.
-- Implementacao atual: `createLocalContentRepository`.
-- Namespace de persistencia local: `fashionbras_admin_data`.
-- Chave por secao: `fashionbras_admin_data_<section>`.
+Arquivos-chave:
+- contrato: `src/services/content/repositories/ContentRepository.ts`
+- fabrica: `src/services/content/repositories/createContentRepository.ts`
+- local atual: `src/services/content/repositories/LocalContentRepository.ts`
+- snapshot para UI: `src/services/content/siteContent.ts`
 
 ## 6) Como o admin funciona hoje
 Rota:
-- `/admin` -> `AdminPage`.
+- `/admin`
+
+Secoes atuais:
+- Site Settings
+- Home
+- Stores
+- Blog
+- Partners
+- Leasing
+- About
 
 Comportamento:
-- `AdminPage` orquestra abas + reset global.
-- Cada aba (`SiteSettings`, `Stores`, `Blog`, `Partners`, `Leasing`, `About`) gerencia estado local de formulario.
-- Ao salvar:
-  - valida e normaliza dados no frontend,
-  - atualiza contexto,
-  - persiste em `localStorage`.
-- Reset por secao e reset total restauram defaults dos mocks.
-
-Importante:
-- Sem autenticacao real.
-- Sem envio remoto.
-- Frontend-only por design nesta fase.
+- cada secao tem formulario proprio com validacao frontend
+- salvar escreve no contexto + `localStorage`
+- reset por secao e reset global restauram defaults
+- sem autenticacao real nesta fase
 
 ## 7) Limitacoes atuais
-- Persistencia local por navegador/dispositivo.
-- Sem sincronizacao multiusuario.
-- Sem historico de alteracoes/versionamento.
-- Sem controle de acesso (auth/RBAC).
-- Sem upload de midia real.
-- Sem validacao de regras de negocio no servidor.
+- persistencia local por navegador/dispositivo
+- sem sincronizacao multiusuario
+- sem controle de acesso real
+- sem upload de midia real
+- sem versionamento/historico de alteracoes
+- sem observabilidade de erros de persistencia em ambiente real
 
 ## 8) Preparacao para futura integracao com Supabase
-O projeto ja esta preparado nos seguintes pontos:
-- Abstracao por contrato (`ContentRepository`).
-- Inversao no provider: repositorio pode ser injetado.
-- Adaptadores e mapeadores dedicados (`adapters`, `mappers`).
-- Tipos de dominio centralizados (`src/types/domain/*`).
-- Snapshot de conteudo para UI desacoplado da origem de dados.
+Ja preparado:
+- contrato unico de repositorio (`ContentRepository`)
+- selecao central de origem em `createContentRepository()`
+- placeholder explicito: `SupabaseContentRepository` (hoje faz fallback local)
+- UI desacoplada da origem por `useSiteContent()` e snapshot derivado
+- tipos de dominio centralizados em `src/types/domain/*`
 
-Troca prevista (sem quebrar UI):
-- Hoje: `createLocalContentRepository()`.
-- Futuro: `createSupabaseContentRepository()` implementando o mesmo contrato.
+Troca futura prevista:
+- manter UI/contexto
+- implementar leitura/escrita remota no repositorio Supabase
+- manter mapping de dados na camada `services/content` (nao nas paginas)
 
 ## 9) Proximos passos recomendados
-1. Criar `SupabaseContentRepository` com a mesma interface de repositorio.
-2. Definir mapeamento DTO <-> dominio no `contentStorageMapper` (ou mapper dedicado de API).
-3. Introduzir camada async para carregamento inicial (loading/error global de conteudo).
-4. Adicionar autenticacao para rota `/admin` (quando backend estiver pronto).
-5. Implementar upload de imagens e substituir URLs manuais.
-6. Adicionar testes de contrato para repositorio (local e remoto).
-7. Adicionar observabilidade basica (erros de persistencia e telemetria de admin).
+1. Implementar repositorio remoto com interface identica ao local
+2. Introduzir camada async de bootstrap (loading/error global de conteudo)
+3. Adicionar auth para rota `/admin` quando backend existir
+4. Implementar upload de imagem e troca de URLs manuais por assets gerenciados
+5. Adicionar testes de contrato do repositorio (local e remoto)
+6. Padronizar encoding dos textos para eliminar caracteres corrompidos
 
 ---
 
-## Decisoes de manutencao recentes
-- Removido kit de UI legado nao utilizado para reduzir ruido e dependencia.
-- Removidas dependencias nao usadas e wrappers globais sem uso (`react-query`, `toaster`, `tooltip`).
-- Mantida arquitetura modular de admin e camada unica de conteudo para evolucao incremental.
+## Notas de manutencao desta rodada
+- removidos wrappers e arquivos mortos do admin (`AdminSidebar`, `AdminTabPanel`, `components/tabs/*`)
+- removida dependencia nao utilizada `tw-animate-css`
+- simplificado barrel de conteudo para exportar tipos direto de `@/types`

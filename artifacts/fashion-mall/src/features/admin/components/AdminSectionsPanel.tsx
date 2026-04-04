@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import type { AdminTabId } from '@/features/admin/constants/tabs';
 import AboutSection from '@/features/admin/components/sections/AboutSection';
 import BlogSection from '@/features/admin/components/sections/BlogSection';
+import HomeSection from '@/features/admin/components/sections/HomeSection';
 import LeasingSection from '@/features/admin/components/sections/LeasingSection';
 import PartnersSection from '@/features/admin/components/sections/PartnersSection';
 import SiteSettingsSection from '@/features/admin/components/sections/SiteSettingsSection';
@@ -10,6 +11,7 @@ import StoresSection from '@/features/admin/components/sections/StoresSection';
 
 const SECTION_BY_TAB: Record<AdminTabId, ComponentType> = {
   settings: SiteSettingsSection,
+  home: HomeSection,
   stores: StoresSection,
   blog: BlogSection,
   partners: PartnersSection,

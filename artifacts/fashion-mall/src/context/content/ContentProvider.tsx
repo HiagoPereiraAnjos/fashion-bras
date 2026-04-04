@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -10,6 +11,9 @@ import type {
   AboutContent,
   BlogCategory,
   BlogPost,
+  ContentSection,
+  ContentState,
+  HomePageContent,
   LeasingBenefit,
   Partner,
   SiteSettings,
@@ -23,15 +27,17 @@ import type { ContentRepository } from '@/services/content/repositories/ContentR
 import type { ContentRepositoryKind } from '@/services/content/repositories/types';
 import { getDefaultSection } from '@/services/content/defaults';
 import { buildBlogCategories, buildStoreSegments } from '@/services/content/selectors';
-import type { ContentSection, ContentState } from '@/services/content/types/content';
 
 export interface AdminDataContextType extends ContentState {
   storeSegments: StoreCategory[];
   blogCategories: BlogCategory[];
+  isBootstrapping: boolean;
+  bootstrapError: string | null;
   setStores: (stores: Store[]) => void;
   setBlogPosts: (posts: BlogPost[]) => void;
   setPartners: (partners: Partner[]) => void;
   setSiteSettings: (settings: SiteSettings) => void;
+  setHomeContent: (content: HomePageContent) => void;
   setLeasingBenefits: (benefits: LeasingBenefit[]) => void;
   setSpaceTypes: (types: SpaceType[]) => void;
   setTestimonials: (testimonials: Testimonial[]) => void;
@@ -75,6 +81,9 @@ export function ContentProvider({
   const [siteSettings, setSiteSettingsState] = useState<SiteSettings>(
     () => repository.loadSection('siteSettings') ?? getDefaultSection('siteSettings'),
   );
+  const [homeContent, setHomeContentState] = useState<HomePageContent>(
+    () => repository.loadSection('homeContent') ?? getDefaultSection('homeContent'),
+  );
   const [leasingBenefits, setLeasingBenefitsState] = useState<LeasingBenefit[]>(
     () => repository.loadSection('leasingBenefits') ?? getDefaultSection('leasingBenefits'),
   );
@@ -92,6 +101,58 @@ export function ContentProvider({
   const [aboutData, setAboutDataState] = useState<AboutContent>(
     () => repository.loadSection('aboutData') ?? getDefaultSection('aboutData'),
   );
+  const [isBootstrapping, setIsBootstrapping] = useState<boolean>(
+    () => Boolean(repository.loadInitialState),
+  );
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+
+  const applySnapshotState = useCallback((snapshot: Partial<ContentState>) => {
+    if (snapshot.stores !== undefined) setStoresState(snapshot.stores);
+    if (snapshot.blogPosts !== undefined) setBlogPostsState(snapshot.blogPosts);
+    if (snapshot.partners !== undefined) setPartnersState(snapshot.partners);
+    if (snapshot.siteSettings !== undefined) setSiteSettingsState(snapshot.siteSettings);
+    if (snapshot.homeContent !== undefined) setHomeContentState(snapshot.homeContent);
+    if (snapshot.leasingBenefits !== undefined) {
+      setLeasingBenefitsState(snapshot.leasingBenefits);
+    }
+    if (snapshot.spaceTypes !== undefined) setSpaceTypesState(snapshot.spaceTypes);
+    if (snapshot.testimonials !== undefined) setTestimonialsState(snapshot.testimonials);
+    if (snapshot.leasingDifferentials !== undefined) {
+      setLeasingDifferentialsState(snapshot.leasingDifferentials);
+    }
+    if (snapshot.aboutData !== undefined) setAboutDataState(snapshot.aboutData);
+  }, []);
+
+  useEffect(() => {
+    if (!repository.loadInitialState) {
+      setIsBootstrapping(false);
+      setBootstrapError(null);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsBootstrapping(true);
+    setBootstrapError(null);
+
+    void (async () => {
+      try {
+        const snapshot = await repository.loadInitialState!();
+        if (isCancelled) return;
+        applySnapshotState(snapshot);
+        setIsBootstrapping(false);
+      } catch (error) {
+        if (isCancelled) return;
+        // Keep rendering with local defaults/current state if remote bootstrap fails.
+        console.warn('[content] Initial content bootstrap failed. Keeping current state.', error);
+        setBootstrapError('Falha ao inicializar dados remotos. Conteudo local mantido.');
+        setIsBootstrapping(false);
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [applySnapshotState, repository]);
 
   const setStores = useCallback(
     (value: Store[]) => {
@@ -122,6 +183,14 @@ export function ContentProvider({
     (value: SiteSettings) => {
       setSiteSettingsState(value);
       repository.saveSection('siteSettings', value);
+    },
+    [repository],
+  );
+
+  const setHomeContent = useCallback(
+    (value: HomePageContent) => {
+      setHomeContentState(value);
+      repository.saveSection('homeContent', value);
     },
     [repository],
   );
@@ -184,6 +253,9 @@ export function ContentProvider({
         case 'siteSettings':
           setSiteSettingsState(defaultValue as ContentState['siteSettings']);
           break;
+        case 'homeContent':
+          setHomeContentState(defaultValue as ContentState['homeContent']);
+          break;
         case 'leasingBenefits':
           setLeasingBenefitsState(defaultValue as ContentState['leasingBenefits']);
           break;
@@ -213,6 +285,7 @@ export function ContentProvider({
     setBlogPostsState(getDefaultSection('blogPosts'));
     setPartnersState(getDefaultSection('partners'));
     setSiteSettingsState(getDefaultSection('siteSettings'));
+    setHomeContentState(getDefaultSection('homeContent'));
     setLeasingBenefitsState(getDefaultSection('leasingBenefits'));
     setSpaceTypesState(getDefaultSection('spaceTypes'));
     setTestimonialsState(getDefaultSection('testimonials'));
@@ -231,6 +304,7 @@ export function ContentProvider({
         blogPosts,
         partners,
         siteSettings,
+        homeContent,
         leasingBenefits,
         spaceTypes,
         testimonials,
@@ -238,10 +312,13 @@ export function ContentProvider({
         aboutData,
         storeSegments,
         blogCategories,
+        isBootstrapping,
+        bootstrapError,
         setStores,
         setBlogPosts,
         setPartners,
         setSiteSettings,
+        setHomeContent,
         setLeasingBenefits,
         setSpaceTypes,
         setTestimonials,

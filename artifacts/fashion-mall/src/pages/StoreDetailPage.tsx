@@ -5,6 +5,7 @@ import { useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import { useSiteContent } from '@/services/content';
 import StoreCard from '@/components/cards/StoreCard';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function StoreDetailPage() {
@@ -15,18 +16,14 @@ export default function StoreDetailPage() {
 
   usePageSeo(
     store
-      ? {
+      ? getSeoMetadata('stores', {
           title: `${store.name} - Loja`,
-          description: store.description,
+          description: store.description || `Conheca a loja ${store.name} no Fashion Bras.`,
           canonicalPath: `/lojas/${store.id}`,
           image: store.images[0],
-        }
-      : {
-          title: 'Loja não encontrada',
-          description: 'A loja solicitada não foi encontrada no catálogo atual do Fashion Bras.',
-          canonicalPath: '/lojas',
-          noIndex: true,
-        },
+          imageAlt: `${store.name} no Fashion Bras`,
+        })
+      : getSeoMetadata('storeDetailFallback'),
   );
 
   if (!store) {
@@ -239,3 +236,4 @@ export default function StoreDetailPage() {
     </MainLayout>
   );
 }
+

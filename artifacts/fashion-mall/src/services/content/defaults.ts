@@ -1,5 +1,6 @@
 import { aboutData } from '@/data/content/aboutData';
 import { blogCategories, blogPostsData } from '@/data/content/blogPostsData';
+import { homeContentData } from '@/data/content/homeContentData';
 import {
   leasingBenefits,
   leasingDifferentials,
@@ -9,8 +10,7 @@ import {
 import { partnersData } from '@/data/content/partnersData';
 import { siteSettings } from '@/data/content/siteSettings';
 import { storesData, storeSegments } from '@/data/content/storesData';
-import type { ContentSection, ContentState } from '@/services/content/types/content';
-import type { BlogCategory } from '@/types';
+import type { BlogCategory, ContentSection, ContentState } from '@/types';
 
 // Single fallback source: UI never imports mock files directly.
 export const BLOG_ALL_CATEGORY = 'Todos';
@@ -22,6 +22,7 @@ const defaultContentBySection: ContentState = {
   blogPosts: blogPostsData,
   partners: partnersData,
   siteSettings,
+  homeContent: homeContentData,
   leasingBenefits,
   spaceTypes,
   testimonials,

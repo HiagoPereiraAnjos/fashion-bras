@@ -6,6 +6,7 @@ import type { ContentRepositoryFactoryOptions } from '@/services/content/reposit
 export function createContentRepository(
   options: ContentRepositoryFactoryOptions = {},
 ): ContentRepository {
+  // Repository selection is centralized here to keep provider/pages agnostic of persistence source.
   const { kind = 'local', storage, namespace } = options;
   const localRepository = createLocalContentRepository(storage, namespace);
 

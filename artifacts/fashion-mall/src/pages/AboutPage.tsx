@@ -1,26 +1,15 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import ContentEmptyState from '@/components/feedback/ContentEmptyState';
 import MainLayout from '@/layouts/MainLayout';
 import { useSiteContent } from '@/services/content';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
-
-function SectionEmptyState({ message }: { message: string }) {
-  return (
-    <div className="surface-card p-8 text-center">
-      <p className="text-sm text-stone-500">{message}</p>
-    </div>
-  );
-}
 
 export default function AboutPage() {
   const { aboutData } = useSiteContent();
 
-  usePageSeo({
-    title: 'Sobre o Fashion Bras',
-    description:
-      'Conheça a história, missão, visão e valores do Fashion Bras, referência em experiência premium de moda em São Paulo.',
-    canonicalPath: '/sobre',
-  });
+  usePageSeo(getSeoMetadata('about'));
 
   return (
     <MainLayout>
@@ -78,7 +67,7 @@ export default function AboutPage() {
                 ))}
               </div>
             ) : (
-              <SectionEmptyState message="História institucional em atualização." />
+              <ContentEmptyState compact message="História institucional em atualização." />
             )}
           </motion.div>
 
@@ -164,7 +153,7 @@ export default function AboutPage() {
               ))
             ) : (
               <div className="md:col-span-2 lg:col-span-3 xl:col-span-5">
-                <SectionEmptyState message="Valores institucionais indisponíveis no momento." />
+                <ContentEmptyState compact message="Valores institucionais indisponíveis no momento." />
               </div>
             )}
           </div>
@@ -198,7 +187,7 @@ export default function AboutPage() {
                 ))}
               </ul>
             ) : (
-              <SectionEmptyState message="Diferenciais em atualização." />
+              <ContentEmptyState compact message="Diferenciais em atualização." />
             )}
           </div>
           <div>
@@ -245,7 +234,7 @@ export default function AboutPage() {
               ))
             ) : (
               <div className="md:col-span-3">
-                <SectionEmptyState message="Equipe institucional em atualização." />
+                <ContentEmptyState compact message="Equipe institucional em atualização." />
               </div>
             )}
           </div>
@@ -254,3 +243,5 @@ export default function AboutPage() {
     </MainLayout>
   );
 }
+
+

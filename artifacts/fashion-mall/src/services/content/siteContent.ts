@@ -2,76 +2,98 @@ import type {
   AboutContent,
   BlogCategory,
   BlogPost,
-  HomeData,
+  ContentSection,
+  HomeContent,
+  HomePageContent,
   LeasingContent,
   NavLink,
+  SiteBranding,
+  SiteContactInfo,
+  SiteContentSnapshot,
+  SiteContentState,
+  SiteFooterContent,
   SiteSettings,
+  SiteSocialLinks,
+  SiteSocialProfile,
   Store,
   StoreCategory,
 } from '@/types';
 import { getDefaultSection } from '@/services/content/defaults';
 import { buildBlogCategories, buildStoreSegments } from '@/services/content/selectors';
-import type { ContentSection, ContentState } from '@/services/content/types/content';
 
 const FALLBACK_NAVIGATION_LINKS: NavLink[] = [
-  { label: 'Início', href: '/' },
+  { label: 'Inicio', href: '/' },
   { label: 'Lojas', href: '/lojas' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Locação', href: '/locacao' },
+  { label: 'Locacao', href: '/locacao' },
   { label: 'Sobre', href: '/sobre' },
 ];
 
 const FALLBACK_CONTACT_INFO = {
-  address: 'Endereço em atualização',
-  phone: 'Telefone em atualização',
+  address: 'Endereco em atualizacao',
+  phone: 'Telefone em atualizacao',
   email: 'contato@fashionbras.com.br',
-  hours: 'Horários em atualização',
+  hours: 'Horarios em atualizacao',
 } as const;
 
-export interface SiteContactInfo {
-  address: string;
-  phone: string;
-  email: string;
-  hours: string;
-}
-
-export interface SiteBranding {
-  fullName: string;
-  mainName: string;
-  secondaryName: string;
-}
-
-export interface SiteSocialProfile {
-  rawValue: string;
-  href: string;
-  displayValue: string;
-  isAvailable: boolean;
-}
-
-export interface SiteSocialLinks {
-  instagram: SiteSocialProfile;
-  facebook: SiteSocialProfile;
-}
+const FALLBACK_FOOTER_DESCRIPTION = 'Shopping de moda premium com experiencias selecionadas.';
+const FALLBACK_FOOTER_LEGAL_NOTE =
+  'Conteudo e experiencia digital desenvolvidos para a moda brasileira.';
+const FALLBACK_FOOTER_LEASING_LINK: NavLink = {
+  label: 'Saiba mais sobre locacao',
+  href: '/locacao',
+};
 
 function resolveSection<K extends ContentSection>(
-  source: Partial<ContentState>,
+  source: Partial<SiteContentState>,
   section: K,
-): ContentState[K] {
+): SiteContentState[K] {
   const value = source[section];
   if (value === undefined || value === null) {
     return getDefaultSection(section);
   }
 
-  return value as ContentState[K];
+  return value as SiteContentState[K];
 }
 
 function normalizeText(value: string | undefined | null): string {
   return value?.trim() ?? '';
 }
 
-function resolveNavigationLinks(navLinks: NavLink[]): NavLink[] {
-  const validLinks = navLinks.filter((link) => normalizeText(link.label) && normalizeText(link.href));
-  return validLinks.length > 0 ? validLinks : FALLBACK_NAVIGATION_LINKS;
+function isInternalPath(value: string): boolean {
+  return normalizeText(value).startsWith('/');
+}
+
+function resolveNavigationLinks(navLinks: NavLink[] | undefined): NavLink[] {
+  const validLinks = (navLinks ?? [])
+    .map((link) => ({
+      label: normalizeText(link.label),
+      href: normalizeText(link.href),
+    }))
+    .filter((link) => link.label && isInternalPath(link.href));
+
+  if (validLinks.length === 0) {
+    return FALLBACK_NAVIGATION_LINKS;
+  }
+
+  const uniqueByHref = new Map<string, NavLink>();
+  for (const link of validLinks) {
+    if (!uniqueByHref.has(link.href)) {
+      uniqueByHref.set(link.href, link);
+    }
+  }
+
+  return Array.from(uniqueByHref.values());
+}
+
+function resolveSiteSettings(sourceSettings: SiteSettings): SiteSettings {
+  const defaults = getDefaultSection('siteSettings');
+
+  return {
+    ...defaults,
+    ...sourceSettings,
+    navLinks: sourceSettings.navLinks ?? defaults.navLinks,
+  };
 }
 
 function isHttpUrl(value: string): boolean {
@@ -88,7 +110,7 @@ function resolveSocialProfile(value: string, platform: 'instagram' | 'facebook')
   if (!rawValue) {
     return {
       rawValue: '',
-      href: '#',
+      href: '',
       displayValue: '',
       isAvailable: false,
     };
@@ -107,7 +129,7 @@ function resolveSocialProfile(value: string, platform: 'instagram' | 'facebook')
   if (!normalizedHandle) {
     return {
       rawValue,
-      href: '#',
+      href: '',
       displayValue: '',
       isAvailable: false,
     };
@@ -141,6 +163,35 @@ function resolveContactInfo(siteSettings: SiteSettings): SiteContactInfo {
   };
 }
 
+function resolveFooterContent(
+  siteSettings: SiteSettings,
+  navigationLinks: NavLink[],
+): SiteFooterContent {
+  const description =
+    normalizeText(siteSettings.institutionalDescription) ||
+    normalizeText(siteSettings.tagline) ||
+    FALLBACK_FOOTER_DESCRIPTION;
+
+  const configuredLeasingHref = normalizeText(siteSettings.footerLeasingHref);
+  const configuredLeasingLabel = normalizeText(siteSettings.footerLeasingLabel);
+  const leasingByConfig =
+    isInternalPath(configuredLeasingHref) && configuredLeasingLabel
+      ? { label: configuredLeasingLabel, href: configuredLeasingHref }
+      : null;
+
+  const leasingByNavigation =
+    navigationLinks.find((link) => link.href === '/locacao') ??
+    navigationLinks.find((link) => link.href.includes('locacao')) ??
+    null;
+
+  return {
+    description,
+    links: navigationLinks.slice(0, 6),
+    leasingLink: leasingByConfig ?? leasingByNavigation ?? FALLBACK_FOOTER_LEASING_LINK,
+    legalNote: normalizeText(siteSettings.footerLegalNote) || FALLBACK_FOOTER_LEGAL_NOTE,
+  };
+}
+
 function getFeaturedStores(stores: Store[]): Store[] {
   const featured = stores.filter((store) => store.featured);
   return featured.length > 0 ? featured : stores.slice(0, 3);
@@ -160,35 +211,73 @@ function splitBlogPosts(posts: BlogPost[]): {
   return { featuredBlogPost, blogFeedPosts };
 }
 
-export interface SiteContentSnapshot extends ContentState {
-  storeSegments: StoreCategory[];
-  blogCategories: BlogCategory[];
-  featuredStores: Store[];
-  featuredBlogPost: BlogPost | null;
-  blogFeedPosts: BlogPost[];
-  blogPreviewPosts: BlogPost[];
-  homeData: HomeData;
-  leasingContent: LeasingContent;
-  aboutContent: AboutContent;
-  navigationLinks: NavLink[];
-  contactInfo: SiteContactInfo;
-  branding: SiteBranding;
-  socialLinks: SiteSocialLinks;
+function resolveHomeContent(sourceContent: HomePageContent): HomePageContent {
+  const defaults = getDefaultSection('homeContent');
+
+  const heroSlides = sourceContent.hero.slides.filter(
+    (slide) =>
+      normalizeText(slide.title) &&
+      normalizeText(slide.subtitle) &&
+      normalizeText(slide.cta) &&
+      normalizeText(slide.href) &&
+      normalizeText(slide.image),
+  );
+
+  const statsItems = sourceContent.stats.items.filter(
+    (item) => normalizeText(item.value) && normalizeText(item.label),
+  );
+
+  return {
+    ...defaults,
+    ...sourceContent,
+    hero: {
+      ...defaults.hero,
+      ...sourceContent.hero,
+      slides: heroSlides.length > 0 ? heroSlides : defaults.hero.slides,
+    },
+    institutional: {
+      ...defaults.institutional,
+      ...sourceContent.institutional,
+    },
+    stats: {
+      ...defaults.stats,
+      ...sourceContent.stats,
+      items: statsItems.length > 0 ? statsItems : defaults.stats.items,
+    },
+    featuredStores: {
+      ...defaults.featuredStores,
+      ...sourceContent.featuredStores,
+    },
+    partners: {
+      ...defaults.partners,
+      ...sourceContent.partners,
+    },
+    blogPreview: {
+      ...defaults.blogPreview,
+      ...sourceContent.blogPreview,
+    },
+    leasingCta: {
+      ...defaults.leasingCta,
+      ...sourceContent.leasingCta,
+    },
+  };
 }
 
 export function buildSiteContentSnapshot(
-  source: Partial<ContentState>,
+  source: Partial<SiteContentState>,
 ): SiteContentSnapshot {
   // Central place for future DTO->domain mapping when remote source is introduced.
   const stores = resolveSection(source, 'stores');
   const blogPosts = resolveSection(source, 'blogPosts');
   const partners = resolveSection(source, 'partners');
-  const siteSettings = resolveSection(source, 'siteSettings');
+  const siteSettings = resolveSiteSettings(resolveSection(source, 'siteSettings'));
+  const homeContent = resolveHomeContent(resolveSection(source, 'homeContent'));
   const leasingBenefits = resolveSection(source, 'leasingBenefits');
   const spaceTypes = resolveSection(source, 'spaceTypes');
   const testimonials = resolveSection(source, 'testimonials');
   const leasingDifferentials = resolveSection(source, 'leasingDifferentials');
   const aboutData = resolveSection(source, 'aboutData');
+
   const navigationLinks = resolveNavigationLinks(siteSettings.navLinks);
   const contactInfo = resolveContactInfo(siteSettings);
   const branding = resolveBranding(siteSettings);
@@ -196,6 +285,7 @@ export function buildSiteContentSnapshot(
     instagram: resolveSocialProfile(siteSettings.instagram, 'instagram'),
     facebook: resolveSocialProfile(siteSettings.facebook, 'facebook'),
   };
+  const footer = resolveFooterContent(siteSettings, navigationLinks);
 
   const storeSegments = buildStoreSegments(stores);
   const blogCategories = buildBlogCategories(blogPosts);
@@ -203,7 +293,7 @@ export function buildSiteContentSnapshot(
   const { featuredBlogPost, blogFeedPosts } = splitBlogPosts(blogPosts);
   const blogPreviewPosts = blogPosts.slice(0, 3);
 
-  const homeData: HomeData = {
+  const homeData: HomeContent = {
     featuredStores,
     featuredBlogPost,
     blogPreviewPosts,
@@ -222,6 +312,7 @@ export function buildSiteContentSnapshot(
     blogPosts,
     partners,
     siteSettings,
+    homeContent,
     leasingBenefits,
     spaceTypes,
     testimonials,
@@ -240,5 +331,6 @@ export function buildSiteContentSnapshot(
     contactInfo,
     branding,
     socialLinks,
+    footer,
   };
 }

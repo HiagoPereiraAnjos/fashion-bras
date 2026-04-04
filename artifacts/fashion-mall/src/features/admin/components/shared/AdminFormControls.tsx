@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Check, RotateCcw, Save } from 'lucide-react';
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -133,12 +133,29 @@ export function EmptyAdminState({
 
 export function useSaveState() {
   const [saved, setSaved] = useState(false);
+  const timeoutRef = useRef<number | null>(null);
 
   const trigger = (action: () => void) => {
     action();
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = window.setTimeout(() => {
+      setSaved(false);
+      timeoutRef.current = null;
+    }, 2500);
   };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return { saved, trigger };
 }

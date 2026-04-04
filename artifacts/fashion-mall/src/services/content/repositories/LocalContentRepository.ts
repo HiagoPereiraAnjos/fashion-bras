@@ -7,10 +7,10 @@ import {
 import {
   createSectionStorageKey,
   mapDomainToStoredValue,
-  mapStoredToDomainValue,
+  mapStoredToDomainSectionValue,
 } from '@/services/content/mappers/contentStorageMapper';
 import type { ContentRepository } from '@/services/content/repositories/ContentRepository';
-import { CONTENT_SECTIONS, type ContentSection, type ContentState } from '@/services/content/types/content';
+import { CONTENT_SECTIONS, type ContentSection, type ContentState } from '@/types';
 
 const DEFAULT_STORAGE_NAMESPACE = 'fashionbras_admin_data';
 
@@ -24,9 +24,9 @@ export function createLocalContentRepository(
   const sectionKey = (section: ContentSection) => createSectionStorageKey(namespace, section);
 
   const loadSection = <K extends ContentSection>(section: K): ContentState[K] | null => {
-    const storedValue = readJson<ContentState[K]>(resolvedStorage, sectionKey(section));
+    const storedValue = readJson<unknown>(resolvedStorage, sectionKey(section));
     if (storedValue === null) return null;
-    return mapStoredToDomainValue(storedValue);
+    return mapStoredToDomainSectionValue(section, storedValue);
   };
 
   const saveSection = <K extends ContentSection>(section: K, value: ContentState[K]) => {

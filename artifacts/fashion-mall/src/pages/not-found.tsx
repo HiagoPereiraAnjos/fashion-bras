@@ -1,13 +1,10 @@
 import { Link } from 'wouter';
 import { AlertCircle } from 'lucide-react';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function NotFound() {
-  usePageSeo({
-    title: "Página não encontrada",
-    description: "A página solicitada não foi encontrada no Fashion Bras.",
-    noIndex: true,
-  });
+  usePageSeo(getSeoMetadata('notFound'));
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-stone-50 px-4">
@@ -29,3 +26,4 @@ export default function NotFound() {
     </div>
   );
 }
+

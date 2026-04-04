@@ -1,6 +1,6 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { useSiteContent } from '@/services/content';
 import {
   hasMinLength,
@@ -21,6 +21,7 @@ type LeasingFormFields = {
 };
 
 type LeasingFormErrors = Partial<Record<keyof LeasingFormFields, string>>;
+type LeasingFormTouched = Partial<Record<keyof LeasingFormFields, boolean>>;
 
 const INITIAL_FORM: LeasingFormFields = {
   name: '',
@@ -35,27 +36,60 @@ const INITIAL_FORM: LeasingFormFields = {
 const BASE_INPUT_CLASSNAME =
   'w-full border px-4 py-3 text-sm focus:outline-none transition-colors bg-white';
 
+function sanitizeForm(values: LeasingFormFields): LeasingFormFields {
+  return {
+    name: normalizeText(values.name),
+    email: normalizeText(values.email),
+    phone: normalizeText(values.phone),
+    company: normalizeText(values.company),
+    spaceType: normalizeText(values.spaceType),
+    segment: normalizeText(values.segment),
+    message: normalizeText(values.message),
+  };
+}
+
 export default function LeasingForm() {
   const { spaceTypes, storeSegments } = useSiteContent();
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [form, setForm] = useState<LeasingFormFields>(INITIAL_FORM);
   const [errors, setErrors] = useState<LeasingFormErrors>({});
+  const [touched, setTouched] = useState<LeasingFormTouched>({});
 
   const availableSpaceTypes = useMemo(
-    () => spaceTypes.filter((space) => isRequired(space.name)),
+    () =>
+      spaceTypes
+        .filter((space) => isRequired(space.name))
+        .map((space) => ({
+          value: space.name,
+          label: `${space.name}${space.size ? ` (${space.size})` : ''}`,
+        })),
     [spaceTypes],
   );
+
   const availableSegments = useMemo(
     () =>
-      storeSegments.filter(
-        (segment) => segment.slug !== 'todos' && isRequired(segment.label),
-      ),
+      storeSegments
+        .filter((segment) => segment.slug !== 'todos' && isRequired(segment.label))
+        .map((segment) => ({
+          value: segment.label,
+          label: segment.label,
+        })),
     [storeSegments],
   );
 
-  const spaceTypeUnavailable = availableSpaceTypes.length === 0;
+  const hasSpaceTypeCatalog = availableSpaceTypes.length > 0;
+  const hasSegmentCatalog = availableSegments.length > 0;
+
+  const spaceTypeOptions = hasSpaceTypeCatalog
+    ? availableSpaceTypes
+    : [{ value: 'A definir com equipe comercial', label: 'A definir com equipe comercial' }];
+
+  const segmentOptions = hasSegmentCatalog
+    ? [...availableSegments, { value: 'Outro', label: 'Outro' }]
+    : [{ value: 'Outro', label: 'Outro' }];
 
   const getFieldError = (
     key: keyof LeasingFormFields,
@@ -68,26 +102,26 @@ export default function LeasingForm() {
         return undefined;
       case 'email':
         if (!isRequired(value)) return 'Informe um e-mail para contato.';
-        if (!isValidEmail(value)) return 'Digite um e-mail válido.';
+        if (!isValidEmail(value)) return 'Digite um e-mail valido.';
         return undefined;
       case 'phone':
         if (!isRequired(value)) return 'Informe telefone ou WhatsApp.';
-        if (!isValidPhone(value)) return 'Digite um telefone válido com DDD.';
+        if (!isValidPhone(value)) return 'Digite um telefone valido com DDD.';
         return undefined;
       case 'company':
-        if (!value) return undefined;
-        if (!hasMinLength(value, 2)) return 'Nome da empresa muito curto.';
+        if (!isRequired(value)) return 'Informe o nome da marca ou empresa.';
+        if (!hasMinLength(value, 2)) return 'Nome da marca muito curto.';
         return undefined;
       case 'spaceType':
-        if (spaceTypeUnavailable) return undefined;
-        if (!isRequired(value)) return 'Selecione o tipo de espaço desejado.';
+        if (!isRequired(value)) return 'Selecione o tipo de espaco desejado.';
         return undefined;
       case 'segment':
+        if (!isRequired(value)) return 'Selecione o segmento da marca.';
         return undefined;
       case 'message':
-        if (!value) return undefined;
-        if (!hasMinLength(value, 10)) {
-          return 'Mensagem muito curta. Escreva pelo menos 10 caracteres.';
+        if (!isRequired(value)) return 'Descreva brevemente sua proposta comercial.';
+        if (!hasMinLength(value, 20)) {
+          return 'Mensagem muito curta. Escreva pelo menos 20 caracteres.';
         }
         return undefined;
     }
@@ -107,15 +141,10 @@ export default function LeasingForm() {
   const updateField = (name: keyof LeasingFormFields, value: string) => {
     setForm((current) => ({ ...current, [name]: value }));
 
-    if (!attemptedSubmit) return;
+    if (!attemptedSubmit && !touched[name]) return;
 
-    const fieldError = getFieldError(name, value);
-    setErrors((current) => {
-      const next = { ...current };
-      if (fieldError) next[name] = fieldError;
-      else delete next[name];
-      return next;
-    });
+    const nextErrors = validateForm({ ...form, [name]: value });
+    setErrors(nextErrors);
   };
 
   const handleChange = (
@@ -125,19 +154,35 @@ export default function LeasingForm() {
     updateField(name as keyof LeasingFormFields, value);
   };
 
+  const handleBlur = (
+    event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    const key = name as keyof LeasingFormFields;
+
+    setTouched((current) => ({ ...current, [key]: true }));
+    const nextErrors = validateForm({ ...form, [key]: value });
+    setErrors(nextErrors);
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setAttemptedSubmit(true);
+    setSubmitError(null);
 
-    const nextErrors = validateForm(form);
+    const sanitized = sanitizeForm(form);
+    setForm(sanitized);
+
+    const nextErrors = validateForm(sanitized);
     setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0 || spaceTypeUnavailable) {
+    if (Object.keys(nextErrors).length > 0) {
+      setSubmitError('Revise os campos obrigatorios para continuar.');
       return;
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    await new Promise((resolve) => setTimeout(resolve, 900));
     setIsSubmitting(false);
     setSubmitted(true);
   };
@@ -145,7 +190,9 @@ export default function LeasingForm() {
   const resetForm = () => {
     setForm(INITIAL_FORM);
     setErrors({});
+    setTouched({});
     setAttemptedSubmit(false);
+    setSubmitError(null);
     setSubmitted(false);
     setIsSubmitting(false);
   };
@@ -171,7 +218,10 @@ export default function LeasingForm() {
             Solicitação registrada com sucesso
           </h3>
           <p className="text-stone-500 max-w-md mx-auto leading-relaxed">
-            Recebemos os dados da sua marca e nossa equipe comercial retornará em até 48 horas úteis.
+            Seus dados foram validados e registrados localmente para demonstração do fluxo.
+          </p>
+          <p className="text-xs text-stone-400 mt-3">
+            Nesta etapa, nenhum envio externo e realizado.
           </p>
           <button
             onClick={resetForm}
@@ -189,33 +239,43 @@ export default function LeasingForm() {
           className="grid grid-cols-1 md:grid-cols-2 gap-5"
           noValidate
         >
-          {spaceTypeUnavailable && (
-            <div className="md:col-span-2 border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
-              Tipos de espaço indisponíveis no momento. Atualize o conteúdo no admin antes de enviar novas solicitações.
+          {!hasSpaceTypeCatalog && (
+            <div className="md:col-span-2 border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 flex items-start gap-2">
+              <Info size={14} className="mt-0.5 shrink-0 text-amber-700" />
+              Tipos de espaco estao em atualizacao. Voce pode seguir com a opcao "A definir com equipe comercial".
+            </div>
+          )}
+
+          {!hasSegmentCatalog && (
+            <div className="md:col-span-2 border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600 flex items-start gap-2">
+              <Info size={14} className="mt-0.5 shrink-0 text-amber-700" />
+              Segmentos de marca estao em atualizacao. Selecione "Outro" para continuar.
             </div>
           )}
 
           {[
-            { name: 'name', label: 'Nome Completo', type: 'text', required: true },
-            { name: 'email', label: 'E-mail', type: 'email', required: true },
-            { name: 'phone', label: 'Telefone / WhatsApp', type: 'tel', required: true },
-            { name: 'company', label: 'Nome da Empresa / Marca', type: 'text', required: false },
+            { name: 'name', label: 'Nome Completo', type: 'text' },
+            { name: 'email', label: 'E-mail', type: 'email' },
+            { name: 'phone', label: 'Telefone / WhatsApp', type: 'tel' },
+            { name: 'company', label: 'Nome da Empresa / Marca', type: 'text' },
           ].map((field) => {
             const key = field.name as keyof LeasingFormFields;
 
             return (
               <div key={field.name}>
                 <label className="block text-xs text-stone-500 tracking-wider uppercase mb-2">
-                  {field.label} {field.required && <span className="text-amber-600">*</span>}
+                  {field.label} <span className="text-amber-600">*</span>
                 </label>
                 <input
                   type={field.type}
                   name={field.name}
                   value={form[key]}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   className={inputClassName(key)}
                   aria-invalid={Boolean(errors[key])}
                   aria-describedby={errors[key] ? `${field.name}-error` : undefined}
+                  required
                 />
                 {errors[key] && (
                   <p id={`${field.name}-error`} className="mt-1 text-xs text-red-600">
@@ -228,82 +288,92 @@ export default function LeasingForm() {
 
           <div>
             <label className="block text-xs text-stone-500 tracking-wider uppercase mb-2">
-              Tipo de Espaço <span className="text-amber-600">*</span>
+              Tipo de Espaco <span className="text-amber-600">*</span>
             </label>
             <select
               name="spaceType"
               value={form.spaceType}
               onChange={handleChange}
-              disabled={spaceTypeUnavailable}
-              className={`${inputClassName('spaceType')} appearance-none disabled:bg-stone-100 disabled:text-stone-400`}
+              onBlur={handleBlur}
+              className={`${inputClassName('spaceType')} appearance-none`}
+              required
             >
               <option value="">Selecione...</option>
-              {availableSpaceTypes.map((space) => (
-                <option key={space.name} value={space.name}>
-                  {`${space.name} (${space.size})`}
+              {spaceTypeOptions.map((space) => (
+                <option key={space.value} value={space.value}>
+                  {space.label}
                 </option>
               ))}
             </select>
-            {errors.spaceType && (
-              <p className="mt-1 text-xs text-red-600">{errors.spaceType}</p>
-            )}
+            {errors.spaceType && <p className="mt-1 text-xs text-red-600">{errors.spaceType}</p>}
           </div>
 
           <div>
             <label className="block text-xs text-stone-500 tracking-wider uppercase mb-2">
-              Segmento da Marca
+              Segmento da Marca <span className="text-amber-600">*</span>
             </label>
             <select
               name="segment"
               value={form.segment}
               onChange={handleChange}
+              onBlur={handleBlur}
               className={`${inputClassName('segment')} appearance-none`}
+              required
             >
               <option value="">Selecione...</option>
-              {availableSegments.map((segment) => (
-                <option key={segment.slug} value={segment.label}>
+              {segmentOptions.map((segment) => (
+                <option key={segment.value} value={segment.value}>
                   {segment.label}
                 </option>
               ))}
-              <option value="Outro">Outro</option>
             </select>
+            {errors.segment && <p className="mt-1 text-xs text-red-600">{errors.segment}</p>}
           </div>
 
           <div className="md:col-span-2">
             <label className="block text-xs text-stone-500 tracking-wider uppercase mb-2">
-              Mensagem
+              Mensagem <span className="text-amber-600">*</span>
             </label>
             <textarea
               name="message"
               value={form.message}
               onChange={handleChange}
+              onBlur={handleBlur}
               rows={4}
-              placeholder="Conte-nos mais sobre sua marca e o que você busca no Fashion Bras..."
+              placeholder="Conte-nos sobre sua marca, publico e objetivo comercial no shopping."
               className={`${inputClassName('message')} resize-none`}
               aria-invalid={Boolean(errors.message)}
+              required
             />
-            {errors.message && (
+            {errors.message ? (
               <p className="mt-1 text-xs text-red-600">{errors.message}</p>
+            ) : (
+              <p className="mt-1 text-xs text-stone-400">
+                Minimo recomendado: 20 caracteres para uma analise comercial inicial.
+              </p>
             )}
           </div>
 
-          {attemptedSubmit && hasErrors && (
-            <div className="md:col-span-2 border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 flex items-start gap-2">
+          {(submitError || (attemptedSubmit && hasErrors)) && (
+            <div
+              className="md:col-span-2 border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 flex items-start gap-2"
+              aria-live="polite"
+            >
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
-              Revise os campos destacados antes de enviar.
+              {submitError || 'Revise os campos destacados antes de enviar.'}
             </div>
           )}
 
           <div className="md:col-span-2">
             <button
               type="submit"
-              disabled={isSubmitting || spaceTypeUnavailable}
+              disabled={isSubmitting}
               className="w-full md:w-auto bg-stone-900 text-white px-10 py-4 text-xs tracking-widest uppercase font-medium hover:bg-amber-700 transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
+              {isSubmitting ? 'Validando...' : 'Enviar Solicitação'}
             </button>
             <p className="text-xs text-stone-400 mt-3">
-              Envio apenas em frontend para demonstração. Não há integração externa nesta etapa.
+              Fluxo de validação frontend-only. Sem backend e sem envio externo nesta fase.
             </p>
           </div>
         </motion.form>

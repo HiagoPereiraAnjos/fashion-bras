@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, CalendarDays, User } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import BlogCard from '@/components/cards/BlogCard';
 import { useSiteContent } from '@/services/content';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function BlogPostPage() {
@@ -13,19 +14,15 @@ export default function BlogPostPage() {
 
   usePageSeo(
     post
-      ? {
+      ? getSeoMetadata('blog', {
           title: post.title,
           description: post.excerpt,
           canonicalPath: `/blog/${post.slug}`,
           image: post.coverImage,
+          imageAlt: `Capa do artigo ${post.title}`,
           type: 'article',
-        }
-      : {
-          title: 'Artigo não encontrado',
-          description: 'O artigo solicitado não foi encontrado no blog do Fashion Bras.',
-          canonicalPath: '/blog',
-          noIndex: true,
-        },
+        })
+      : getSeoMetadata('blogPostFallback'),
   );
 
   if (!post) {
@@ -183,3 +180,4 @@ export default function BlogPostPage() {
     </MainLayout>
   );
 }
+

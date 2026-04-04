@@ -3,7 +3,7 @@ import { buildPageTitle, seoConfig, type PageSeoMetadata } from '@/seo/config';
 
 const DEFAULT_ROBOTS =
   'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1';
-const NO_INDEX_ROBOTS = 'noindex,nofollow';
+const NO_INDEX_ROBOTS = 'noindex,nofollow,noarchive,nosnippet';
 
 function upsertMetaByName(name: string, content: string) {
   const selector = `meta[name="${name}"]`;
@@ -44,20 +44,11 @@ function upsertCanonicalLink(href: string) {
 }
 
 function resolveAbsoluteUrl(pathOrUrl?: string) {
-  const base = seoConfig.siteUrl.replace(/\/$/, '');
+  const base = seoConfig.siteUrl;
 
-  if (!pathOrUrl) {
-    return `${base}/`;
-  }
-
-  if (/^https?:\/\//i.test(pathOrUrl)) {
-    return pathOrUrl;
-  }
-
-  if (pathOrUrl.startsWith('/')) {
-    return `${base}${pathOrUrl}`;
-  }
-
+  if (!pathOrUrl) return `${base}/`;
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  if (pathOrUrl.startsWith('/')) return `${base}${pathOrUrl}`;
   return `${base}/${pathOrUrl}`;
 }
 
@@ -68,7 +59,7 @@ function resolveCurrentCanonicalUrl(canonicalPath?: string) {
     return resolveAbsoluteUrl('/');
   }
 
-  return resolveAbsoluteUrl(`${window.location.pathname}${window.location.search}`);
+  return resolveAbsoluteUrl(window.location.pathname);
 }
 
 export function usePageSeo({
@@ -76,6 +67,7 @@ export function usePageSeo({
   description,
   canonicalPath,
   image,
+  imageAlt,
   type = 'website',
   noIndex = false,
 }: PageSeoMetadata) {
@@ -84,6 +76,7 @@ export function usePageSeo({
     const pageDescription = (description || seoConfig.defaultDescription).trim();
     const canonicalUrl = resolveCurrentCanonicalUrl(canonicalPath);
     const socialImage = resolveAbsoluteUrl(image || seoConfig.defaultImage);
+    const socialImageAlt = (imageAlt || seoConfig.defaultImageAlt).trim();
     const robots = noIndex ? NO_INDEX_ROBOTS : DEFAULT_ROBOTS;
 
     document.documentElement.lang = 'pt-BR';
@@ -91,10 +84,13 @@ export function usePageSeo({
 
     upsertMetaByName('description', pageDescription);
     upsertMetaByName('robots', robots);
+    upsertMetaByName('author', seoConfig.siteName);
     upsertMetaByName('twitter:card', seoConfig.twitterCard);
+    upsertMetaByName('twitter:site', seoConfig.twitterSite);
     upsertMetaByName('twitter:title', pageTitle);
     upsertMetaByName('twitter:description', pageDescription);
     upsertMetaByName('twitter:image', socialImage);
+    upsertMetaByName('twitter:image:alt', socialImageAlt);
 
     upsertMetaByProperty('og:type', type);
     upsertMetaByProperty('og:site_name', seoConfig.siteName);
@@ -103,7 +99,8 @@ export function usePageSeo({
     upsertMetaByProperty('og:description', pageDescription);
     upsertMetaByProperty('og:url', canonicalUrl);
     upsertMetaByProperty('og:image', socialImage);
+    upsertMetaByProperty('og:image:alt', socialImageAlt);
 
     upsertCanonicalLink(canonicalUrl);
-  }, [canonicalPath, description, image, noIndex, title, type]);
+  }, [canonicalPath, description, image, imageAlt, noIndex, title, type]);
 }

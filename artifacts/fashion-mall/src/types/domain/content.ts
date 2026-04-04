@@ -1,5 +1,5 @@
 import type { DomainDateLabel, DomainId, Draft, Slug, UrlString } from '@/types/domain/base';
-import type { SiteSettings } from '@/types/domain/site';
+import type { NavLink, SiteSettings } from '@/types/domain/site';
 
 export type BlogCategory = string;
 
@@ -50,8 +50,68 @@ export interface HomeHeroSlide {
   image: UrlString;
 }
 
-// Backward-compatible alias for existing naming.
-export type HeroSlide = HomeHeroSlide;
+export interface HomeStatItem {
+  value: string;
+  label: string;
+}
+
+export interface HomeHeroContent {
+  eyebrow: string;
+  slides: HomeHeroSlide[];
+}
+
+export interface HomeInstitutionalContent {
+  eyebrow: string;
+  title: string;
+  titleHighlight: string;
+  leadParagraph: string;
+  secondaryParagraph: string;
+  ctaLabel: string;
+  ctaHref: string;
+  imagePrimary: UrlString;
+  imageSecondary: UrlString;
+  floatingStatValue: string;
+  floatingStatLabel: string;
+}
+
+export interface HomeSectionHighlightContent {
+  eyebrow: string;
+  title: string;
+  titleHighlight: string;
+  ctaLabel: string;
+  ctaHref: string;
+  emptyMessage: string;
+}
+
+export interface HomePartnersSectionContent {
+  eyebrow: string;
+  emptyMessage: string;
+}
+
+export interface HomeStatsContent {
+  backgroundWord: string;
+  items: HomeStatItem[];
+}
+
+export interface HomeLeasingCtaContent {
+  eyebrow: string;
+  title: string;
+  titleHighlight: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  backgroundImage: UrlString;
+}
+
+export interface HomePageContent {
+  hero: HomeHeroContent;
+  institutional: HomeInstitutionalContent;
+  stats: HomeStatsContent;
+  featuredStores: HomeSectionHighlightContent;
+  partners: HomePartnersSectionContent;
+  blogPreview: HomeSectionHighlightContent;
+  leasingCta: HomeLeasingCtaContent;
+}
 
 export interface LeasingBenefit {
   icon: string;
@@ -98,29 +158,107 @@ export interface LeasingContent {
   differentials: string[];
 }
 
-export interface HomeData {
+export interface HomeContent {
   featuredStores: Store[];
   featuredBlogPost: BlogPost | null;
   blogPreviewPosts: BlogPost[];
   partners: Partner[];
 }
 
-export interface ContentPersistenceSnapshot {
+export interface SiteContentState {
   stores: Store[];
   blogPosts: BlogPost[];
   partners: Partner[];
   siteSettings: SiteSettings;
+  homeContent: HomePageContent;
+  leasingBenefits: LeasingBenefit[];
+  spaceTypes: SpaceType[];
+  testimonials: Testimonial[];
+  leasingDifferentials: string[];
+  aboutData: AboutContent;
+}
+
+export const SITE_CONTENT_SECTIONS = [
+  'stores',
+  'blogPosts',
+  'partners',
+  'siteSettings',
+  'homeContent',
+  'leasingBenefits',
+  'spaceTypes',
+  'testimonials',
+  'leasingDifferentials',
+  'aboutData',
+] as const;
+
+export type SiteContentSection = (typeof SITE_CONTENT_SECTIONS)[number];
+
+export interface SiteContactInfo {
+  address: string;
+  phone: string;
+  email: string;
+  hours: string;
+}
+
+export interface SiteBranding {
+  fullName: string;
+  mainName: string;
+  secondaryName: string;
+}
+
+export interface SiteSocialProfile {
+  rawValue: string;
+  href: string;
+  displayValue: string;
+  isAvailable: boolean;
+}
+
+export interface SiteSocialLinks {
+  instagram: SiteSocialProfile;
+  facebook: SiteSocialProfile;
+}
+
+export interface SiteFooterContent {
+  description: string;
+  links: NavLink[];
+  leasingLink: NavLink;
+  legalNote: string;
+}
+
+export interface SiteContentSnapshot extends SiteContentState {
+  storeSegments: StoreCategory[];
+  blogCategories: BlogCategory[];
+  featuredStores: Store[];
+  featuredBlogPost: BlogPost | null;
+  blogFeedPosts: BlogPost[];
+  blogPreviewPosts: BlogPost[];
+  homeData: HomeContent;
   leasingContent: LeasingContent;
   aboutContent: AboutContent;
+  navigationLinks: NavLink[];
+  contactInfo: SiteContactInfo;
+  branding: SiteBranding;
+  socialLinks: SiteSocialLinks;
+  footer: SiteFooterContent;
 }
+
+export type SiteContentPersistence = SiteContentState;
 
 export type StoreFormData = Draft<Store, 'id'>;
 export type BlogPostFormData = Draft<BlogPost, 'slug'>;
 export type PartnerFormData = Draft<Partner, 'id'>;
 export type SiteSettingsFormData = SiteSettings;
+export type HomeContentFormData = HomePageContent;
 export type LeasingContentFormData = LeasingContent;
 export type AboutContentFormData = AboutContent;
 
 // Backward-compatible aliases for incremental adoption.
-export type AboutData = AboutContent;
+export type HeroSlide = HomeHeroSlide;
 export type StoreSegment = StoreCategory;
+export type HomeData = HomeContent;
+export type ContentState = SiteContentState;
+export type ContentSection = SiteContentSection;
+export const CONTENT_SECTIONS = SITE_CONTENT_SECTIONS;
+export type AdminContentState = SiteContentState;
+export type ContentPersistenceSnapshot = SiteContentPersistence;
+export type AboutData = AboutContent;

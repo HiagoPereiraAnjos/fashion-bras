@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
+import ContentEmptyState from '@/components/feedback/ContentEmptyState';
 import StoreFilters from '@/components/filters/StoreFilters';
+import MainLayout from '@/layouts/MainLayout';
 import { useSiteContent } from '@/services/content';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function StoresPage() {
@@ -11,12 +13,7 @@ export default function StoresPage() {
   const [search, setSearch] = useState('');
   const [segment, setSegment] = useState('todos');
 
-  usePageSeo({
-    title: 'Lojas de Moda',
-    description:
-      'Explore as lojas do Fashion Bras por segmento e encontre marcas premium de moda, acessórios, esportes e lifestyle em São Paulo.',
-    canonicalPath: '/lojas',
-  });
+  usePageSeo(getSeoMetadata('stores'));
 
   const filtered = useMemo(() => {
     return stores.filter((store) => {
@@ -33,7 +30,6 @@ export default function StoresPage() {
 
   return (
     <MainLayout>
-      {/* Page Header */}
       <section className="relative pt-40 pb-20 bg-stone-950">
         <div className="absolute inset-0 opacity-20">
           <img
@@ -48,21 +44,16 @@ export default function StoresPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="page-hero-kicker">
-              Fashion Bras
-            </p>
-            <h1 className="page-hero-title">
-              Nossas Lojas
-            </h1>
+            <p className="page-hero-kicker">Fashion Bras</p>
+            <h1 className="page-hero-title">Nossas Lojas</h1>
             <p className="page-hero-description">
               Explore nosso mix exclusivo de lojas selecionadas. Aqui, cada marca foi escolhida
-              com critério para oferecer o melhor da moda e do estilo.
+              com criterio para oferecer o melhor da moda e do estilo.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Filters + Listing */}
       <section className="section-shell py-16 bg-stone-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="mb-10">
@@ -81,29 +72,34 @@ export default function StoresPage() {
                 {filtered.length} {filtered.length === 1 ? 'loja encontrada' : 'lojas encontradas'}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filtered.map((store, i) => (
-                  <StoreCard key={store.id} store={store} index={i} />
+                {filtered.map((store, index) => (
+                  <StoreCard key={store.id} store={store} index={index} />
                 ))}
               </div>
             </>
           ) : (
-            <div className="text-center py-24">
-              <p className="font-serif text-2xl text-stone-400 mb-3">
-                {hasAnyStores ? 'Nenhuma loja encontrada' : 'Nenhuma loja cadastrada'}
-              </p>
-              <p className="text-stone-400 text-sm">
-                {hasAnyStores
-                  ? 'Tente ajustar sua busca ou filtros.'
-                  : 'O catálogo de lojas ainda está sendo preparado.'}
-              </p>
-              {hasAnyStores && (
-                <button
-                  onClick={() => { setSearch(''); setSegment('todos'); }}
-                  className="mt-6 text-amber-700 text-xs tracking-widest uppercase font-medium hover:underline"
-                >
-                  Limpar filtros
-                </button>
-              )}
+            <div className="py-24">
+              <ContentEmptyState
+                title={hasAnyStores ? 'Nenhuma loja encontrada' : 'Catalogo em atualizacao'}
+                message={
+                  hasAnyStores
+                    ? 'Nao encontramos lojas com os filtros atuais. Ajuste os criterios para ampliar os resultados.'
+                    : 'As lojas ainda nao foram publicadas. Assim que forem cadastradas, aparecerao aqui.'
+                }
+                action={
+                  hasAnyStores ? (
+                    <button
+                      onClick={() => {
+                        setSearch('');
+                        setSegment('todos');
+                      }}
+                      className="text-amber-700 text-xs tracking-widest uppercase font-medium hover:underline"
+                    >
+                      Limpar filtros
+                    </button>
+                  ) : undefined
+                }
+              />
             </div>
           )}
         </div>

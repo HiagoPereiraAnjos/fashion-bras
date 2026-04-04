@@ -1,32 +1,21 @@
 import type { ComponentType } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Users, Shield, Zap, TrendingUp, Star, Check } from 'lucide-react';
+import ContentEmptyState from '@/components/feedback/ContentEmptyState';
 import MainLayout from '@/layouts/MainLayout';
 import LeasingForm from '@/components/forms/LeasingForm';
 import { useSiteContent } from '@/services/content';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 const iconMap: Record<string, ComponentType<{ size?: number; className?: string }>> = {
   MapPin, Users, Shield, Zap, TrendingUp, Star,
 };
 
-function SectionEmptyState({ message }: { message: string }) {
-  return (
-    <div className="surface-card p-8 text-center">
-      <p className="text-sm text-stone-500">{message}</p>
-    </div>
-  );
-}
-
 export default function LeasingPage() {
   const { leasingBenefits, spaceTypes, testimonials, leasingDifferentials } = useSiteContent();
 
-  usePageSeo({
-    title: 'Locação de Lojas e Espaços',
-    description:
-      'Conheça oportunidades de locação no Fashion Bras: espaços comerciais, benefícios para lojistas e formulário de proposta.',
-    canonicalPath: '/locacao',
-  });
+  usePageSeo(getSeoMetadata('leasing'));
 
   return (
     <MainLayout>
@@ -98,7 +87,7 @@ export default function LeasingPage() {
               })
             ) : (
               <div className="md:col-span-2 lg:col-span-3">
-                <SectionEmptyState message="Benefícios de locação em atualização." />
+                <ContentEmptyState compact message="Benefícios de locação em atualização." />
               </div>
             )}
           </div>
@@ -139,7 +128,7 @@ export default function LeasingPage() {
               ))
             ) : (
               <div className="md:col-span-2">
-                <SectionEmptyState message="Tipos de espaço indisponíveis no momento." />
+                <ContentEmptyState compact message="Tipos de espaço indisponíveis no momento." />
               </div>
             )}
           </div>
@@ -178,7 +167,7 @@ export default function LeasingPage() {
                 ))}
               </ul>
             ) : (
-              <SectionEmptyState message="Diferenciais comerciais em atualização." />
+              <ContentEmptyState compact message="Diferenciais comerciais em atualização." />
             )}
           </motion.div>
 
@@ -236,7 +225,7 @@ export default function LeasingPage() {
               ))
             ) : (
               <div className="md:col-span-3">
-                <SectionEmptyState message="Depoimentos indisponíveis no momento." />
+                <ContentEmptyState compact message="Depoimentos indisponíveis no momento." />
               </div>
             )}
           </div>
@@ -266,3 +255,5 @@ export default function LeasingPage() {
     </MainLayout>
   );
 }
+
+

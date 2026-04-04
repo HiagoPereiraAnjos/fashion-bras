@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useAdminData } from '@/context/AdminDataContext';
 import {
@@ -18,6 +18,11 @@ export default function PartnersSection() {
   const { saved, trigger } = useSaveState();
   const [local, setLocal] = useState([...partners]);
   const [notice, setNotice] = useState<SaveNotice>(null);
+
+  useEffect(() => {
+    setLocal([...partners]);
+    setNotice(null);
+  }, [partners]);
 
   const update = (index: number, name: string) =>
     setLocal((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, name } : item)));
@@ -109,3 +114,4 @@ export default function PartnersSection() {
     </div>
   );
 }
+

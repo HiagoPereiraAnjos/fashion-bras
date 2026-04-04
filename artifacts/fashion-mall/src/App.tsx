@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { AdminDataProvider } from "@/services/content";
 import HomePage from "@/pages/HomePage";
@@ -7,8 +8,17 @@ import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
 import LeasingPage from "@/pages/LeasingPage";
 import AboutPage from "@/pages/AboutPage";
-import AdminPage from "@/pages/AdminPage";
 import NotFound from "@/pages/not-found";
+
+const AdminPage = lazy(() => import("@/pages/AdminPage"));
+
+function AdminPageRoute() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-50" />}>
+      <AdminPage />
+    </Suspense>
+  );
+}
 
 function Router() {
   return (
@@ -20,7 +30,7 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/locacao" component={LeasingPage} />
       <Route path="/sobre" component={AboutPage} />
-      <Route path="/admin" component={AdminPage} />
+      <Route path="/admin" component={AdminPageRoute} />
       <Route component={NotFound} />
     </Switch>
   );

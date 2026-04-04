@@ -4,6 +4,7 @@ import { AdminLayout } from '@/features/admin/components/AdminLayout';
 import { AdminSectionsPanel } from '@/features/admin/components/AdminSectionsPanel';
 import { ResetAllModal } from '@/features/admin/components/ResetAllModal';
 import type { AdminTabId } from '@/features/admin/constants/tabs';
+import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function AdminPage() {
@@ -11,12 +12,7 @@ export default function AdminPage() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const { resetAll, hasCustomData } = useAdminData();
 
-  usePageSeo({
-    title: 'Painel Administrativo',
-    description: 'Área administrativa de gestão de conteúdo do Fashion Bras.',
-    canonicalPath: '/admin',
-    noIndex: true,
-  });
+  usePageSeo(getSeoMetadata('admin'));
 
   return (
     <AdminLayout
@@ -37,3 +33,4 @@ export default function AdminPage() {
     </AdminLayout>
   );
 }
+
