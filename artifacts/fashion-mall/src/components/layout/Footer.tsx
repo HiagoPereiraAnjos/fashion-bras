@@ -1,31 +1,9 @@
 import { Link } from 'wouter';
 import { Instagram, Facebook, MapPin, Phone, Mail, Clock } from 'lucide-react';
-import { useSiteContent } from '@/features/content';
-
-const FALLBACK_NAV_LINKS = [
-  { label: 'Início', href: '/' },
-  { label: 'Lojas', href: '/lojas' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Locação', href: '/locacao' },
-  { label: 'Sobre', href: '/sobre' },
-];
+import { useSiteContent } from '@/services/content';
 
 export default function Footer() {
-  const { siteSettings } = useSiteContent();
-  const [brandMain, ...brandSecondaryParts] = (siteSettings.name || 'Fashion Bras').split(' ');
-  const brandSecondary = brandSecondaryParts.join(' ') || 'Bras';
-  const instagramHandle = siteSettings.instagram.replace(/^@/, '').trim();
-  const facebookHandle = siteSettings.facebook.replace(/^@/, '').trim();
-  const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : '#';
-  const facebookHref = facebookHandle ? `https://facebook.com/${facebookHandle}` : '#';
-  const activeNavLinks =
-    siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim()).length > 0
-      ? siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim())
-      : FALLBACK_NAV_LINKS;
-  const contactAddress = siteSettings.address || 'Endereço em atualização';
-  const contactPhone = siteSettings.phone || 'Telefone em atualização';
-  const contactEmail = siteSettings.email || 'contato@fashionbras.com.br';
-  const contactHours = siteSettings.hours || 'Horários em atualização';
+  const { siteSettings, navigationLinks, branding, contactInfo, socialLinks } = useSiteContent();
 
   return (
     <footer className="bg-stone-950 text-stone-300">
@@ -38,10 +16,10 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-6">
               <p className="font-serif text-2xl font-bold text-white tracking-widest">
-                {brandMain.toUpperCase()}
+                {branding.mainName.toUpperCase()}
               </p>
               <p className="text-amber-500 text-xs tracking-[0.35em] font-light">
-                {brandSecondary.toUpperCase()}
+                {branding.secondaryName.toUpperCase()}
               </p>
             </div>
             <p className="text-stone-400 text-sm leading-relaxed mb-6">
@@ -49,24 +27,28 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href={instagramHref}
+                href={socialLinks.instagram.href}
                 className={`w-9 h-9 rounded-full border border-stone-700 flex items-center justify-center transition-colors ${
-                  instagramHandle ? 'hover:border-amber-500 hover:text-amber-500' : 'opacity-50 cursor-not-allowed'
+                  socialLinks.instagram.isAvailable
+                    ? 'hover:border-amber-500 hover:text-amber-500'
+                    : 'opacity-50 cursor-not-allowed'
                 }`}
                 aria-label="Instagram"
-                target="_blank"
-                rel="noopener noreferrer"
+                target={socialLinks.instagram.isAvailable ? '_blank' : undefined}
+                rel={socialLinks.instagram.isAvailable ? 'noopener noreferrer' : undefined}
               >
                 <Instagram size={16} />
               </a>
               <a
-                href={facebookHref}
+                href={socialLinks.facebook.href}
                 className={`w-9 h-9 rounded-full border border-stone-700 flex items-center justify-center transition-colors ${
-                  facebookHandle ? 'hover:border-amber-500 hover:text-amber-500' : 'opacity-50 cursor-not-allowed'
+                  socialLinks.facebook.isAvailable
+                    ? 'hover:border-amber-500 hover:text-amber-500'
+                    : 'opacity-50 cursor-not-allowed'
                 }`}
                 aria-label="Facebook"
-                target="_blank"
-                rel="noopener noreferrer"
+                target={socialLinks.facebook.isAvailable ? '_blank' : undefined}
+                rel={socialLinks.facebook.isAvailable ? 'noopener noreferrer' : undefined}
               >
                 <Facebook size={16} />
               </a>
@@ -79,7 +61,7 @@ export default function Footer() {
               Navegação
             </h4>
             <ul className="space-y-3">
-              {activeNavLinks.map((link) => (
+              {navigationLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>
                     <span className="text-stone-400 hover:text-amber-400 text-sm transition-colors cursor-pointer">
@@ -99,15 +81,15 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex gap-3 text-sm text-stone-400">
                 <MapPin size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                <span>{contactAddress}</span>
+                <span>{contactInfo.address}</span>
               </li>
               <li className="flex gap-3 text-sm text-stone-400">
                 <Phone size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                <span>{contactPhone}</span>
+                <span>{contactInfo.phone}</span>
               </li>
               <li className="flex gap-3 text-sm text-stone-400">
                 <Mail size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                <span>{contactEmail}</span>
+                <span>{contactInfo.email}</span>
               </li>
             </ul>
           </div>
@@ -119,7 +101,7 @@ export default function Footer() {
             </h4>
             <div className="flex gap-3 text-sm text-stone-400">
               <Clock size={16} className="text-amber-500 mt-0.5 shrink-0" />
-              <span>{contactHours}</span>
+              <span>{contactInfo.hours}</span>
             </div>
             <div className="mt-8">
               <p className="text-xs text-stone-500 uppercase tracking-widest mb-3">
@@ -139,7 +121,7 @@ export default function Footer() {
       <div className="border-t border-stone-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-stone-500 text-xs">
-            &copy; {new Date().getFullYear()} Fashion Bras. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} {branding.fullName}. Todos os direitos reservados.
           </p>
           <p className="text-stone-600 text-xs">
             Desenvolvido com excelência para a moda brasileira.

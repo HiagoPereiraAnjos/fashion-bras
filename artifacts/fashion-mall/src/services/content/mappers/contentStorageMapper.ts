@@ -1,4 +1,4 @@
-import type { ContentSection } from '@/features/content/types/content';
+import type { ContentSection } from '@/services/content/types/content';
 
 export function createSectionStorageKey(namespace: string, section: ContentSection): string {
   return `${namespace}_${section}`;

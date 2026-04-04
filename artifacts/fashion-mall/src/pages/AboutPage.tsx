@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 function SectionEmptyState({ message }: { message: string }) {

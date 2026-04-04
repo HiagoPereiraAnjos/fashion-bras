@@ -1,4 +1,4 @@
-import type { ContentSection, ContentState } from '@/features/content/types/content';
+import type { ContentSection, ContentState } from '@/services/content/types/content';
 
 // Single contract used by UI/context. Swap implementation, not consumers.
 export interface ContentRepository {

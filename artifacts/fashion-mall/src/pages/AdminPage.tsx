@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAdminData } from '@/context/AdminDataContext';
 import { AdminLayout } from '@/features/admin/components/AdminLayout';
-import { AdminTabPanel } from '@/features/admin/components/AdminTabPanel';
+import { AdminSectionsPanel } from '@/features/admin/components/AdminSectionsPanel';
 import { ResetAllModal } from '@/features/admin/components/ResetAllModal';
 import type { AdminTabId } from '@/features/admin/constants/tabs';
 import { usePageSeo } from '@/seo/usePageSeo';
@@ -25,7 +25,7 @@ export default function AdminPage() {
       hasCustomData={hasCustomData}
       onRequestResetAll={() => setShowResetConfirm(true)}
     >
-      <AdminTabPanel activeTab={activeTab} />
+      <AdminSectionsPanel activeTab={activeTab} />
       <ResetAllModal
         open={showResetConfirm}
         onCancel={() => setShowResetConfirm(false)}

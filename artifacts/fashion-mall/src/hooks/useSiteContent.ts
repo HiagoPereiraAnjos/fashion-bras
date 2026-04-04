@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useAdminData } from '@/features/content/context/AdminDataContext';
-import { buildSiteContentSnapshot } from '@/features/content/services/siteContent';
+import { useAdminData } from '@/context/content/ContentProvider';
+import { buildSiteContentSnapshot } from '@/services/content/siteContent';
 
 export function useSiteContent() {
   const {

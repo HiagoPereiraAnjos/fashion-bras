@@ -1,17 +1,18 @@
-import { aboutData } from '@/features/content/mocks/aboutData';
-import { blogCategories, blogPostsData } from '@/features/content/mocks/blogPostsData';
+import { aboutData } from '@/data/content/aboutData';
+import { blogCategories, blogPostsData } from '@/data/content/blogPostsData';
 import {
   leasingBenefits,
   leasingDifferentials,
   spaceTypes,
   testimonials,
-} from '@/features/content/mocks/leasingData';
-import { partnersData } from '@/features/content/mocks/partnersData';
-import { siteSettings } from '@/features/content/mocks/siteSettings';
-import { storesData, storeSegments } from '@/features/content/mocks/storesData';
-import type { ContentSection, ContentState } from '@/features/content/types/content';
+} from '@/data/content/leasingData';
+import { partnersData } from '@/data/content/partnersData';
+import { siteSettings } from '@/data/content/siteSettings';
+import { storesData, storeSegments } from '@/data/content/storesData';
+import type { ContentSection, ContentState } from '@/services/content/types/content';
 import type { BlogCategory } from '@/types';
 
+// Single fallback source: UI never imports mock files directly.
 export const BLOG_ALL_CATEGORY = 'Todos';
 export const defaultStoreSegments = storeSegments;
 export const defaultBlogCategories: BlogCategory[] = blogCategories;

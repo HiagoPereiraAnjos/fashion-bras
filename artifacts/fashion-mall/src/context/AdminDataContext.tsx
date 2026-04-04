@@ -1,4 +1,4 @@
 export {
   AdminDataProvider,
   useAdminData,
-} from '@/features/content/context/AdminDataContext';
+} from '@/context/content/ContentProvider';

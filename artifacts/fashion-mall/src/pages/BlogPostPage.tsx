@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, CalendarDays, User } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import BlogCard from '@/components/cards/BlogCard';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function BlogPostPage() {

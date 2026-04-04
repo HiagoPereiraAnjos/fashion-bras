@@ -18,11 +18,12 @@ import type {
   StoreCategory,
   Testimonial,
 } from '@/types';
-import { createLocalContentRepository } from '@/features/content/repositories/LocalContentRepository';
-import type { ContentRepository } from '@/features/content/repositories/ContentRepository';
-import { getDefaultSection } from '@/features/content/services/defaults';
-import { buildBlogCategories, buildStoreSegments } from '@/features/content/services/selectors';
-import type { ContentSection, ContentState } from '@/features/content/types/content';
+import { createContentRepository } from '@/services/content/repositories/createContentRepository';
+import type { ContentRepository } from '@/services/content/repositories/ContentRepository';
+import type { ContentRepositoryKind } from '@/services/content/repositories/types';
+import { getDefaultSection } from '@/services/content/defaults';
+import { buildBlogCategories, buildStoreSegments } from '@/services/content/selectors';
+import type { ContentSection, ContentState } from '@/services/content/types/content';
 
 export interface AdminDataContextType extends ContentState {
   storeSegments: StoreCategory[];
@@ -44,17 +45,22 @@ export interface AdminDataContextType extends ContentState {
 interface ContentProviderProps {
   children: ReactNode;
   repository?: ContentRepository;
+  repositoryKind?: ContentRepositoryKind;
 }
 
 const AdminDataContext = createContext<AdminDataContextType | null>(null);
 
-export function ContentProvider({ children, repository: repositoryOverride }: ContentProviderProps) {
+export function ContentProvider({
+  children,
+  repository: repositoryOverride,
+  repositoryKind = 'local',
+}: ContentProviderProps) {
   const repository = useMemo(
     () =>
       repositoryOverride ??
-      // Future integration: inject SupabaseContentRepository here in app bootstrap.
-      createLocalContentRepository(),
-    [repositoryOverride],
+      // Future integration: switch to "supabase" when remote repository is implemented.
+      createContentRepository({ kind: repositoryKind }),
+    [repositoryKind, repositoryOverride],
   );
 
   const [stores, setStoresState] = useState<Store[]>(

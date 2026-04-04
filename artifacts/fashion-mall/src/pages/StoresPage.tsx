@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
 import StoreFilters from '@/components/filters/StoreFilters';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function StoresPage() {

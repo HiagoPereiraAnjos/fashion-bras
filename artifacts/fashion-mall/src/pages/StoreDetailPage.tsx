@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Phone, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import StoreCard from '@/components/cards/StoreCard';
 import { usePageSeo } from '@/seo/usePageSeo';
 

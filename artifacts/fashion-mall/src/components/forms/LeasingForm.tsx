@@ -1,7 +1,7 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import {
   hasMinLength,
   isRequired,

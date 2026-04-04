@@ -3,14 +3,14 @@ import {
   removeKey,
   resolveStorage,
   writeJson,
-} from '@/features/content/adapters/storage/localStorageAdapter';
+} from '@/services/content/adapters/storage/localStorageAdapter';
 import {
   createSectionStorageKey,
   mapDomainToStoredValue,
   mapStoredToDomainValue,
-} from '@/features/content/mappers/contentStorageMapper';
-import type { ContentRepository } from '@/features/content/repositories/ContentRepository';
-import { CONTENT_SECTIONS, type ContentSection, type ContentState } from '@/features/content/types/content';
+} from '@/services/content/mappers/contentStorageMapper';
+import type { ContentRepository } from '@/services/content/repositories/ContentRepository';
+import { CONTENT_SECTIONS, type ContentSection, type ContentState } from '@/services/content/types/content';
 
 const DEFAULT_STORAGE_NAMESPACE = 'fashionbras_admin_data';
 

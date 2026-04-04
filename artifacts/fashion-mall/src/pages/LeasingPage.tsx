@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Users, Shield, Zap, TrendingUp, Star, Check } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import LeasingForm from '@/components/forms/LeasingForm';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 const iconMap: Record<string, ComponentType<{ size?: number; className?: string }>> = {

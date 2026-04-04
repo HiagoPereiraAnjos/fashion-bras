@@ -1,5 +1,5 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { AdminDataProvider } from "@/features/content";
+import { AdminDataProvider } from "@/services/content";
 import HomePage from "@/pages/HomePage";
 import StoresPage from "@/pages/StoresPage";
 import StoreDetailPage from "@/pages/StoreDetailPage";
@@ -28,7 +28,8 @@ function Router() {
 
 function App() {
   return (
-    <AdminDataProvider>
+    // Keep provider bootstrap centralized; swap to "supabase" when repository is implemented.
+    <AdminDataProvider repositoryKind="local">
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
         <Router />
       </WouterRouter>

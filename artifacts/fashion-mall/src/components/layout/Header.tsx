@@ -2,25 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag, Settings } from 'lucide-react';
-import { useSiteContent } from '@/features/content';
-
-const FALLBACK_NAV_LINKS = [
-  { label: 'Início', href: '/' },
-  { label: 'Lojas', href: '/lojas' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Locação', href: '/locacao' },
-  { label: 'Sobre', href: '/sobre' },
-];
+import { useSiteContent } from '@/services/content';
 
 export default function Header() {
-  const { siteSettings } = useSiteContent();
+  const { navigationLinks, branding } = useSiteContent();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [location] = useLocation();
-  const activeNavLinks =
-    siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim()).length > 0
-      ? siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim())
-      : FALLBACK_NAV_LINKS;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -57,21 +45,21 @@ export default function Header() {
                   isTransparent ? 'text-white' : 'text-stone-900'
                 }`}
               >
-                {(siteSettings.name || 'FASHION BRAS').split(' ')[0].toUpperCase()}
+                {branding.mainName.toUpperCase()}
               </span>
               <span
                 className={`text-xs tracking-[0.35em] font-light transition-colors duration-300 ${
                   isTransparent ? 'text-amber-300' : 'text-amber-600'
                 }`}
               >
-                {(siteSettings.name || 'FASHION BRAS').split(' ').slice(1).join(' ').toUpperCase() || 'BRAS'}
+                {branding.secondaryName.toUpperCase()}
               </span>
             </motion.div>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
-            {activeNavLinks.map((link, i) => (
+            {navigationLinks.map((link, i) => (
               <motion.div
                 key={link.href}
                 initial={{ opacity: 0, y: -10 }}
@@ -141,7 +129,7 @@ export default function Header() {
             className="md:hidden bg-white border-t border-stone-100 overflow-hidden"
           >
             <nav className="flex flex-col px-6 py-4 gap-4">
-              {activeNavLinks.map((link) => (
+              {navigationLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <span
                     className={`text-sm tracking-widest uppercase font-medium cursor-pointer block py-2 transition-colors ${

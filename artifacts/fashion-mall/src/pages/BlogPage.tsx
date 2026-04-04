@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import MainLayout from '@/layouts/MainLayout';
 import BlogCard from '@/components/cards/BlogCard';
-import { BLOG_ALL_CATEGORY, useSiteContent } from '@/features/content';
+import { BLOG_ALL_CATEGORY, useSiteContent } from '@/services/content';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function BlogPage() {

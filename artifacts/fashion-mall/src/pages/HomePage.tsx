@@ -5,7 +5,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
 import BlogCard from '@/components/cards/BlogCard';
-import { useSiteContent } from '@/features/content';
+import { useSiteContent } from '@/services/content';
 import { usePageSeo } from '@/seo/usePageSeo';
 import type { HomeHeroSlide } from '@/types';
 
@@ -19,15 +19,15 @@ const heroSlides: HomeHeroSlide[] = [
   },
   {
     title: 'Marcas Selecionadas,',
-    subtitle: 'Experiências Únicas',
+    subtitle: 'ExperiÃªncias Ãšnicas',
     cta: 'Explore o Shopping',
     href: '/sobre',
     image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1600&q=80',
   },
   {
     title: 'O Destino da Moda',
-    subtitle: 'que Você Merece',
-    cta: 'Conheça o Blog',
+    subtitle: 'que VocÃª Merece',
+    cta: 'ConheÃ§a o Blog',
     href: '/blog',
     image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80',
   },
@@ -86,10 +86,10 @@ function HeroSection() {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="section-label text-amber-300/90 mb-8 before:bg-amber-300/60 after:bg-amber-300/60"
             >
-              Fashion Bras — O Shopping de Moda
+              Fashion Bras â€” O Shopping de Moda
             </motion.p>
 
-            {/* Display heading — Cormorant Garamond */}
+            {/* Display heading â€” Cormorant Garamond */}
             <h1 className="font-display font-light text-white leading-[0.95] mb-2" style={{ fontSize: 'clamp(3.5rem, 10vw, 9rem)', letterSpacing: '-0.01em' }}>
               {heroSlides[current].title}
             </h1>
@@ -142,6 +142,23 @@ function HeroSection() {
 }
 
 function InstitutionalSection() {
+  const { aboutContent, branding } = useSiteContent();
+  const historyParagraphs = aboutContent.history
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const mission = aboutContent.mission.trim();
+  const vision = aboutContent.vision.trim();
+
+  const leadParagraph =
+    historyParagraphs[0] ||
+    mission ||
+    'Inaugurado em 2010, o Fashion Bras é o principal destino de moda de São Paulo. Com mais de 80 lojas cuidadosamente selecionadas, reunimos as melhores marcas nacionais e internacionais em um ambiente sofisticado e acolhedor.';
+
+  const secondaryParagraph =
+    historyParagraphs[1] ||
+    vision ||
+    'Aqui, cada detalhe foi pensado para proporcionar a melhor experiência de compra: desde a arquitetura de alto padrão até o atendimento personalizado de cada lojista.';
+
   return (
     <section className="section-shell-wide py-28">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -152,7 +169,7 @@ function InstitutionalSection() {
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="section-label mb-7">
-            <span>Bem-vindo ao Fashion Bras</span>
+            <span>Bem-vindo ao {branding.fullName}</span>
           </div>
           <h2 className="font-display font-light text-stone-900 leading-tight mb-7" style={{ fontSize: 'clamp(2.4rem, 5vw, 3.8rem)', letterSpacing: '-0.01em' }}>
             Um Shopping <em className="italic">Pensado</em><br />
@@ -160,13 +177,10 @@ function InstitutionalSection() {
           </h2>
           <div className="gold-divider mb-9" />
           <p className="text-stone-500 leading-[1.9] mb-5 font-light">
-            Inaugurado em 2010, o Fashion Bras é o principal destino de moda de São Paulo.
-            Com mais de 80 lojas cuidadosamente selecionadas, reunimos as melhores marcas
-            nacionais e internacionais em um ambiente sofisticado e acolhedor.
+            {leadParagraph}
           </p>
           <p className="text-stone-500 leading-[1.9] mb-10 font-light">
-            Aqui, cada detalhe foi pensado para proporcionar a melhor experiência de compra:
-            desde a arquitetura de alto padrão até o atendimento personalizado de cada lojista.
+            {secondaryParagraph}
           </p>
           <Link href="/sobre">
             <span className="btn-ghost-gold group cursor-pointer">
@@ -205,8 +219,8 @@ function InstitutionalSection() {
 function StatsSection() {
   const stats = [
     { value: '80+', label: 'Lojas curadas' },
-    { value: '50k', label: 'Visitantes / mês' },
-    { value: '14', label: 'Anos de história' },
+    { value: '50k', label: 'Visitantes / mÃªs' },
+    { value: '14', label: 'Anos de histÃ³ria' },
     { value: '3', label: 'Pisos de moda' },
   ];
   return (
@@ -293,7 +307,7 @@ function PartnersSection() {
             ))}
           </div>
         ) : (
-          <HomeSectionEmptyState message="Lista de parceiros indisponível no momento." />
+          <HomeSectionEmptyState message="Lista de parceiros indisponÃ­vel no momento." />
         )}
       </div>
     </section>
@@ -310,7 +324,7 @@ function BlogPreviewSection() {
           <div>
             <div className="section-label mb-6"><span>Blog &amp; Novidades</span></div>
             <h2 className="font-display font-light text-stone-900 leading-tight" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', letterSpacing: '-0.01em' }}>
-              Tendências &amp; <em className="italic">Inspiração</em>
+              TendÃªncias &amp; <em className="italic">InspiraÃ§Ã£o</em>
             </h2>
           </div>
           <Link href="/blog">
@@ -326,7 +340,7 @@ function BlogPreviewSection() {
             ))}
           </div>
         ) : (
-          <HomeSectionEmptyState message="Novos artigos serão publicados em breve." />
+          <HomeSectionEmptyState message="Novos artigos serÃ£o publicados em breve." />
         )}
       </div>
     </section>
@@ -351,11 +365,11 @@ function LeasingCTASection() {
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <div className="section-label justify-center mb-8 text-amber-300/80 before:bg-amber-300/40 after:bg-amber-300/40">
-            <span>Faça Parte do Fashion Bras</span>
+            <span>FaÃ§a Parte do Fashion Bras</span>
           </div>
           <h2 className="font-display font-light text-white mb-7 leading-tight" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)', letterSpacing: '-0.01em' }}>
             Sua Marca Merece<br />
-            <em className="italic" style={{ color: 'hsl(40, 65%, 72%)' }}>um Endereço de Destaque</em>
+            <em className="italic" style={{ color: 'hsl(40, 65%, 72%)' }}>um EndereÃ§o de Destaque</em>
           </h2>
           <p className="text-stone-300/80 text-lg leading-relaxed mb-12 max-w-xl mx-auto font-light">
             Junte-se a mais de 80 marcas que escolheram o Fashion Bras como seu lar.
@@ -366,7 +380,7 @@ function LeasingCTASection() {
               className="btn-primary cursor-pointer inline-flex"
               style={{ background: 'hsl(40, 52%, 46%)' }}
             >
-              Solicitar Locação
+              Solicitar LocaÃ§Ã£o
               <ArrowRight size={15} />
             </motion.span>
           </Link>
@@ -378,9 +392,9 @@ function LeasingCTASection() {
 
 export default function HomePage() {
   usePageSeo({
-    title: 'Shopping de Moda Premium em São Paulo',
+    title: 'Shopping de Moda Premium em SÃ£o Paulo',
     description:
-      'Descubra o Fashion Bras: lojas de moda selecionadas, tendências do blog, parceiros exclusivos e experiências premium em São Paulo.',
+      'Descubra o Fashion Bras: lojas de moda selecionadas, tendÃªncias do blog, parceiros exclusivos e experiÃªncias premium em SÃ£o Paulo.',
     canonicalPath: '/',
   });
 
@@ -396,3 +410,4 @@ export default function HomePage() {
     </MainLayout>
   );
 }
+

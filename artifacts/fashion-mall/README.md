@@ -40,27 +40,29 @@ artifacts/fashion-mall/
       filters/
       forms/
       layout/
+    data/
+      content/
     context/
-      AdminDataContext.tsx              # alias de compatibilidade
+      AdminDataContext.tsx              # alias de compatibilidade para admin
+      content/
+        ContentProvider.tsx
+    hooks/
+      useSiteContent.ts
     features/
       admin/
         components/
           tabs/
           shared/
         constants/
-      content/
-        adapters/storage/
-        context/
-        hooks/
-        mappers/
-        mocks/
-        providers/
-        repositories/
-        services/
-        types/
     layouts/
     pages/
     seo/
+    services/
+      content/
+        adapters/storage/
+        mappers/
+        repositories/
+        types/
     types/domain/
     utils/
   vite.config.ts
@@ -68,9 +70,10 @@ artifacts/fashion-mall/
 ```
 
 Resumo por camada:
-- `features/content/repositories`: contrato e implementacao de acesso a dados.
-- `features/content/providers`: estado global (contexto admin/site).
-- `features/content/services`: seletores e snapshot de conteudo para UI.
+- `data/content`: mocks/defaults da fase atual.
+- `services/content/repositories`: contrato e implementacao de acesso a dados.
+- `context/content/ContentProvider`: estado global (admin/site).
+- `services/content`: seletores e snapshot de conteudo para UI.
 - `features/admin`: UI do painel administrativo, modular por aba.
 - `pages` e `components`: camada de apresentacao.
 
@@ -118,7 +121,7 @@ pnpm.cmd --filter @workspace/fashion-mall typecheck
 
 ## 5) Como funciona a camada de dados atual
 Fluxo atual:
-1. Defaults vem de `features/content/mocks/*`.
+1. Defaults vem de `data/content/*`.
 2. `ContentProvider` inicializa cada secao com:
    - valor salvo no repositorio (`loadSection`) ou
    - fallback padrao (`getDefaultSection`).
