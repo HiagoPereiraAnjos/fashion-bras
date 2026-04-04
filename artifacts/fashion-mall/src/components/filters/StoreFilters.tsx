@@ -1,14 +1,16 @@
 import { Search } from 'lucide-react';
-import { storeSegments } from '@/data/storesData';
+import type { StoreCategory } from '@/types';
 
 interface StoreFiltersProps {
+  segments: StoreCategory[];
   search: string;
   onSearchChange: (val: string) => void;
-  activeSegment: string;
-  onSegmentChange: (slug: string) => void;
+  activeSegment: StoreCategory['slug'];
+  onSegmentChange: (slug: StoreCategory['slug']) => void;
 }
 
 export default function StoreFilters({
+  segments,
   search,
   onSearchChange,
   activeSegment,
@@ -30,7 +32,7 @@ export default function StoreFilters({
 
       {/* Segment filters */}
       <div className="flex flex-wrap gap-2">
-        {storeSegments.map((seg) => (
+        {segments.map((seg) => (
           <button
             key={seg.slug}
             onClick={() => onSegmentChange(seg.slug)}

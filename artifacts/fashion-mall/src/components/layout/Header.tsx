@@ -2,13 +2,25 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag, Settings } from 'lucide-react';
-import { useAdminData } from '@/context/AdminDataContext';
+import { useSiteContent } from '@/features/content';
+
+const FALLBACK_NAV_LINKS = [
+  { label: 'Início', href: '/' },
+  { label: 'Lojas', href: '/lojas' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Locação', href: '/locacao' },
+  { label: 'Sobre', href: '/sobre' },
+];
 
 export default function Header() {
-  const { siteSettings } = useAdminData();
+  const { siteSettings } = useSiteContent();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [location] = useLocation();
+  const activeNavLinks =
+    siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim()).length > 0
+      ? siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim())
+      : FALLBACK_NAV_LINKS;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -59,7 +71,7 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
-            {siteSettings.navLinks.map((link, i) => (
+            {activeNavLinks.map((link, i) => (
               <motion.div
                 key={link.href}
                 initial={{ opacity: 0, y: -10 }}
@@ -129,7 +141,7 @@ export default function Header() {
             className="md:hidden bg-white border-t border-stone-100 overflow-hidden"
           >
             <nav className="flex flex-col px-6 py-4 gap-4">
-              {siteSettings.navLinks.map((link) => (
+              {activeNavLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <span
                     className={`text-sm tracking-widest uppercase font-medium cursor-pointer block py-2 transition-colors ${

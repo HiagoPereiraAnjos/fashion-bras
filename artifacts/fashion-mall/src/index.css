@@ -2,6 +2,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
+@source "./**/*.{ts,tsx,js,jsx}";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -161,6 +162,9 @@
   --ink: hsl(20, 8%, 8%);
   --cream: hsl(38, 22%, 97%);
   --cream-deep: hsl(35, 18%, 93%);
+  --space-section-md: 4rem;
+  --space-section-lg: 6rem;
+  --space-section-xl: 7rem;
 }
 
 .dark {
@@ -255,6 +259,60 @@
 /* ── CUSTOM UTILITIES ───────────────────────────────────────────────────── */
 
 /* Display font — Cormorant Garamond for big editorial moments */
+@layer components {
+  .section-shell {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-shell-wide {
+    @apply px-6 sm:px-8 lg:px-16;
+  }
+
+  .page-hero-kicker {
+    @apply text-amber-400 text-xs tracking-[0.3em] uppercase font-medium mb-4;
+  }
+
+  .section-kicker {
+    @apply text-amber-600 text-xs tracking-[0.25em] uppercase font-medium mb-4;
+  }
+
+  .page-hero-title {
+    @apply font-serif text-5xl md:text-6xl font-bold text-white mb-4;
+  }
+
+  .page-hero-title-tight {
+    @apply font-serif text-5xl md:text-6xl font-bold text-white mb-6 leading-tight;
+  }
+
+  .page-hero-description {
+    @apply text-stone-400 max-w-xl leading-relaxed;
+  }
+
+  .surface-border {
+    @apply border border-stone-100;
+  }
+
+  .surface-border-hover {
+    @apply border border-stone-100 hover:border-amber-200 hover:shadow-sm transition-all duration-300;
+  }
+
+  .surface-card {
+    @apply bg-white border border-stone-100;
+  }
+
+  .surface-card-hover {
+    @apply bg-white border border-stone-100 hover:border-amber-200 hover:shadow-sm transition-all duration-300;
+  }
+
+  .admin-field-label {
+    @apply block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5;
+  }
+
+  .admin-control {
+    @apply w-full border border-stone-200 px-3 py-2 text-sm focus:outline-none focus:border-amber-500 transition-colors bg-white;
+  }
+}
+
 .font-display {
   font-family: 'Cormorant Garamond', Georgia, serif;
 }

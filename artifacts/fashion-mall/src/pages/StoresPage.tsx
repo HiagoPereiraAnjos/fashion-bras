@@ -3,12 +3,20 @@ import { motion } from 'framer-motion';
 import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
 import StoreFilters from '@/components/filters/StoreFilters';
-import { useAdminData } from '@/context/AdminDataContext';
+import { useSiteContent } from '@/features/content';
+import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function StoresPage() {
-  const { stores } = useAdminData();
+  const { stores, storeSegments } = useSiteContent();
   const [search, setSearch] = useState('');
   const [segment, setSegment] = useState('todos');
+
+  usePageSeo({
+    title: 'Lojas de Moda',
+    description:
+      'Explore as lojas do Fashion Bras por segmento e encontre marcas premium de moda, acessórios, esportes e lifestyle em São Paulo.',
+    canonicalPath: '/lojas',
+  });
 
   const filtered = useMemo(() => {
     return stores.filter((store) => {
@@ -19,7 +27,9 @@ export default function StoresPage() {
       const matchSegment = segment === 'todos' || store.segmentSlug === segment;
       return matchSearch && matchSegment;
     });
-  }, [search, segment]);
+  }, [stores, search, segment]);
+
+  const hasAnyStores = stores.length > 0;
 
   return (
     <MainLayout>
@@ -32,19 +42,19 @@ export default function StoresPage() {
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="section-shell relative max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-amber-400 text-xs tracking-[0.3em] uppercase font-medium mb-4">
+            <p className="page-hero-kicker">
               Fashion Bras
             </p>
-            <h1 className="font-serif text-5xl md:text-6xl font-bold text-white mb-4">
+            <h1 className="page-hero-title">
               Nossas Lojas
             </h1>
-            <p className="text-stone-400 max-w-xl leading-relaxed">
+            <p className="page-hero-description">
               Explore nosso mix exclusivo de lojas selecionadas. Aqui, cada marca foi escolhida
               com critério para oferecer o melhor da moda e do estilo.
             </p>
@@ -53,10 +63,11 @@ export default function StoresPage() {
       </section>
 
       {/* Filters + Listing */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-stone-50 min-h-screen">
+      <section className="section-shell py-16 bg-stone-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="mb-10">
             <StoreFilters
+              segments={storeSegments}
               search={search}
               onSearchChange={setSearch}
               activeSegment={segment}
@@ -77,14 +88,22 @@ export default function StoresPage() {
             </>
           ) : (
             <div className="text-center py-24">
-              <p className="font-serif text-2xl text-stone-400 mb-3">Nenhuma loja encontrada</p>
-              <p className="text-stone-400 text-sm">Tente ajustar sua busca ou filtros.</p>
-              <button
-                onClick={() => { setSearch(''); setSegment('todos'); }}
-                className="mt-6 text-amber-700 text-xs tracking-widest uppercase font-medium hover:underline"
-              >
-                Limpar filtros
-              </button>
+              <p className="font-serif text-2xl text-stone-400 mb-3">
+                {hasAnyStores ? 'Nenhuma loja encontrada' : 'Nenhuma loja cadastrada'}
+              </p>
+              <p className="text-stone-400 text-sm">
+                {hasAnyStores
+                  ? 'Tente ajustar sua busca ou filtros.'
+                  : 'O catálogo de lojas ainda está sendo preparado.'}
+              </p>
+              {hasAnyStores && (
+                <button
+                  onClick={() => { setSearch(''); setSegment('todos'); }}
+                  className="mt-6 text-amber-700 text-xs tracking-widest uppercase font-medium hover:underline"
+                >
+                  Limpar filtros
+                </button>
+              )}
             </div>
           )}
         </div>

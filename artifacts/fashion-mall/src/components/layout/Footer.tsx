@@ -1,8 +1,32 @@
 import { Link } from 'wouter';
 import { Instagram, Facebook, MapPin, Phone, Mail, Clock } from 'lucide-react';
-import { siteSettings } from '@/data/siteSettings';
+import { useSiteContent } from '@/features/content';
+
+const FALLBACK_NAV_LINKS = [
+  { label: 'Início', href: '/' },
+  { label: 'Lojas', href: '/lojas' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Locação', href: '/locacao' },
+  { label: 'Sobre', href: '/sobre' },
+];
 
 export default function Footer() {
+  const { siteSettings } = useSiteContent();
+  const [brandMain, ...brandSecondaryParts] = (siteSettings.name || 'Fashion Bras').split(' ');
+  const brandSecondary = brandSecondaryParts.join(' ') || 'Bras';
+  const instagramHandle = siteSettings.instagram.replace(/^@/, '').trim();
+  const facebookHandle = siteSettings.facebook.replace(/^@/, '').trim();
+  const instagramHref = instagramHandle ? `https://instagram.com/${instagramHandle}` : '#';
+  const facebookHref = facebookHandle ? `https://facebook.com/${facebookHandle}` : '#';
+  const activeNavLinks =
+    siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim()).length > 0
+      ? siteSettings.navLinks.filter((link) => link.label?.trim() && link.href?.trim())
+      : FALLBACK_NAV_LINKS;
+  const contactAddress = siteSettings.address || 'Endereço em atualização';
+  const contactPhone = siteSettings.phone || 'Telefone em atualização';
+  const contactEmail = siteSettings.email || 'contato@fashionbras.com.br';
+  const contactHours = siteSettings.hours || 'Horários em atualização';
+
   return (
     <footer className="bg-stone-950 text-stone-300">
       {/* Top divider */}
@@ -13,25 +37,36 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="mb-6">
-              <p className="font-serif text-2xl font-bold text-white tracking-widest">FASHION</p>
-              <p className="text-amber-500 text-xs tracking-[0.35em] font-light">BRAS</p>
+              <p className="font-serif text-2xl font-bold text-white tracking-widest">
+                {brandMain.toUpperCase()}
+              </p>
+              <p className="text-amber-500 text-xs tracking-[0.35em] font-light">
+                {brandSecondary.toUpperCase()}
+              </p>
             </div>
             <p className="text-stone-400 text-sm leading-relaxed mb-6">
-              O destino da moda que você merece. Marcas selecionadas, experiências únicas,
-              estilo que inspira.
+              {siteSettings.tagline || 'O destino da moda que você merece.'}
             </p>
             <div className="flex gap-4">
               <a
-                href="#"
-                className="w-9 h-9 rounded-full border border-stone-700 flex items-center justify-center hover:border-amber-500 hover:text-amber-500 transition-colors"
+                href={instagramHref}
+                className={`w-9 h-9 rounded-full border border-stone-700 flex items-center justify-center transition-colors ${
+                  instagramHandle ? 'hover:border-amber-500 hover:text-amber-500' : 'opacity-50 cursor-not-allowed'
+                }`}
                 aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Instagram size={16} />
               </a>
               <a
-                href="#"
-                className="w-9 h-9 rounded-full border border-stone-700 flex items-center justify-center hover:border-amber-500 hover:text-amber-500 transition-colors"
+                href={facebookHref}
+                className={`w-9 h-9 rounded-full border border-stone-700 flex items-center justify-center transition-colors ${
+                  facebookHandle ? 'hover:border-amber-500 hover:text-amber-500' : 'opacity-50 cursor-not-allowed'
+                }`}
                 aria-label="Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Facebook size={16} />
               </a>
@@ -44,7 +79,7 @@ export default function Footer() {
               Navegação
             </h4>
             <ul className="space-y-3">
-              {siteSettings.navLinks.map((link) => (
+              {activeNavLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>
                     <span className="text-stone-400 hover:text-amber-400 text-sm transition-colors cursor-pointer">
@@ -64,15 +99,15 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex gap-3 text-sm text-stone-400">
                 <MapPin size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                <span>{siteSettings.address}</span>
+                <span>{contactAddress}</span>
               </li>
               <li className="flex gap-3 text-sm text-stone-400">
                 <Phone size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                <span>{siteSettings.phone}</span>
+                <span>{contactPhone}</span>
               </li>
               <li className="flex gap-3 text-sm text-stone-400">
                 <Mail size={16} className="text-amber-500 mt-0.5 shrink-0" />
-                <span>{siteSettings.email}</span>
+                <span>{contactEmail}</span>
               </li>
             </ul>
           </div>
@@ -84,10 +119,12 @@ export default function Footer() {
             </h4>
             <div className="flex gap-3 text-sm text-stone-400">
               <Clock size={16} className="text-amber-500 mt-0.5 shrink-0" />
-              <span>{siteSettings.hours}</span>
+              <span>{contactHours}</span>
             </div>
             <div className="mt-8">
-              <p className="text-xs text-stone-500 uppercase tracking-widest mb-3">Locação de Lojas</p>
+              <p className="text-xs text-stone-500 uppercase tracking-widest mb-3">
+                Locação de Lojas
+              </p>
               <Link href="/locacao">
                 <span className="text-amber-500 hover:text-amber-400 text-sm transition-colors cursor-pointer border-b border-amber-500/40 pb-0.5">
                   Saiba mais sobre locação

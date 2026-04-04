@@ -3,12 +3,30 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, CalendarDays, User } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import BlogCard from '@/components/cards/BlogCard';
-import { useAdminData } from '@/context/AdminDataContext';
+import { useSiteContent } from '@/features/content';
+import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function BlogPostPage() {
-  const { blogPosts } = useAdminData();
+  const { blogPosts } = useSiteContent();
   const { slug } = useParams<{ slug: string }>();
   const post = blogPosts.find((p) => p.slug === slug);
+
+  usePageSeo(
+    post
+      ? {
+          title: post.title,
+          description: post.excerpt,
+          canonicalPath: `/blog/${post.slug}`,
+          image: post.coverImage,
+          type: 'article',
+        }
+      : {
+          title: 'Artigo não encontrado',
+          description: 'O artigo solicitado não foi encontrado no blog do Fashion Bras.',
+          canonicalPath: '/blog',
+          noIndex: true,
+        },
+  );
 
   if (!post) {
     return (
@@ -36,9 +54,23 @@ export default function BlogPostPage() {
     .slice(0, 3);
 
   const relatedPosts = related.length > 0 ? related : fallbackRelated;
+  const coverImage =
+    post.coverImage || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80';
+  const author = post.author || 'Equipe Fashion Bras';
+  const readTime = post.readTime || 'Tempo não informado';
+  const excerpt = post.excerpt || 'Conteúdo em atualização.';
 
   // Simple markdown-like renderer
   const renderContent = (content: string) => {
+    const normalizedContent = content.trim();
+    if (!normalizedContent) {
+      return (
+        <p className="text-stone-600 leading-relaxed mb-4">
+          Este artigo está em atualização e será publicado em breve.
+        </p>
+      );
+    }
+
     return content.split('\n\n').map((block, i) => {
       if (block.startsWith('**') && block.endsWith('**')) {
         return (
@@ -71,7 +103,7 @@ export default function BlogPostPage() {
       <section className="relative pt-20">
         <div className="h-[50vh] min-h-[400px] overflow-hidden relative">
           <img
-            src={post.coverImage}
+            src={coverImage}
             alt={post.title}
             className="w-full h-full object-cover"
           />
@@ -95,7 +127,7 @@ export default function BlogPostPage() {
       </section>
 
       {/* Back */}
-      <div className="py-4 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <div className="section-shell py-4 max-w-4xl mx-auto">
         <Link href="/blog">
           <span className="inline-flex items-center gap-2 text-stone-400 hover:text-stone-700 text-xs tracking-widest uppercase cursor-pointer transition-colors">
             <ArrowLeft size={14} />
@@ -105,26 +137,26 @@ export default function BlogPostPage() {
       </div>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <article className="section-shell max-w-4xl mx-auto pb-20">
         {/* Meta */}
         <div className="flex flex-wrap items-center gap-6 text-stone-400 text-sm py-6 border-b border-stone-100 mb-8">
           <span className="flex items-center gap-2">
             <User size={14} />
-            {post.author}
+            {author}
           </span>
           <span className="flex items-center gap-2">
             <CalendarDays size={14} />
-            {post.date}
+            {post.date || 'Data não informada'}
           </span>
           <span className="flex items-center gap-2">
             <Clock size={14} />
-            {post.readTime} de leitura
+            {readTime} de leitura
           </span>
         </div>
 
         {/* Excerpt */}
         <p className="text-lg text-stone-700 leading-relaxed italic border-l-2 border-amber-500 pl-6 mb-8">
-          {post.excerpt}
+          {excerpt}
         </p>
 
         {/* Content */}
@@ -135,7 +167,7 @@ export default function BlogPostPage() {
 
       {/* Related */}
       {relatedPosts.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-stone-50">
+        <section className="section-shell py-16 bg-stone-50">
           <div className="max-w-7xl mx-auto">
             <h2 className="font-serif text-3xl font-bold text-stone-900 mb-10">
               Artigos Relacionados

@@ -3,14 +3,31 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Phone, Instagram, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
-import { useAdminData } from '@/context/AdminDataContext';
+import { useSiteContent } from '@/features/content';
 import StoreCard from '@/components/cards/StoreCard';
+import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function StoreDetailPage() {
-  const { stores } = useAdminData();
+  const { stores } = useSiteContent();
   const { id } = useParams<{ id: string }>();
   const store = stores.find((s) => s.id === id);
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  usePageSeo(
+    store
+      ? {
+          title: `${store.name} - Loja`,
+          description: store.description,
+          canonicalPath: `/lojas/${store.id}`,
+          image: store.images[0],
+        }
+      : {
+          title: 'Loja não encontrada',
+          description: 'A loja solicitada não foi encontrada no catálogo atual do Fashion Bras.',
+          canonicalPath: '/lojas',
+          noIndex: true,
+        },
+  );
 
   if (!store) {
     return (
@@ -29,15 +46,24 @@ export default function StoreDetailPage() {
     );
   }
 
+  const galleryImages = store.images.filter((image) => image && image.trim().length > 0);
+  const hasGallery = galleryImages.length > 0;
+  const currentImage =
+    galleryImages[galleryIndex] ??
+    'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=1200&q=80';
+  const instagramHandle = store.instagram?.replace('@', '').trim();
+  const hasPhone = Boolean(store.phone?.trim());
+  const hasInstagram = Boolean(instagramHandle);
+
   const related = stores.filter((s) => s.id !== store.id && s.segmentSlug === store.segmentSlug).slice(0, 3);
 
-  const prevImage = () => setGalleryIndex((i) => (i - 1 + store.images.length) % store.images.length);
-  const nextImage = () => setGalleryIndex((i) => (i + 1) % store.images.length);
+  const prevImage = () => setGalleryIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
+  const nextImage = () => setGalleryIndex((i) => (i + 1) % galleryImages.length);
 
   return (
     <MainLayout>
       {/* Back */}
-      <div className="pt-24 pb-4 px-4 sm:px-6 lg:px-8 bg-white max-w-7xl mx-auto">
+      <div className="section-shell pt-24 pb-4 bg-white max-w-7xl mx-auto">
         <Link href="/lojas">
           <span className="inline-flex items-center gap-2 text-stone-400 hover:text-stone-700 text-xs tracking-widest uppercase cursor-pointer transition-colors">
             <ArrowLeft size={14} />
@@ -47,18 +73,18 @@ export default function StoreDetailPage() {
       </div>
 
       {/* Hero Gallery */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <section className="section-shell max-w-7xl mx-auto pb-8">
         <div className="relative overflow-hidden aspect-[16/7] bg-stone-100">
           <motion.img
             key={galleryIndex}
             initial={{ opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
-            src={store.images[galleryIndex]}
+            src={currentImage}
             alt={store.name}
             className="w-full h-full object-cover"
           />
-          {store.images.length > 1 && (
+          {hasGallery && galleryImages.length > 1 && (
             <>
               <button
                 onClick={prevImage}
@@ -73,7 +99,7 @@ export default function StoreDetailPage() {
                 <ChevronRight size={20} className="text-stone-700" />
               </button>
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {store.images.map((_, i) => (
+                {galleryImages.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setGalleryIndex(i)}
@@ -85,29 +111,31 @@ export default function StoreDetailPage() {
           )}
           <div className="absolute top-4 left-4">
             <span className="bg-white/90 text-stone-700 text-xs px-3 py-1.5 tracking-wider uppercase font-medium">
-              {store.segment}
+              {store.segment || 'Sem segmento'}
             </span>
           </div>
         </div>
 
         {/* Thumbnails */}
-        <div className="flex gap-3 mt-3">
-          {store.images.map((img, i) => (
-            <button
-              key={i}
-              onClick={() => setGalleryIndex(i)}
-              className={`w-20 h-16 overflow-hidden border-2 transition-colors ${
-                i === galleryIndex ? 'border-amber-500' : 'border-transparent'
-              }`}
-            >
-              <img src={img} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
+        {hasGallery && (
+          <div className="flex gap-3 mt-3">
+            {galleryImages.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setGalleryIndex(i)}
+                className={`w-20 h-16 overflow-hidden border-2 transition-colors ${
+                  i === galleryIndex ? 'border-amber-500' : 'border-transparent'
+                }`}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Content */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="section-shell max-w-7xl mx-auto py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2">
             <motion.div
@@ -119,8 +147,12 @@ export default function StoreDetailPage() {
                 {store.name}
               </h1>
               <div className="gold-divider mb-6" />
-              <p className="text-stone-600 text-lg leading-relaxed mb-6">{store.description}</p>
-              <p className="text-stone-500 leading-relaxed">{store.longDescription}</p>
+              <p className="text-stone-600 text-lg leading-relaxed mb-6">
+                {store.description || 'Descrição indisponível no momento.'}
+              </p>
+              <p className="text-stone-500 leading-relaxed">
+                {store.longDescription || 'Informações completas em atualização.'}
+              </p>
             </motion.div>
           </div>
 
@@ -132,41 +164,57 @@ export default function StoreDetailPage() {
                   <MapPin size={18} className="text-amber-600 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs text-stone-400 uppercase tracking-wider mb-0.5">Localização</p>
-                    <p className="text-stone-700 font-medium">{store.floor}</p>
+                    <p className="text-stone-700 font-medium">
+                      {store.floor || 'Localização indisponível'}
+                    </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <Phone size={18} className="text-amber-600 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs text-stone-400 uppercase tracking-wider mb-0.5">Telefone</p>
-                    <a href={`tel:${store.phone}`} className="text-stone-700 font-medium hover:text-amber-700 transition-colors">
-                      {store.phone}
-                    </a>
+                    {hasPhone ? (
+                      <a href={`tel:${store.phone}`} className="text-stone-700 font-medium hover:text-amber-700 transition-colors">
+                        {store.phone}
+                      </a>
+                    ) : (
+                      <p className="text-stone-500 font-medium">Não informado</p>
+                    )}
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <Instagram size={18} className="text-amber-600 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs text-stone-400 uppercase tracking-wider mb-0.5">Instagram</p>
-                    <a
-                      href={`https://instagram.com/${store.instagram.replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-stone-700 font-medium hover:text-amber-700 transition-colors"
-                    >
-                      {store.instagram}
-                    </a>
+                    {hasInstagram ? (
+                      <a
+                        href={`https://instagram.com/${instagramHandle}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-stone-700 font-medium hover:text-amber-700 transition-colors"
+                      >
+                        {store.instagram}
+                      </a>
+                    ) : (
+                      <p className="text-stone-500 font-medium">Não informado</p>
+                    )}
                   </div>
                 </li>
               </ul>
 
               <div className="mt-8 pt-6 border-t border-stone-200">
-                <a
-                  href={`tel:${store.phone}`}
-                  className="block w-full bg-stone-900 text-white text-center py-3.5 text-xs tracking-widest uppercase font-medium hover:bg-amber-700 transition-colors duration-300"
-                >
-                  Entrar em Contato
-                </a>
+                {hasPhone ? (
+                  <a
+                    href={`tel:${store.phone}`}
+                    className="block w-full bg-stone-900 text-white text-center py-3.5 text-xs tracking-widest uppercase font-medium hover:bg-amber-700 transition-colors duration-300"
+                  >
+                    Entrar em Contato
+                  </a>
+                ) : (
+                  <span className="block w-full bg-stone-200 text-stone-500 text-center py-3.5 text-xs tracking-widest uppercase font-medium cursor-not-allowed">
+                    Contato indisponível
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -175,7 +223,7 @@ export default function StoreDetailPage() {
 
       {/* Related Stores */}
       {related.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-stone-50">
+        <section className="section-shell py-16 bg-stone-50">
           <div className="max-w-7xl mx-auto">
             <h2 className="font-serif text-3xl font-bold text-stone-900 mb-10">
               Lojas do Mesmo Segmento

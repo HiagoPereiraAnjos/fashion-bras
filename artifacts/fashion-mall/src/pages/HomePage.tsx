@@ -5,9 +5,11 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import MainLayout from '@/layouts/MainLayout';
 import StoreCard from '@/components/cards/StoreCard';
 import BlogCard from '@/components/cards/BlogCard';
-import { useAdminData } from '@/context/AdminDataContext';
+import { useSiteContent } from '@/features/content';
+import { usePageSeo } from '@/seo/usePageSeo';
+import type { HomeHeroSlide } from '@/types';
 
-const heroSlides = [
+const heroSlides: HomeHeroSlide[] = [
   {
     title: 'Moda que Inspira,',
     subtitle: 'Estilo que Persiste',
@@ -30,6 +32,14 @@ const heroSlides = [
     image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80',
   },
 ];
+
+function HomeSectionEmptyState({ message }: { message: string }) {
+  return (
+    <div className="surface-card p-10 text-center">
+      <p className="text-sm text-stone-500">{message}</p>
+    </div>
+  );
+}
 
 function HeroSection() {
   const [current, setCurrent] = useState(0);
@@ -133,7 +143,7 @@ function HeroSection() {
 
 function InstitutionalSection() {
   return (
-    <section className="py-28 px-6 sm:px-8 lg:px-16">
+    <section className="section-shell-wide py-28">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -228,10 +238,9 @@ function StatsSection() {
 }
 
 function FeaturedStoresSection() {
-  const { stores } = useAdminData();
-  const featured = stores.filter((s) => s.featured);
+  const { featuredStores } = useSiteContent();
   return (
-    <section className="py-28 px-6 sm:px-8 lg:px-16" style={{ background: 'hsl(38, 22%, 97%)' }}>
+    <section className="section-shell-wide py-28" style={{ background: 'hsl(38, 22%, 97%)' }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
           <div>
@@ -246,48 +255,56 @@ function FeaturedStoresSection() {
             </span>
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featured.map((store, i) => (
-            <StoreCard key={store.id} store={store} index={i} />
-          ))}
-        </div>
+        {featuredStores.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredStores.map((store, i) => (
+              <StoreCard key={store.id} store={store} index={i} />
+            ))}
+          </div>
+        ) : (
+          <HomeSectionEmptyState message="Nenhuma loja em destaque cadastrada no momento." />
+        )}
       </div>
     </section>
   );
 }
 
 function PartnersSection() {
-  const { partners } = useAdminData();
+  const { partners } = useSiteContent();
   return (
     <section className="py-20 px-6 border-y border-stone-200/60 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <p className="text-center section-label justify-center mb-12">
           <span>Marcas &amp; Parceiros</span>
         </p>
-        <div className="flex flex-wrap justify-center gap-x-14 gap-y-5">
-          {partners.map((partner, i) => (
-            <motion.span
-              key={partner.id}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.04, duration: 0.5 }}
-              className="font-display text-xl md:text-2xl font-light text-stone-300 hover:text-stone-700 transition-colors duration-400 cursor-default tracking-widest italic"
-            >
-              {partner.name}
-            </motion.span>
-          ))}
-        </div>
+        {partners.length > 0 ? (
+          <div className="flex flex-wrap justify-center gap-x-14 gap-y-5">
+            {partners.map((partner, i) => (
+              <motion.span
+                key={partner.id}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04, duration: 0.5 }}
+                className="font-display text-xl md:text-2xl font-light text-stone-300 hover:text-stone-700 transition-colors duration-400 cursor-default tracking-widest italic"
+              >
+                {partner.name}
+              </motion.span>
+            ))}
+          </div>
+        ) : (
+          <HomeSectionEmptyState message="Lista de parceiros indisponível no momento." />
+        )}
       </div>
     </section>
   );
 }
 
 function BlogPreviewSection() {
-  const { blogPosts } = useAdminData();
-  const posts = blogPosts.slice(0, 3);
+  const { blogPreviewPosts } = useSiteContent();
+  const posts = blogPreviewPosts;
   return (
-    <section className="py-28 px-6 sm:px-8 lg:px-16 bg-white">
+    <section className="section-shell-wide py-28 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16">
           <div>
@@ -302,11 +319,15 @@ function BlogPreviewSection() {
             </span>
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post, i) => (
-            <BlogCard key={post.slug} post={post} index={i} />
-          ))}
-        </div>
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post, i) => (
+              <BlogCard key={post.slug} post={post} index={i} />
+            ))}
+          </div>
+        ) : (
+          <HomeSectionEmptyState message="Novos artigos serão publicados em breve." />
+        )}
       </div>
     </section>
   );
@@ -356,6 +377,13 @@ function LeasingCTASection() {
 }
 
 export default function HomePage() {
+  usePageSeo({
+    title: 'Shopping de Moda Premium em São Paulo',
+    description:
+      'Descubra o Fashion Bras: lojas de moda selecionadas, tendências do blog, parceiros exclusivos e experiências premium em São Paulo.',
+    canonicalPath: '/',
+  });
+
   return (
     <MainLayout>
       <HeroSection />
