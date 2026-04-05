@@ -24,7 +24,7 @@ export default function SiteSettingsSection() {
   const [form, setForm] = useState<SiteSettings>(() => createSiteSettingsFormData(siteSettings));
   const [errors, setErrors] = useState<SiteSettingsFormErrors>({});
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { saved, trigger } = useSaveState();
+  const { saved, isSaving, trigger } = useSaveState();
 
   useEffect(() => {
     setForm(createSiteSettingsFormData(siteSettings));
@@ -41,7 +41,7 @@ export default function SiteSettingsSection() {
     setForm((current) => ({ ...current, navLinks }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const { errors: nextErrors, normalized, validNavLinks } = validateSiteSettingsForm(form);
     setErrors(nextErrors);
 
@@ -51,12 +51,37 @@ export default function SiteSettingsSection() {
     }
 
     setSaveError(null);
-    trigger(() =>
-      setSiteSettings({
-        ...normalized,
-        navLinks: validNavLinks,
-      }),
-    );
+    try {
+      await trigger(async () =>
+        setSiteSettings({
+          ...normalized,
+          navLinks: validNavLinks,
+        }),
+      );
+    } catch (error) {
+      setSaveError(
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel salvar as configuracoes do site.',
+      );
+    }
+  };
+
+  const handleResetSection = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('siteSettings');
+        setForm(createSiteSettingsFormData(defaults));
+        setErrors({});
+        setSaveError(null);
+      } catch (error) {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : 'Nao foi possivel restaurar as configuracoes padrao.',
+        );
+      }
+    })();
   };
 
   return (
@@ -65,12 +90,7 @@ export default function SiteSettingsSection() {
         form={form}
         errors={errors}
         update={update}
-        onReset={() => {
-          const defaults = resetSection('siteSettings');
-          setForm(createSiteSettingsFormData(defaults));
-          setErrors({});
-          setSaveError(null);
-        }}
+        onReset={handleResetSection}
       />
 
       <ContactSettingsCard form={form} errors={errors} update={update} />
@@ -86,7 +106,7 @@ export default function SiteSettingsSection() {
       <FooterSettingsCard form={form} errors={errors} update={update} />
 
       {saveError && <InlineNotice tone="error" message={saveError} />}
-      <SaveButton onClick={handleSave} saved={saved} />
+      <SaveButton onClick={handleSave} saved={saved} isSaving={isSaving} />
     </div>
   );
 }

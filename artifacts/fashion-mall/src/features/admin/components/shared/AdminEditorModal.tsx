@@ -5,10 +5,11 @@ import { X } from 'lucide-react';
 type AdminEditorModalProps = {
   title: string;
   onClose: () => void;
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
   saveLabel: string;
   children: ReactNode;
   titleClassName?: string;
+  isSaving?: boolean;
 };
 
 export function AdminEditorModal({
@@ -18,6 +19,7 @@ export function AdminEditorModal({
   saveLabel,
   children,
   titleClassName = 'font-medium text-stone-800',
+  isSaving = false,
 }: AdminEditorModalProps) {
   return (
     <motion.div
@@ -29,7 +31,11 @@ export function AdminEditorModal({
       <div className="bg-white w-full max-w-2xl">
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50">
           <h3 className={titleClassName}>{title}</h3>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-700 shrink-0">
+          <button
+            onClick={onClose}
+            className="text-stone-400 hover:text-stone-700 shrink-0"
+            disabled={isSaving}
+          >
             <X size={18} />
           </button>
         </div>
@@ -37,15 +43,17 @@ export function AdminEditorModal({
         <div className="px-6 py-4 border-t border-stone-100 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs text-stone-500 border border-stone-200 hover:border-stone-400 uppercase tracking-wider"
+            className="px-4 py-2 text-xs text-stone-500 border border-stone-200 hover:border-stone-400 uppercase tracking-wider disabled:opacity-50"
+            disabled={isSaving}
           >
             Cancelar
           </button>
           <button
             onClick={onSave}
-            className="px-5 py-2 bg-stone-900 text-white text-xs uppercase tracking-wider hover:bg-amber-700 transition-colors"
+            className="px-5 py-2 bg-stone-900 text-white text-xs uppercase tracking-wider hover:bg-amber-700 transition-colors disabled:opacity-70 disabled:cursor-wait"
+            disabled={isSaving}
           >
-            {saveLabel}
+            {isSaving ? 'Salvando...' : saveLabel}
           </button>
         </div>
       </div>

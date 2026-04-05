@@ -1,21 +1,27 @@
-import { Suspense, lazy } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
-import { AdminDataProvider } from "@/services/content";
-import HomePage from "@/pages/HomePage";
-import StoresPage from "@/pages/StoresPage";
-import StoreDetailPage from "@/pages/StoreDetailPage";
-import BlogPage from "@/pages/BlogPage";
-import BlogPostPage from "@/pages/BlogPostPage";
-import LeasingPage from "@/pages/LeasingPage";
-import AboutPage from "@/pages/AboutPage";
-import NotFound from "@/pages/not-found";
+import { Suspense, lazy } from 'react';
+import { Route, Router as WouterRouter, Switch } from 'wouter';
+import { AdminRouteGuard } from '@/components/auth/AdminRouteGuard';
+import { runtimeConfig } from '@/config/runtime';
+import { AdminAuthProvider } from '@/context/auth/AdminAuthProvider';
+import { AdminDataProvider } from '@/services/content';
+import AboutPage from '@/pages/AboutPage';
+import BlogPage from '@/pages/BlogPage';
+import BlogPostPage from '@/pages/BlogPostPage';
+import HomePage from '@/pages/HomePage';
+import LeasingPage from '@/pages/LeasingPage';
+import NotFound from '@/pages/not-found';
+import StoreDetailPage from '@/pages/StoreDetailPage';
+import StoresPage from '@/pages/StoresPage';
+import AdminLoginPage from '@/pages/AdminLoginPage';
 
-const AdminPage = lazy(() => import("@/pages/AdminPage"));
+const AdminPage = lazy(() => import('@/pages/AdminPage'));
 
 function AdminPageRoute() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-stone-50" />}>
-      <AdminPage />
+      <AdminRouteGuard>
+        <AdminPage />
+      </AdminRouteGuard>
     </Suspense>
   );
 }
@@ -30,6 +36,7 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/locacao" component={LeasingPage} />
       <Route path="/sobre" component={AboutPage} />
+      <Route path="/admin/login" component={AdminLoginPage} />
       <Route path="/admin" component={AdminPageRoute} />
       <Route component={NotFound} />
     </Switch>
@@ -38,12 +45,13 @@ function Router() {
 
 function App() {
   return (
-    // Keep provider bootstrap centralized; swap to "supabase" when repository is implemented.
-    <AdminDataProvider repositoryKind="local">
-      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-        <Router />
-      </WouterRouter>
-    </AdminDataProvider>
+    <AdminAuthProvider>
+      <AdminDataProvider repositoryKind={runtimeConfig.contentBackendMode}>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+          <Router />
+        </WouterRouter>
+      </AdminDataProvider>
+    </AdminAuthProvider>
   );
 }
 

@@ -26,34 +26,60 @@ export default function AboutSection() {
     createAboutSectionFormData(aboutData),
   );
   const [notice, setNotice] = useState<SaveNotice>(null);
-  const { saved, trigger } = useSaveState();
+  const { saved, isSaving, trigger } = useSaveState();
 
   useEffect(() => {
     setForm(createAboutSectionFormData(aboutData));
     setNotice(null);
   }, [aboutData]);
 
-  const saveAbout = () => {
+  const saveAbout = async () => {
     const result = buildAboutSectionSaveResult(form);
     if (result.error || !result.payload) {
-      setNotice({ tone: 'error', message: result.error ?? 'Falha ao salvar conteúdo de Sobre.' });
+      setNotice({ tone: 'error', message: result.error ?? 'Falha ao salvar conteudo de Sobre.' });
       return;
     }
 
     const { removedCount, ...nextAboutData } = result.payload;
 
-    trigger(() => {
-      setAboutData(nextAboutData);
-      setForm(createAboutSectionFormData(nextAboutData));
-    });
+    try {
+      await trigger(async () => {
+        await setAboutData(nextAboutData);
+        setForm(createAboutSectionFormData(nextAboutData));
+      });
 
-    setNotice({
-      tone: 'success',
-      message:
-        removedCount > 0
-          ? `${removedCount} item(ns) vazio(s) foram removidos no salvamento.`
-          : 'Conteúdo de Sobre atualizado com sucesso.',
-    });
+      setNotice({
+        tone: 'success',
+        message:
+          removedCount > 0
+            ? `${removedCount} item(ns) vazio(s) foram removidos no salvamento.`
+            : 'Conteudo de Sobre atualizado com sucesso.',
+      });
+    } catch (error) {
+      setNotice({
+        tone: 'error',
+        message:
+          error instanceof Error ? error.message : 'Nao foi possivel salvar o conteudo de Sobre.',
+      });
+    }
+  };
+
+  const handleReset = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('aboutData');
+        setForm(createAboutSectionFormData(defaults));
+        setNotice(null);
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Nao foi possivel restaurar o conteudo padrao de Sobre.',
+        });
+      }
+    })();
   };
 
   return (
@@ -63,11 +89,7 @@ export default function AboutSection() {
         vision={form.vision}
         setMission={(value) => setForm((current) => ({ ...current, mission: value }))}
         setVision={(value) => setForm((current) => ({ ...current, vision: value }))}
-        onReset={() => {
-          const defaults = resetSection('aboutData');
-          setForm(createAboutSectionFormData(defaults));
-          setNotice(null);
-        }}
+        onReset={handleReset}
       />
 
       <HistoryCard
@@ -112,7 +134,7 @@ export default function AboutSection() {
       />
 
       {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
-      <SaveButton onClick={saveAbout} saved={saved} />
+      <SaveButton onClick={saveAbout} saved={saved} isSaving={isSaving} />
     </div>
   );
 }

@@ -1,0 +1,609 @@
+{
+  "stores": [
+    {
+      "id": "aria-moda",
+      "name": "Aria Moda",
+      "segment": "Moda Feminina",
+      "segmentSlug": "feminina",
+      "floor": "Piso 1",
+      "description": "Elegância e sofisticação para a mulher contemporânea.",
+      "longDescription": "A Aria Moda traz ao Fashion Bras uma coleção cuidadosamente curada para a mulher que valoriza o estilo sem abrir mão do conforto. Com peças atemporais e coleções sazonais inspiradas nas principais semanas de moda, a loja oferece uma experiência de compra única com atendimento personalizado e consultoria de imagem.",
+      "phone": "(11) 91234-5678",
+      "instagram": "@aria.moda",
+      "featured": true,
+      "images": [
+        "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
+        "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80",
+        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80"
+      ]
+    },
+    {
+      "id": "brutal-homme",
+      "name": "Brutal Homme",
+      "segment": "Moda Masculina",
+      "segmentSlug": "masculina",
+      "floor": "Piso 1",
+      "description": "Estilo urbano e refinado para o homem moderno.",
+      "longDescription": "Brutal Homme é a referência em moda masculina no Fashion Bras. Com um mix perfeito entre o clássico e o contemporâneo, a loja apresenta ternos sob medida, coleções casuais premium e acessórios selecionados. O atendimento especializado garante que cada cliente encontre o look ideal para qualquer ocasião.",
+      "phone": "(11) 92345-6789",
+      "instagram": "@brutalhomme",
+      "featured": true,
+      "images": [
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
+        "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+      ]
+    },
+    {
+      "id": "petit-monde",
+      "name": "Petit Monde",
+      "segment": "Moda Infantil",
+      "segmentSlug": "infantil",
+      "floor": "Piso 2",
+      "description": "Moda divertida e de qualidade para os pequenos.",
+      "longDescription": "A Petit Monde acredita que as crianças merecem o melhor em estilo e conforto. Com coleções que combinam praticidade para os pais e alegria para os filhos, a loja trabalha com tecidos certificados, modelos pensados para o movimento e designs que encantam. Do recém-nascido ao pré-adolescente.",
+      "phone": "(11) 93456-7890",
+      "instagram": "@petitmonde.kids",
+      "images": [
+        "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80",
+        "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80",
+        "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80"
+      ]
+    },
+    {
+      "id": "sole-story",
+      "name": "Sole Story",
+      "segment": "Calçados & Bolsas",
+      "segmentSlug": "calcados",
+      "floor": "Piso 1",
+      "description": "Calçados e bolsas que contam histórias de estilo.",
+      "longDescription": "Na Sole Story, cada passo é uma declaração de estilo. A loja reúne as melhores marcas nacionais e internacionais de calçados femininos e masculinos, além de uma seleção exclusiva de bolsas e acessórios de couro. Com atendimento especializado e tamanhos para todos, a experiência de compra é sempre especial.",
+      "phone": "(11) 94567-8901",
+      "instagram": "@solestory.oficial",
+      "featured": true,
+      "images": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+        "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80",
+        "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80"
+      ]
+    },
+    {
+      "id": "aurum-accessories",
+      "name": "Aurum Accessories",
+      "segment": "Acessórios",
+      "segmentSlug": "acessorios",
+      "floor": "Piso 2",
+      "description": "Joias e acessórios que elevam qualquer look.",
+      "longDescription": "Aurum é o templo dos acessórios premium no Fashion Bras. Semijoias folheadas a ouro, bijuterias artesanais, lenços de seda, óculos de sol e muito mais. Cada peça é escolhida com cuidado para complementar e elevar qualquer conjunto, transformando o simples em extraordinário.",
+      "phone": "(11) 95678-9012",
+      "instagram": "@aurum.acessorios",
+      "images": [
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80",
+        "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
+        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80"
+      ]
+    },
+    {
+      "id": "move-sport",
+      "name": "Move Sport",
+      "segment": "Esportes & Lifestyle",
+      "segmentSlug": "esportes",
+      "floor": "Piso 2",
+      "description": "Performance e estilo para o seu lifestyle ativo.",
+      "longDescription": "Move Sport é a loja para quem vive em movimento. Com as principais marcas de moda esportiva do mercado, a loja oferece roupas e calçados para academia, corrida, yoga, crossfit e esportes ao ar livre. O conceito vai além do vestuário esportivo — é um lifestyle de bem-estar e movimento.",
+      "phone": "(11) 96789-0123",
+      "instagram": "@movesport.br",
+      "images": [
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+        "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80",
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80"
+      ]
+    },
+    {
+      "id": "casa-moderna",
+      "name": "Casa Moderna",
+      "segment": "Casa & Decoração",
+      "segmentSlug": "casa",
+      "floor": "Piso 3",
+      "description": "Decoração e lifestyle para um lar com personalidade.",
+      "longDescription": "Casa Moderna traz ao Fashion Bras um conceito único: moda para a sua casa. Com itens de decoração, cama, mesa e banho de alto padrão, velas aromáticas, aromatizadores e objetos de design contemporâneo, a loja transforma qualquer ambiente em um espaço de elegância e bem-estar.",
+      "phone": "(11) 97890-1234",
+      "instagram": "@casamoderna.decor",
+      "images": [
+        "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80",
+        "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80",
+        "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80"
+      ]
+    },
+    {
+      "id": "luna-feminina",
+      "name": "Luna Feminina",
+      "segment": "Moda Feminina",
+      "segmentSlug": "feminina",
+      "floor": "Piso 1",
+      "description": "Moda feminina autêntica para todas as ocasiões.",
+      "longDescription": "Luna Feminina celebra a diversidade e a autenticidade da mulher brasileira. Com coleções que transitam entre o casual chic e o social elegante, a loja é um espaço de afirmação e estilo. Tamanhos inclusivos, peças atemporais e uma equipe de consultoras prontas para ajudar na composição de looks perfeitos.",
+      "phone": "(11) 98901-2345",
+      "instagram": "@lunafeminina",
+      "images": [
+        "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80",
+        "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80"
+      ]
+    },
+    {
+      "id": "vivo-homme",
+      "name": "Vivo Homme",
+      "segment": "Moda Masculina",
+      "segmentSlug": "masculina",
+      "floor": "Piso 2",
+      "description": "O melhor do streetwear e do smart casual masculino.",
+      "longDescription": "Vivo Homme é para o homem que quer se vestir bem sem esforço. Com um conceito moderno e descolado, a loja traz as principais tendências do streetwear internacional adaptadas ao estilo brasileiro. Sneakers exclusivos, camisetas premium, moletons e jaquetas que combinam atitude com sofisticação.",
+      "phone": "(11) 90012-3456",
+      "instagram": "@vivohomme",
+      "images": [
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80"
+      ]
+    },
+    {
+      "id": "infantis-bras",
+      "name": "Infantis Bras",
+      "segment": "Moda Infantil",
+      "segmentSlug": "infantil",
+      "floor": "Piso 2",
+      "description": "Roupas sustentáveis e duráveis para crianças felizes.",
+      "longDescription": "Infantis Bras nasceu com a missão de vestir as crianças com responsabilidade. Com foco em materiais orgânicos, tingimentos naturais e processos de produção sustentáveis, a loja oferece roupas lindas, confortáveis e boas para o planeta. Porque cuidar do futuro começa pelo presente.",
+      "phone": "(11) 91123-4567",
+      "instagram": "@infantisbras",
+      "images": [
+        "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=800&q=80",
+        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
+        "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80"
+      ]
+    },
+    {
+      "id": "passarela-shoes",
+      "name": "Passarela Shoes",
+      "segment": "Calçados & Bolsas",
+      "segmentSlug": "calcados",
+      "floor": "Piso 3",
+      "description": "Tendências internacionais em calçados e acessórios.",
+      "longDescription": "Passarela Shoes traz ao Fashion Bras o melhor das passarelas mundiais em forma de calçado. Com edições limitadas, colaborações especiais e modelos exclusivos, a loja é ponto de referência para colecionadores e fashionistas que querem se destacar com originalidade e bom gosto refinado.",
+      "phone": "(11) 92234-5678",
+      "instagram": "@passarelashoes",
+      "images": [
+        "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=800&q=80",
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80",
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80"
+      ]
+    },
+    {
+      "id": "bijou-elite",
+      "name": "Bijou Elite",
+      "segment": "Acessórios",
+      "segmentSlug": "acessorios",
+      "floor": "Piso 1",
+      "description": "Semijoias e acessórios de luxo acessível.",
+      "longDescription": "Bijou Elite é o lar das peças que fazem a diferença. Com uma curadoria exclusiva de semijoias, relógios, óculos de grau e sol, a loja atende um público que valoriza o detalhe e busca qualidade acima de tudo. Cada peça é um investimento em estilo e personalidade.",
+      "phone": "(11) 93345-6789",
+      "instagram": "@bijouelte.oficial",
+      "images": [
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80",
+        "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80",
+        "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=800&q=80"
+      ]
+    }
+  ],
+  "blogPosts": [
+    {
+      "slug": "tendencias-verao-2025",
+      "title": "As Tendências que Vão Dominar o Verão 2025",
+      "category": "Tendências",
+      "date": "28 de março de 2025",
+      "excerpt": "Da paleta de cores terrosas ao minimalismo máximo: confira o que os experts apontam como as apostas certeiras para a próxima estação.",
+      "content": "A nova temporada chegou com propostas ousadas e, ao mesmo tempo, profundamente elegantes. Os desfiles das principais semanas de moda ao redor do mundo apontaram para uma direção clara: menos é mais, mas o menos precisa ser perfeito.\n\n**Cores em destaque**\n\nA paleta de verão 2025 aposta em tons terrosos — areia, siena, caramelo e off-white dominarão os guarda-roupas. Mas não se engane: o branco puro também faz uma volta triunfal, especialmente em composições monocromáticas.\n\n**Silhuetas e formas**\n\nAs silhuetas fluidas e amplas continuam em alta, com destaque para os conjuntos de duas peças em tecidos leves como linho e viscose. Os ombros marcados também aparecem com força, trazendo uma aura de poder e sofisticação ao look.\n\n**Acessórios que fazem a diferença**\n\nOs acessórios maximalistas dão espaço para peças delicadas e com significado. Colares finos sobrepostos, brincos de argola em ouro envelhecido e bolsas estruturadas em couro natural completam os looks da estação.\n\n**Como incorporar no dia a dia**\n\nA dica de ouro dos stylists é investir em peças versáteis que transitam entre o casual e o social. Um conjunto de linho bege, por exemplo, pode ir da praia ao jantar com apenas a troca de acessórios.",
+      "coverImage": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80",
+      "author": "Camila Ferreira",
+      "readTime": "5 min",
+      "featured": true
+    },
+    {
+      "slug": "como-montar-guarda-roupa-capsule",
+      "title": "Como Montar um Guarda-Roupa Cápsula Perfeito",
+      "category": "Estilo",
+      "date": "20 de março de 2025",
+      "excerpt": "Ter menos peças e se vestir melhor: o guia definitivo para construir um guarda-roupa inteligente e atemporal.",
+      "content": "O conceito de guarda-roupa cápsula não é novo, mas nunca foi tão relevante quanto agora. Em um mundo de consumo consciente e sustentabilidade, ter menos peças de maior qualidade é, ao mesmo tempo, uma escolha estética e ética.\n\n**O que é um guarda-roupa cápsula?**\n\nUm guarda-roupa cápsula é uma coleção curada de peças essenciais, versáteis e atemporais que podem ser combinadas entre si de múltiplas formas. A ideia é ter qualidade em vez de quantidade, estilo em vez de volume.\n\n**As peças básicas indispensáveis**\n\nToda cápsula começa com fundamentos sólidos: uma calça de alfaiataria bem cortada, uma camisa branca impecável, um casaco neutro de qualidade, um vestido pretinho clássico e um jeans premium. Essas peças devem ser compradas com atenção ao corte, ao tecido e ao caimento no seu corpo.\n\n**Como comprar com inteligência**\n\nAntes de adicionar qualquer peça, pergunte-se: \"Isso combina com pelo menos três coisas que já tenho?\" Se a resposta for não, provavelmente não pertence à sua cápsula. Invista em peças neutras e complemente com 2 ou 3 itens de cor ou estampas especiais por temporada.\n\n**Resultado**\n\nCom 30 a 40 peças bem escolhidas, você pode criar mais de 100 looks diferentes. O segredo está na curadoria inteligente e na qualidade das escolhas.",
+      "coverImage": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1200&q=80",
+      "author": "Rafael Monteiro",
+      "readTime": "7 min"
+    },
+    {
+      "slug": "fashion-bras-festival-moda-2025",
+      "title": "Fashion Bras Festival de Moda 2025: Confira o que Vem Por Aí",
+      "category": "Eventos",
+      "date": "15 de março de 2025",
+      "excerpt": "O maior evento de moda do shopping está chegando com desfiles, workshops, promoções exclusivas e muito mais. Salve a data!",
+      "content": "O Fashion Bras Festival de Moda 2025 promete ser o maior evento da história do shopping. Com três dias de programação intensa, o festival reunirá marcas, designers, influenciadores e fashionistas em uma celebração única da moda brasileira.\n\n**O que esperar do evento**\n\nDurante os dias 15, 16 e 17 de maio, o Fashion Bras se transformará em um grande palco para a moda. Haverá desfiles diários com as coleções de outono-inverno das lojas do shopping, workshops com especialistas em estilo, palcos de maquiagem ao vivo e muito mais.\n\n**Programação especial**\n\nNo dia 15, a abertura será marcada por um desfile especial com modelos profissionais apresentando os destaques das lojas âncora. No dia 16, o foco será em workshops práticos: styling, coloração pessoal e consultoria de imagem. No dia 17, a grande final terá um desfile-espetáculo com convidados especiais e lançamentos exclusivos.\n\n**Promoções imperdíveis**\n\nTodas as lojas participantes oferecem descontos exclusivos para o período do festival. Além disso, cada compra dá direito a participar do sorteio de um voucher de R$ 5.000 em compras no shopping.\n\n**Como participar**\n\nA entrada é gratuita para todos os eventos. Workshops específicos têm vagas limitadas e inscrições pelo nosso site. Não perca!",
+      "coverImage": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=80",
+      "author": "Equipe Fashion Bras",
+      "readTime": "4 min"
+    },
+    {
+      "slug": "acessorios-transformam-look",
+      "title": "Como os Acessórios Certos Transformam Qualquer Look",
+      "category": "Dicas",
+      "date": "8 de março de 2025",
+      "excerpt": "Um bom acessório pode elevar um look simples ao nível premium. Aprenda as regras (e quando quebrá-las).",
+      "content": "Existe uma máxima no mundo da moda que nunca perde a validade: um bom acessório pode salvar qualquer look. E o inverso também é verdadeiro — um acessório errado pode comprometer o que seria um conjunto perfeito.\n\n**A regra dos três**\n\nO stylist brasileiro Alexandre Herchcovitch popularizou no Brasil a \"regra dos três acessórios\": escolha três peças complementares e tire uma. Essa técnica impede o excesso sem cair no minimalismo vazio.\n\n**Saiba o peso do seu look**\n\nLooks mais estruturados — terno, vestido de festa, alfaiataria — pedem acessórios contidos e precisos. Looks casuais têm mais liberdade para explorar peças bolder, como um colar statement ou um anel maxi.\n\n**O poder das bolsas**\n\nA bolsa é o acessório que mais comunica status e intenção no universo fashion. Uma bolsa bem escolhida pode transformar um look básico em algo memorável. Invista em pelo menos uma bolsa de qualidade que atravesse estações.\n\n**Óculos como assinatura**\n\nÓculos de sol se tornaram uma das principais assinaturas de estilo. Encontre o formato que melhor enquadra o seu rosto e transforme-o em uma marca pessoal — use sempre, em qualquer estação.",
+      "coverImage": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80",
+      "author": "Fernanda Costa",
+      "readTime": "6 min"
+    },
+    {
+      "slug": "moda-sustentavel-futuro-industria",
+      "title": "Moda Sustentável: O Futuro Que Já Chegou",
+      "category": "Moda Sustentável",
+      "date": "1 de março de 2025",
+      "excerpt": "Consumo consciente, fibras regenerativas e economia circular: conheça as marcas que estão reinventando a moda com responsabilidade.",
+      "content": "A indústria da moda é a segunda maior poluidora do mundo. Mas as coisas estão mudando — e rapidamente. Uma nova geração de marcas, designers e consumidores está redesenhando as regras do jogo, colocando a sustentabilidade no centro de cada decisão.\n\n**O que é moda sustentável de verdade?**\n\nSustentabilidade na moda vai muito além de usar algodão orgânico. Envolve rastreabilidade de toda a cadeia produtiva, pagamento justo aos trabalhadores, design para durabilidade (não para descarte), uso de materiais reciclados e recicláveis, e neutralização de carbono.\n\n**As fibras do futuro**\n\nA indústria já desenvolveu tecidos inovadores que mudam o jogo: Tencel (celulose de eucalipto), Piñatex (couro de abacaxi), mycelium leather (couro de fungo), algodão de ar (sem água) e poliéster 100% reciclado de garrafas PET. O futuro é agora.\n\n**Como consumir com consciência**\n\nO primeiro passo é consumir menos e melhor. Depois, pesquisar as marcas antes de comprar, priorizar peças versáteis e duráveis, dar preferência ao mercado de segunda mão para peças de luxo e cuidar bem do que você já tem para prolongar a vida útil.\n\n**O papel do consumidor**\n\nCada compra é um voto. Ao escolher marcas comprometidas com a sustentabilidade, você está moldando o futuro da indústria. E esse futuro pode ser brilhante.",
+      "coverImage": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80",
+      "author": "Dr. Marcelo Andrade",
+      "readTime": "8 min"
+    },
+    {
+      "slug": "moda-masculina-alfaiataria-2025",
+      "title": "A Volta da Alfaiataria: O Homem Bem-Vestido de 2025",
+      "category": "Estilo",
+      "date": "22 de fevereiro de 2025",
+      "excerpt": "O terno voltou e veio para ficar. Descubra como incorporar a alfaiataria no cotidiano com modernidade e personalidade.",
+      "content": "Depois de anos de domínio do athleisure e do casual extremo, a alfaiataria masculina está vivendo uma renascença. E não é uma volta nostálgica — é uma reinvenção completa que combina o melhor do clássico com a liberdade contemporânea.\n\n**A nova alfaiataria**\n\nO terno de 2025 não tem as mesmas regras de 1985. Os cortes são mais fluidos, os tecidos mais leves (linho, crepe, veludo leve), as cores vão do neutro ao inesperado (azul royal, verde musgo, bordô). A modelagem oversized convive com o slim, dependendo do efeito desejado.\n\n**Smart casual redefinido**\n\nO conceito de smart casual ganhou nova vida com a alfaiataria moderna. Um blazer de alfaiataria com camiseta básica premium e tênis de qualidade é o look do executivo moderno, do criativo e do homem que entende de moda sem parecer que está tentando demais.\n\n**Acessórios que completam**\n\nO retorno da alfaiataria trouxe consigo o renascimento de acessórios clássicos: o lenço de bolso, o relógio de pulso analógico, o cinto de couro genuíno e os sapatos Oxford ou loafers. Cada peça conta a história de um homem que se cuida.\n\n**Como começar**\n\nSe você é iniciante na alfaiataria, comece com um blazer versátil na cor certo: navy, cinza chumbo ou caramelo. Essas peças trabalham com quase qualquer roupa que você já tem e elevam imediatamente o nível do look.",
+      "coverImage": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80",
+      "author": "Bruno Alves",
+      "readTime": "5 min"
+    },
+    {
+      "slug": "novas-lojas-fashion-bras",
+      "title": "Novas Lojas Chegam ao Fashion Bras",
+      "category": "Eventos",
+      "date": "14 de fevereiro de 2025",
+      "excerpt": "O Fashion Bras dá as boas-vindas a três novas marcas que chegam para enriquecer ainda mais o mix do shopping.",
+      "content": "O Fashion Bras continua crescendo. Este mês, três novas lojas abrem suas portas para oferecer ainda mais opções ao nosso público sofisticado e exigente. São marcas que foram cuidadosamente selecionadas para complementar e enriquecer o mix de lojas do shopping.\n\n**Aurum Accessories — Piso 2**\n\nA Aurum chega ao Fashion Bras com uma proposta única: semijoias e acessórios de luxo acessível. Com peças desenvolvidas por joalheiros nacionais e importadas de referências internacionais, a loja promete ser o novo endereço dos fashionistas que amam detalhes.\n\n**Casa Moderna — Piso 3**\n\nO conceito de \"moda para casa\" chega com tudo ao Fashion Bras. A Casa Moderna traz decoração, objetos de design e artigos para o lar que traduzem o mesmo senso estético que buscamos no vestuário. Uma visita imperdível para quem quer um lar com personalidade.\n\n**Move Sport — Piso 2**\n\nPara quem vive em movimento, a Move Sport é a nova casa. Com as principais marcas de moda esportiva premium e um conceito de lifestyle ativo, a loja oferece muito mais do que roupas para academia — oferece uma forma de viver.\n\n**Horário de inauguração**\n\nAs três lojas serão inauguradas simultaneamente no dia 20 de fevereiro, às 10h, com recepção especial para clientes cadastrados no Fashion Bras VIP Club.",
+      "coverImage": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=1200&q=80",
+      "author": "Equipe Fashion Bras",
+      "readTime": "3 min"
+    },
+    {
+      "slug": "calçados-primavera-verao",
+      "title": "Calçados em Foco: Os Modelos Que Você Precisa Ter",
+      "category": "Tendências",
+      "date": "5 de fevereiro de 2025",
+      "excerpt": "Das mules às plataformas: um guia definitivo dos calçados que vão dominar a primavera-verão 2025.",
+      "content": "Os calçados têm o poder único de definir o tom de um look inteiro. Uma sandália flat muda completamente a leitura de um vestido elegante. Um têiner chunky transforma uma calça de alfaiataria. E é exatamente por isso que acompanhar as tendências em calçados é tão importante quanto conhecer as tendências em roupas.\n\n**Mules e slides voltam com tudo**\n\nAs mules abertas no calcanhar continuam no topo das tendências, mas ganham novos acabamentos: metalizados, com detalhes de couro trançado e em versões altíssimas de plataforma. São peças que adicionam drama ao look sem esforço.\n\n**O retorno dos mocassins**\n\nO mocassim, símbolo do preppy americano, ressurge reinventado. Em versões plataforma, com borlas oversized ou em couro exótico (ou seus análogos veganos), ele se adapta tanto ao casual quanto ao formal, tornando-se um dos calçados mais versáteis da estação.\n\n**Tênis de luxo**\n\nO luxury sneaker não é novidade, mas sua onipresença continua crescendo. Os modelos chunky dão espaço para perfis mais limpos e minimalistas, em couro, com detalhes metálicos sutis e colabs com artistas visuais.\n\n**Botas de cano médio**\n\nPara o final da temporada, as botas de cano médio (ankle boots com cano mais alto) prometem ser a peça de transição perfeita. Em couro vegetal, com bico fino ou redondo, em preto ou cognac.",
+      "coverImage": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=1200&q=80",
+      "author": "Juliana Peixoto",
+      "readTime": "6 min"
+    }
+  ],
+  "partners": [
+    {
+      "id": "1",
+      "name": "Le Lis Blanc"
+    },
+    {
+      "id": "2",
+      "name": "Animale"
+    },
+    {
+      "id": "3",
+      "name": "Farm Rio"
+    },
+    {
+      "id": "4",
+      "name": "Shoulder"
+    },
+    {
+      "id": "5",
+      "name": "Colcci"
+    },
+    {
+      "id": "6",
+      "name": "Forum"
+    },
+    {
+      "id": "7",
+      "name": "Ellus"
+    },
+    {
+      "id": "8",
+      "name": "Reserva"
+    },
+    {
+      "id": "9",
+      "name": "Dudalina"
+    },
+    {
+      "id": "10",
+      "name": "Track&Field"
+    },
+    {
+      "id": "11",
+      "name": "Melissa"
+    },
+    {
+      "id": "12",
+      "name": "Havaianas Premium"
+    }
+  ],
+  "siteSettings": {
+    "name": "Fashion Bras",
+    "tagline": "O destino da moda que voce merece.",
+    "institutionalDescription": "Shopping de moda premium em Sao Paulo, com curadoria de marcas, atendimento qualificado e experiencias sofisticadas.",
+    "address": "Rua das Artes, 1200 - Centro Fashion, Sao Paulo, SP",
+    "phone": "(11) 3000-0000",
+    "email": "contato@fashionbras.com.br",
+    "hours": "Segunda a Sabado: 10h as 22h | Domingo: 12h as 20h",
+    "instagram": "@fashionbras",
+    "facebook": "fashionbras",
+    "footerLeasingLabel": "Saiba mais sobre locacao",
+    "footerLeasingHref": "/locacao",
+    "footerLegalNote": "Conteudo e experiencia digital desenvolvidos para a moda brasileira.",
+    "navLinks": [
+      {
+        "label": "Inicio",
+        "href": "/"
+      },
+      {
+        "label": "Lojas",
+        "href": "/lojas"
+      },
+      {
+        "label": "Blog",
+        "href": "/blog"
+      },
+      {
+        "label": "Locacao",
+        "href": "/locacao"
+      },
+      {
+        "label": "Sobre",
+        "href": "/sobre"
+      }
+    ]
+  },
+  "homeContent": {
+    "hero": {
+      "eyebrow": "Fashion Bras - O Shopping de Moda",
+      "slides": [
+        {
+          "id": "home-hero-1",
+          "title": "Moda que Inspira,",
+          "subtitle": "Estilo que Persiste",
+          "cta": "Descubra as Lojas",
+          "href": "/lojas",
+          "image": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"
+        },
+        {
+          "id": "home-hero-2",
+          "title": "Marcas Selecionadas,",
+          "subtitle": "Experiencias Unicas",
+          "cta": "Explore o Shopping",
+          "href": "/sobre",
+          "image": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1600&q=80"
+        },
+        {
+          "id": "home-hero-3",
+          "title": "O Destino da Moda",
+          "subtitle": "que Voce Merece",
+          "cta": "Conheca o Blog",
+          "href": "/blog",
+          "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80"
+        }
+      ]
+    },
+    "institutional": {
+      "eyebrow": "Bem-vindo ao",
+      "title": "Um Shopping Pensado",
+      "titleHighlight": "para Quem Ama Moda",
+      "leadParagraph": "Inaugurado em 2010, o Fashion Bras e o principal destino de moda de Sao Paulo. Com mais de 80 lojas cuidadosamente selecionadas, reunimos as melhores marcas nacionais e internacionais em um ambiente sofisticado e acolhedor.",
+      "secondaryParagraph": "Aqui, cada detalhe foi pensado para proporcionar a melhor experiencia de compra: desde a arquitetura de alto padrao ate o atendimento personalizado de cada lojista.",
+      "ctaLabel": "Conheca nossa historia",
+      "ctaHref": "/sobre",
+      "imagePrimary": "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=600&q=80",
+      "imageSecondary": "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600&q=80",
+      "floatingStatValue": "80+",
+      "floatingStatLabel": "Lojas Selecionadas"
+    },
+    "stats": {
+      "backgroundWord": "MODA",
+      "items": [
+        {
+          "value": "80+",
+          "label": "Lojas curadas"
+        },
+        {
+          "value": "50k",
+          "label": "Visitantes / mes"
+        },
+        {
+          "value": "14",
+          "label": "Anos de historia"
+        },
+        {
+          "value": "3",
+          "label": "Pisos de moda"
+        }
+      ]
+    },
+    "featuredStores": {
+      "eyebrow": "Lojas em Destaque",
+      "title": "Marcas que",
+      "titleHighlight": "Inspiram",
+      "ctaLabel": "Ver todas as lojas",
+      "ctaHref": "/lojas",
+      "emptyMessage": "Nenhuma loja em destaque cadastrada no momento."
+    },
+    "partners": {
+      "eyebrow": "Marcas & Parceiros",
+      "emptyMessage": "Lista de parceiros indisponivel no momento."
+    },
+    "blogPreview": {
+      "eyebrow": "Blog & Novidades",
+      "title": "Tendencias &",
+      "titleHighlight": "Inspiracao",
+      "ctaLabel": "Ver todos os artigos",
+      "ctaHref": "/blog",
+      "emptyMessage": "Novos artigos serao publicados em breve."
+    },
+    "leasingCta": {
+      "eyebrow": "Faca Parte do Fashion Bras",
+      "title": "Sua Marca Merece",
+      "titleHighlight": "um Endereco de Destaque",
+      "description": "Junte-se a mais de 80 marcas que escolheram o Fashion Bras como seu lar.",
+      "ctaLabel": "Solicitar Locacao",
+      "ctaHref": "/locacao",
+      "backgroundImage": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80"
+    }
+  },
+  "leasingBenefits": [
+    {
+      "icon": "MapPin",
+      "title": "Localização Estratégica",
+      "description": "Situado em uma das regiões de maior fluxo da cidade, o Fashion Bras garante visibilidade e acesso a um público qualificado e com alto poder de compra."
+    },
+    {
+      "icon": "Users",
+      "title": "Alto Fluxo de Visitantes",
+      "description": "Com mais de 50.000 visitantes por mês, o Fashion Bras oferece um volume consistente de clientes potenciais para o seu negócio crescer."
+    },
+    {
+      "icon": "Shield",
+      "title": "Segurança 24 Horas",
+      "description": "Monitoramento contínuo, equipe de segurança treinada e sistema de vigilância de última geração garantem a tranquilidade de lojistas e clientes."
+    },
+    {
+      "icon": "Zap",
+      "title": "Infraestrutura Completa",
+      "description": "Internet de alta velocidade, sistema elétrico dimensionado para varejo, climatização central e espaços de carga e descarga planejados para facilitar sua operação."
+    },
+    {
+      "icon": "TrendingUp",
+      "title": "Suporte ao Lojista",
+      "description": "Equipe dedicada para apoiar desde a montagem da loja até campanhas de marketing conjuntas. Você não está sozinho — crescemos juntos."
+    },
+    {
+      "icon": "Star",
+      "title": "Mix Comercial Curado",
+      "description": "Selecionamos cuidadosamente as marcas que fazem parte do Fashion Bras para garantir que o mix de lojas seja complementar, sofisticado e atrativo."
+    }
+  ],
+  "spaceTypes": [
+    {
+      "name": "Loja Padrão",
+      "size": "A partir de 30m²",
+      "description": "Ideal para marcas em crescimento que buscam um espaço funcional e bem localizado nos corredores principais do shopping."
+    },
+    {
+      "name": "Loja Premium",
+      "size": "De 60m² a 150m²",
+      "description": "Espaços amplos com localização diferenciada, vitrines duplas e maior visibilidade. Perfeito para marcas consolidadas que buscam presença de destaque."
+    },
+    {
+      "name": "Quiosque & Pop-up",
+      "size": "De 8m² a 20m²",
+      "description": "Solução flexível para marcas que desejam testar o mercado, lançar produtos ou ter presença temporária com baixo investimento inicial."
+    },
+    {
+      "name": "Sala Comercial",
+      "size": "De 15m² a 40m²",
+      "description": "Espaços destinados a serviços complementares: estúdios de beleza, consultórios de imagem, ateliês e serviços especializados em moda."
+    }
+  ],
+  "testimonials": [
+    {
+      "name": "Camila Rodrigues",
+      "store": "Aria Moda",
+      "text": "Abrir nossa loja no Fashion Bras foi a decisão mais acertada da nossa história. O suporte da equipe, o perfil dos clientes e o ambiente sofisticado do shopping fizeram toda a diferença para o crescimento da marca."
+    },
+    {
+      "name": "Ricardo Pedrosa",
+      "store": "Brutal Homme",
+      "text": "O Fashion Bras não é apenas um espaço para vender — é uma comunidade de lojistas que se apoiam e crescem juntos. O ambiente, o fluxo de clientes e as iniciativas de marketing do shopping são incomparáveis."
+    },
+    {
+      "name": "Mariana Lima",
+      "store": "Sole Story",
+      "text": "Estamos há dois anos no Fashion Bras e cada ano superamos nossas metas. A gestão do shopping é transparente, parceira e sempre atenta às necessidades dos lojistas. Recomendo sem hesitar."
+    }
+  ],
+  "leasingDifferentials": [
+    "Gestão profissional e transparente",
+    "Campanhas de marketing coletivas incluídas",
+    "Eventos exclusivos para lojistas e clientes",
+    "Estacionamento amplo e gratuito para clientes",
+    "Praça de alimentação premium para conforto dos visitantes",
+    "Programa de fidelidade integrado entre as lojas",
+    "Espaço de co-working para lojistas",
+    "Treinamentos e capacitações mensais gratuitos"
+  ],
+  "aboutData": {
+    "history": [
+      "O Fashion Bras nasceu de um sonho: criar um espaço onde a moda brasileira pudesse se expressar com toda a sua riqueza, criatividade e sofisticação. Inaugurado em 2010, o shopping rapidamente se tornou referência no segmento de moda no estado de São Paulo.",
+      "Ao longo de mais de uma década, construímos uma trajetória marcada pela curadoria cuidadosa de marcas, pelo cuidado com a experiência do cliente e pelo compromisso com a excelência em cada detalhe. Cada loja que abrimos suas portas aqui passou por um processo rigoroso de seleção.",
+      "Hoje, o Fashion Bras reúne mais de 80 lojas, recebe mais de 50.000 visitantes por mês e é reconhecido como um dos destinos de moda mais sofisticados do Brasil. Mas o que realmente nos define não são os números — é a paixão que colocamos em cada decisão."
+    ],
+    "mission": "Ser o principal destino de moda do Brasil, conectando marcas, consumidores e tendências em um ambiente sofisticado, acolhedor e inspirador.",
+    "vision": "Ser reconhecido como o shopping de moda mais admirado do país, referência em curadoria, experiência e inovação no varejo fashion.",
+    "values": [
+      {
+        "title": "Curadoria",
+        "description": "Selecionamos cada marca com atenção e critério, garantindo um mix coerente e elevado."
+      },
+      {
+        "title": "Excelência",
+        "description": "Buscamos o melhor em cada detalhe — do atendimento à arquitetura, da sinalização às experiências."
+      },
+      {
+        "title": "Inovação",
+        "description": "Acompanhamos as tendências do mercado e da tecnologia para sempre oferecer o que há de mais moderno."
+      },
+      {
+        "title": "Sustentabilidade",
+        "description": "Comprometidos com o futuro, adotamos práticas sustentáveis em nossa operação e incentivamos as marcas parceiras a fazerem o mesmo."
+      },
+      {
+        "title": "Comunidade",
+        "description": "Somos um espaço de encontro, cultura e expressão. Acreditamos que moda é também conexão humana."
+      }
+    ],
+    "differentials": [
+      "Curadoria exclusiva de marcas nacionais e internacionais",
+      "Ambiente arquitetônico de alto padrão e conforto total",
+      "Programação cultural e de moda ao longo do ano",
+      "Estacionamento amplo, coberto e gratuito",
+      "Acessibilidade completa em todos os pisos",
+      "Experiências personalizadas para clientes VIP",
+      "Parcerias com os principais eventos de moda do Brasil",
+      "Programa de sustentabilidade ambiental certificado"
+    ],
+    "team": [
+      {
+        "name": "Ana Paula Bras",
+        "role": "CEO & Fundadora",
+        "description": "Visionária e apaixonada por moda, Ana Paula fundou o Fashion Bras com a missão de democratizar o acesso ao luxo e sofisticação."
+      },
+      {
+        "name": "Carlos Mendonça",
+        "role": "Diretor Comercial",
+        "description": "Com mais de 20 anos de experiência no varejo fashion, Carlos é responsável pela curadoria e gestão das marcas do shopping."
+      },
+      {
+        "name": "Beatriz Santos",
+        "role": "Diretora de Marketing",
+        "description": "Especialista em branding e experiência do consumidor, Beatriz lidera todas as iniciativas de comunicação e relacionamento do Fashion Bras."
+      }
+    ]
+  }
+}

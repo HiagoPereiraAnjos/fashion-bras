@@ -1,0 +1,855 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: content
+    description: Public content operations
+  - name: admin-content
+    description: Admin content operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /content/snapshot:
+    get:
+      operationId: getContentSnapshot
+      tags: [content]
+      summary: Get full site content snapshot
+      responses:
+        "200":
+          description: Site content snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContentState"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /content/sections/{section}:
+    get:
+      operationId: getContentSection
+      tags: [content]
+      summary: Get one content section
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentSection"
+      responses:
+        "200":
+          description: Section payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentSectionResponse"
+        "400":
+          description: Invalid section
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /admin/me:
+    get:
+      operationId: adminMe
+      tags: [admin-content]
+      summary: Get current authenticated admin user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminMe"
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /admin/content/sections/{section}:
+    put:
+      operationId: putAdminContentSection
+      tags: [admin-content]
+      summary: Replace one content section
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentSection"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentSectionUpdateRequest"
+      responses:
+        "200":
+          description: Updated section
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentSectionResponse"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /admin/content/reset/{section}:
+    post:
+      operationId: postAdminResetContentSection
+      tags: [admin-content]
+      summary: Reset one section to baseline defaults
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentSection"
+      responses:
+        "200":
+          description: Reset section payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentSectionResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /admin/content/reset-all:
+    post:
+      operationId: postAdminResetAllContent
+      tags: [admin-content]
+      summary: Reset all sections to baseline defaults
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Full reset snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContentState"
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /admin/content/import:
+    post:
+      operationId: postAdminImportContent
+      tags: [admin-content]
+      summary: Import full snapshot (optional migration endpoint)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteContentState"
+      responses:
+        "200":
+          description: Imported snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContentState"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+      required:
+        - title
+        - status
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ContentSection:
+      type: string
+      enum:
+        - stores
+        - blogPosts
+        - partners
+        - siteSettings
+        - homeContent
+        - leasingBenefits
+        - spaceTypes
+        - testimonials
+        - leasingDifferentials
+        - aboutData
+
+    NavLink:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+      required:
+        - label
+        - href
+
+    Store:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        segment:
+          type: string
+        segmentSlug:
+          type: string
+        floor:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+        phone:
+          type: string
+        instagram:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        featured:
+          type: boolean
+      required:
+        - id
+        - name
+        - segment
+        - segmentSlug
+        - floor
+        - description
+        - longDescription
+        - phone
+        - instagram
+        - images
+
+    BlogPost:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        date:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        coverImage:
+          type: string
+        author:
+          type: string
+        readTime:
+          type: string
+        featured:
+          type: boolean
+      required:
+        - slug
+        - title
+        - category
+        - date
+        - excerpt
+        - content
+        - coverImage
+        - author
+        - readTime
+
+    Partner:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        logo:
+          type: string
+      required:
+        - id
+        - name
+
+    SiteSettings:
+      type: object
+      properties:
+        name:
+          type: string
+        tagline:
+          type: string
+        institutionalDescription:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        hours:
+          type: string
+        instagram:
+          type: string
+        facebook:
+          type: string
+        footerLeasingLabel:
+          type: string
+        footerLeasingHref:
+          type: string
+        footerLegalNote:
+          type: string
+        navLinks:
+          type: array
+          items:
+            $ref: "#/components/schemas/NavLink"
+      required:
+        - name
+        - tagline
+        - institutionalDescription
+        - address
+        - phone
+        - email
+        - hours
+        - instagram
+        - facebook
+        - footerLeasingLabel
+        - footerLeasingHref
+        - footerLegalNote
+        - navLinks
+
+    HomeHeroSlide:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        cta:
+          type: string
+        href:
+          type: string
+        image:
+          type: string
+      required:
+        - title
+        - subtitle
+        - cta
+        - href
+        - image
+
+    HomeHeroContent:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        slides:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeHeroSlide"
+      required:
+        - eyebrow
+        - slides
+
+    HomeInstitutionalContent:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        title:
+          type: string
+        titleHighlight:
+          type: string
+        leadParagraph:
+          type: string
+        secondaryParagraph:
+          type: string
+        ctaLabel:
+          type: string
+        ctaHref:
+          type: string
+        imagePrimary:
+          type: string
+        imageSecondary:
+          type: string
+        floatingStatValue:
+          type: string
+        floatingStatLabel:
+          type: string
+      required:
+        - eyebrow
+        - title
+        - titleHighlight
+        - leadParagraph
+        - secondaryParagraph
+        - ctaLabel
+        - ctaHref
+        - imagePrimary
+        - imageSecondary
+        - floatingStatValue
+        - floatingStatLabel
+
+    HomeStatItem:
+      type: object
+      properties:
+        value:
+          type: string
+        label:
+          type: string
+      required:
+        - value
+        - label
+
+    HomeStatsContent:
+      type: object
+      properties:
+        backgroundWord:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeStatItem"
+      required:
+        - backgroundWord
+        - items
+
+    HomeSectionHighlightContent:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        title:
+          type: string
+        titleHighlight:
+          type: string
+        ctaLabel:
+          type: string
+        ctaHref:
+          type: string
+        emptyMessage:
+          type: string
+      required:
+        - eyebrow
+        - title
+        - titleHighlight
+        - ctaLabel
+        - ctaHref
+        - emptyMessage
+
+    HomePartnersSectionContent:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        emptyMessage:
+          type: string
+      required:
+        - eyebrow
+        - emptyMessage
+
+    HomeLeasingCtaContent:
+      type: object
+      properties:
+        eyebrow:
+          type: string
+        title:
+          type: string
+        titleHighlight:
+          type: string
+        description:
+          type: string
+        ctaLabel:
+          type: string
+        ctaHref:
+          type: string
+        backgroundImage:
+          type: string
+      required:
+        - eyebrow
+        - title
+        - titleHighlight
+        - description
+        - ctaLabel
+        - ctaHref
+        - backgroundImage
+
+    HomeContent:
+      type: object
+      properties:
+        hero:
+          $ref: "#/components/schemas/HomeHeroContent"
+        institutional:
+          $ref: "#/components/schemas/HomeInstitutionalContent"
+        stats:
+          $ref: "#/components/schemas/HomeStatsContent"
+        featuredStores:
+          $ref: "#/components/schemas/HomeSectionHighlightContent"
+        partners:
+          $ref: "#/components/schemas/HomePartnersSectionContent"
+        blogPreview:
+          $ref: "#/components/schemas/HomeSectionHighlightContent"
+        leasingCta:
+          $ref: "#/components/schemas/HomeLeasingCtaContent"
+      required:
+        - hero
+        - institutional
+        - stats
+        - featuredStores
+        - partners
+        - blogPreview
+        - leasingCta
+
+    LeasingBenefit:
+      type: object
+      properties:
+        icon:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - icon
+        - title
+        - description
+
+    SpaceType:
+      type: object
+      properties:
+        name:
+          type: string
+        size:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - size
+        - description
+
+    Testimonial:
+      type: object
+      properties:
+        name:
+          type: string
+        store:
+          type: string
+        text:
+          type: string
+      required:
+        - name
+        - store
+        - text
+
+    AboutValue:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - title
+        - description
+
+    AboutTeamMember:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - role
+        - description
+
+    AboutContent:
+      type: object
+      properties:
+        history:
+          type: array
+          items:
+            type: string
+        mission:
+          type: string
+        vision:
+          type: string
+        values:
+          type: array
+          items:
+            $ref: "#/components/schemas/AboutValue"
+        differentials:
+          type: array
+          items:
+            type: string
+        team:
+          type: array
+          items:
+            $ref: "#/components/schemas/AboutTeamMember"
+      required:
+        - history
+        - mission
+        - vision
+        - values
+        - differentials
+        - team
+
+    SiteContentState:
+      type: object
+      properties:
+        stores:
+          type: array
+          items:
+            $ref: "#/components/schemas/Store"
+        blogPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlogPost"
+        partners:
+          type: array
+          items:
+            $ref: "#/components/schemas/Partner"
+        siteSettings:
+          $ref: "#/components/schemas/SiteSettings"
+        homeContent:
+          $ref: "#/components/schemas/HomeContent"
+        leasingBenefits:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeasingBenefit"
+        spaceTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpaceType"
+        testimonials:
+          type: array
+          items:
+            $ref: "#/components/schemas/Testimonial"
+        leasingDifferentials:
+          type: array
+          items:
+            type: string
+        aboutData:
+          $ref: "#/components/schemas/AboutContent"
+      required:
+        - stores
+        - blogPosts
+        - partners
+        - siteSettings
+        - homeContent
+        - leasingBenefits
+        - spaceTypes
+        - testimonials
+        - leasingDifferentials
+        - aboutData
+
+    ContentSectionValue:
+      anyOf:
+        - type: array
+          items:
+            $ref: "#/components/schemas/Store"
+        - type: array
+          items:
+            $ref: "#/components/schemas/BlogPost"
+        - type: array
+          items:
+            $ref: "#/components/schemas/Partner"
+        - $ref: "#/components/schemas/SiteSettings"
+        - $ref: "#/components/schemas/HomeContent"
+        - type: array
+          items:
+            $ref: "#/components/schemas/LeasingBenefit"
+        - type: array
+          items:
+            $ref: "#/components/schemas/SpaceType"
+        - type: array
+          items:
+            $ref: "#/components/schemas/Testimonial"
+        - type: array
+          items:
+            type: string
+        - $ref: "#/components/schemas/AboutContent"
+
+    ContentSectionResponse:
+      type: object
+      properties:
+        section:
+          $ref: "#/components/schemas/ContentSection"
+        value:
+          $ref: "#/components/schemas/ContentSectionValue"
+      required:
+        - section
+        - value
+
+    ContentSectionUpdateRequest:
+      type: object
+      properties:
+        value:
+          $ref: "#/components/schemas/ContentSectionValue"
+      required:
+        - value
+
+    AdminMe:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          type: string
+      required:
+        - userId
+        - email
+        - role

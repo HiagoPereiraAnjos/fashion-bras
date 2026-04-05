@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useAdminData } from '@/context/AdminDataContext';
-import { InlineNotice, SaveButton, useSaveState } from '@/features/admin/components/shared/AdminFormControls';
+import {
+  InlineNotice,
+  SaveButton,
+  useSaveState,
+} from '@/features/admin/components/shared/AdminFormControls';
 import {
   HeroSettingsCard,
   InstitutionalSettingsCard,
   SecondaryBlocksSettingsCard,
   StatsAndFeaturedSettingsCard,
 } from '@/features/admin/components/sections/home/HomeSectionCards';
-import { normalizeHomeContent, type HomeSectionErrors, validateHomeContent } from '@/features/admin/components/sections/home/homeSectionForm';
+import {
+  normalizeHomeContent,
+  type HomeSectionErrors,
+  validateHomeContent,
+} from '@/features/admin/components/sections/home/homeSectionForm';
 import type { HomePageContent } from '@/types';
 
 export default function HomeSection() {
@@ -15,7 +23,7 @@ export default function HomeSection() {
   const [form, setForm] = useState<HomePageContent>(() => ({ ...homeContent }));
   const [saveError, setSaveError] = useState<string | null>(null);
   const [errors, setErrors] = useState<HomeSectionErrors>({});
-  const { saved, trigger } = useSaveState();
+  const { saved, isSaving, trigger } = useSaveState();
 
   useEffect(() => {
     setForm({ ...homeContent });
@@ -32,7 +40,7 @@ export default function HomeSection() {
   const secondaryBlocksErrorMessage =
     errors.blogCta ?? errors.leasingCta ?? errors.leasingImage;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const normalized = normalizeHomeContent(form);
     const nextErrors = validateHomeContent(normalized);
     setErrors(nextErrors);
@@ -43,7 +51,28 @@ export default function HomeSection() {
     }
 
     setSaveError(null);
-    trigger(() => setHomeContent(normalized));
+    try {
+      await trigger(async () => setHomeContent(normalized));
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : 'Nao foi possivel salvar o conteudo da Home.',
+      );
+    }
+  };
+
+  const handleReset = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('homeContent');
+        setForm(defaults);
+        setSaveError(null);
+        setErrors({});
+      } catch (error) {
+        setSaveError(
+          error instanceof Error ? error.message : 'Nao foi possivel restaurar os padroes.',
+        );
+      }
+    })();
   };
 
   return (
@@ -52,12 +81,7 @@ export default function HomeSection() {
         form={form}
         setForm={setForm}
         errorMessage={heroErrorMessage}
-        onReset={() => {
-          const defaults = resetSection('homeContent');
-          setForm(defaults);
-          setSaveError(null);
-          setErrors({});
-        }}
+        onReset={handleReset}
       />
 
       <InstitutionalSettingsCard
@@ -79,7 +103,7 @@ export default function HomeSection() {
       />
 
       {saveError && <InlineNotice tone="error" message={saveError} />}
-      <SaveButton onClick={handleSave} saved={saved} />
+      <SaveButton onClick={handleSave} saved={saved} isSaving={isSaving} />
     </div>
   );
 }

@@ -5,18 +5,29 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  AdminMe,
+  ContentSection,
+  ContentSectionResponse,
+  ContentSectionUpdateRequest,
+  HealthStatus,
+  ProblemDetails,
+  SiteContentState,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +110,577 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get full site content snapshot
+ */
+export const getGetContentSnapshotUrl = () => {
+  return `/api/content/snapshot`;
+};
+
+export const getContentSnapshot = async (
+  options?: RequestInit,
+): Promise<SiteContentState> => {
+  return customFetch<SiteContentState>(getGetContentSnapshotUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetContentSnapshotQueryKey = () => {
+  return [`/api/content/snapshot`] as const;
+};
+
+export const getGetContentSnapshotQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentSnapshot>>,
+  TError = ErrorType<ProblemDetails>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentSnapshot>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetContentSnapshotQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentSnapshot>>
+  > = ({ signal }) => getContentSnapshot({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentSnapshot>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentSnapshotQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentSnapshot>>
+>;
+export type GetContentSnapshotQueryError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Get full site content snapshot
+ */
+
+export function useGetContentSnapshot<
+  TData = Awaited<ReturnType<typeof getContentSnapshot>>,
+  TError = ErrorType<ProblemDetails>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getContentSnapshot>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentSnapshotQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get one content section
+ */
+export const getGetContentSectionUrl = (section: ContentSection) => {
+  return `/api/content/sections/${section}`;
+};
+
+export const getContentSection = async (
+  section: ContentSection,
+  options?: RequestInit,
+): Promise<ContentSectionResponse> => {
+  return customFetch<ContentSectionResponse>(getGetContentSectionUrl(section), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetContentSectionQueryKey = (section: ContentSection) => {
+  return [`/api/content/sections/${section}`] as const;
+};
+
+export const getGetContentSectionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getContentSection>>,
+  TError = ErrorType<ProblemDetails>,
+>(
+  section: ContentSection,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getContentSection>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetContentSectionQueryKey(section);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getContentSection>>
+  > = ({ signal }) => getContentSection(section, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!section,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getContentSection>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetContentSectionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getContentSection>>
+>;
+export type GetContentSectionQueryError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Get one content section
+ */
+
+export function useGetContentSection<
+  TData = Awaited<ReturnType<typeof getContentSection>>,
+  TError = ErrorType<ProblemDetails>,
+>(
+  section: ContentSection,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getContentSection>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetContentSectionQueryOptions(section, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get current authenticated admin user
+ */
+export const getAdminMeUrl = () => {
+  return `/api/admin/me`;
+};
+
+export const adminMe = async (options?: RequestInit): Promise<AdminMe> => {
+  return customFetch<AdminMe>(getAdminMeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getAdminMeQueryKey = () => {
+  return [`/api/admin/me`] as const;
+};
+
+export const getAdminMeQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminMe>>,
+  TError = ErrorType<ProblemDetails>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof adminMe>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminMeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminMe>>> = ({
+    signal,
+  }) => adminMe({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminMe>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type AdminMeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminMe>>
+>;
+export type AdminMeQueryError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Get current authenticated admin user
+ */
+
+export function useAdminMe<
+  TData = Awaited<ReturnType<typeof adminMe>>,
+  TError = ErrorType<ProblemDetails>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof adminMe>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getAdminMeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Replace one content section
+ */
+export const getPutAdminContentSectionUrl = (section: ContentSection) => {
+  return `/api/admin/content/sections/${section}`;
+};
+
+export const putAdminContentSection = async (
+  section: ContentSection,
+  contentSectionUpdateRequest: ContentSectionUpdateRequest,
+  options?: RequestInit,
+): Promise<ContentSectionResponse> => {
+  return customFetch<ContentSectionResponse>(
+    getPutAdminContentSectionUrl(section),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(contentSectionUpdateRequest),
+    },
+  );
+};
+
+export const getPutAdminContentSectionMutationOptions = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminContentSection>>,
+    TError,
+    { section: ContentSection; data: BodyType<ContentSectionUpdateRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof putAdminContentSection>>,
+  TError,
+  { section: ContentSection; data: BodyType<ContentSectionUpdateRequest> },
+  TContext
+> => {
+  const mutationKey = ["putAdminContentSection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof putAdminContentSection>>,
+    { section: ContentSection; data: BodyType<ContentSectionUpdateRequest> }
+  > = (props) => {
+    const { section, data } = props ?? {};
+
+    return putAdminContentSection(section, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PutAdminContentSectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof putAdminContentSection>>
+>;
+export type PutAdminContentSectionMutationBody =
+  BodyType<ContentSectionUpdateRequest>;
+export type PutAdminContentSectionMutationError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Replace one content section
+ */
+export const usePutAdminContentSection = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof putAdminContentSection>>,
+    TError,
+    { section: ContentSection; data: BodyType<ContentSectionUpdateRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof putAdminContentSection>>,
+  TError,
+  { section: ContentSection; data: BodyType<ContentSectionUpdateRequest> },
+  TContext
+> => {
+  return useMutation(getPutAdminContentSectionMutationOptions(options));
+};
+
+/**
+ * @summary Reset one section to baseline defaults
+ */
+export const getPostAdminResetContentSectionUrl = (section: ContentSection) => {
+  return `/api/admin/content/reset/${section}`;
+};
+
+export const postAdminResetContentSection = async (
+  section: ContentSection,
+  options?: RequestInit,
+): Promise<ContentSectionResponse> => {
+  return customFetch<ContentSectionResponse>(
+    getPostAdminResetContentSectionUrl(section),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getPostAdminResetContentSectionMutationOptions = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminResetContentSection>>,
+    TError,
+    { section: ContentSection },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminResetContentSection>>,
+  TError,
+  { section: ContentSection },
+  TContext
+> => {
+  const mutationKey = ["postAdminResetContentSection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminResetContentSection>>,
+    { section: ContentSection }
+  > = (props) => {
+    const { section } = props ?? {};
+
+    return postAdminResetContentSection(section, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminResetContentSectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminResetContentSection>>
+>;
+
+export type PostAdminResetContentSectionMutationError =
+  ErrorType<ProblemDetails>;
+
+/**
+ * @summary Reset one section to baseline defaults
+ */
+export const usePostAdminResetContentSection = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminResetContentSection>>,
+    TError,
+    { section: ContentSection },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminResetContentSection>>,
+  TError,
+  { section: ContentSection },
+  TContext
+> => {
+  return useMutation(getPostAdminResetContentSectionMutationOptions(options));
+};
+
+/**
+ * @summary Reset all sections to baseline defaults
+ */
+export const getPostAdminResetAllContentUrl = () => {
+  return `/api/admin/content/reset-all`;
+};
+
+export const postAdminResetAllContent = async (
+  options?: RequestInit,
+): Promise<SiteContentState> => {
+  return customFetch<SiteContentState>(getPostAdminResetAllContentUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getPostAdminResetAllContentMutationOptions = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminResetAllContent>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminResetAllContent>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["postAdminResetAllContent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminResetAllContent>>,
+    void
+  > = () => {
+    return postAdminResetAllContent(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminResetAllContentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminResetAllContent>>
+>;
+
+export type PostAdminResetAllContentMutationError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Reset all sections to baseline defaults
+ */
+export const usePostAdminResetAllContent = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminResetAllContent>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminResetAllContent>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getPostAdminResetAllContentMutationOptions(options));
+};
+
+/**
+ * @summary Import full snapshot (optional migration endpoint)
+ */
+export const getPostAdminImportContentUrl = () => {
+  return `/api/admin/content/import`;
+};
+
+export const postAdminImportContent = async (
+  siteContentState: SiteContentState,
+  options?: RequestInit,
+): Promise<SiteContentState> => {
+  return customFetch<SiteContentState>(getPostAdminImportContentUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(siteContentState),
+  });
+};
+
+export const getPostAdminImportContentMutationOptions = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminImportContent>>,
+    TError,
+    { data: BodyType<SiteContentState> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminImportContent>>,
+  TError,
+  { data: BodyType<SiteContentState> },
+  TContext
+> => {
+  const mutationKey = ["postAdminImportContent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminImportContent>>,
+    { data: BodyType<SiteContentState> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminImportContent(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminImportContentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminImportContent>>
+>;
+export type PostAdminImportContentMutationBody = BodyType<SiteContentState>;
+export type PostAdminImportContentMutationError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Import full snapshot (optional migration endpoint)
+ */
+export const usePostAdminImportContent = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminImportContent>>,
+    TError,
+    { data: BodyType<SiteContentState> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminImportContent>>,
+  TError,
+  { data: BodyType<SiteContentState> },
+  TContext
+> => {
+  return useMutation(getPostAdminImportContentMutationOptions(options));
+};

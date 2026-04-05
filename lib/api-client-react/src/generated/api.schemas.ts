@@ -5,6 +5,234 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface ProblemDetails {
+  type?: string;
+  title: string;
+  status: number;
+  detail?: string;
+  instance?: string;
+}
+
 export interface HealthStatus {
   status: string;
+}
+
+export type ContentSection =
+  (typeof ContentSection)[keyof typeof ContentSection];
+
+export const ContentSection = {
+  stores: "stores",
+  blogPosts: "blogPosts",
+  partners: "partners",
+  siteSettings: "siteSettings",
+  homeContent: "homeContent",
+  leasingBenefits: "leasingBenefits",
+  spaceTypes: "spaceTypes",
+  testimonials: "testimonials",
+  leasingDifferentials: "leasingDifferentials",
+  aboutData: "aboutData",
+} as const;
+
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  segment: string;
+  segmentSlug: string;
+  floor: string;
+  description: string;
+  longDescription: string;
+  phone: string;
+  instagram: string;
+  images: string[];
+  featured?: boolean;
+}
+
+export interface BlogPost {
+  slug: string;
+  title: string;
+  category: string;
+  date: string;
+  excerpt: string;
+  content: string;
+  coverImage: string;
+  author: string;
+  readTime: string;
+  featured?: boolean;
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  logo?: string;
+}
+
+export interface SiteSettings {
+  name: string;
+  tagline: string;
+  institutionalDescription: string;
+  address: string;
+  phone: string;
+  email: string;
+  hours: string;
+  instagram: string;
+  facebook: string;
+  footerLeasingLabel: string;
+  footerLeasingHref: string;
+  footerLegalNote: string;
+  navLinks: NavLink[];
+}
+
+export interface HomeHeroSlide {
+  id?: string;
+  title: string;
+  subtitle: string;
+  cta: string;
+  href: string;
+  image: string;
+}
+
+export interface HomeHeroContent {
+  eyebrow: string;
+  slides: HomeHeroSlide[];
+}
+
+export interface HomeInstitutionalContent {
+  eyebrow: string;
+  title: string;
+  titleHighlight: string;
+  leadParagraph: string;
+  secondaryParagraph: string;
+  ctaLabel: string;
+  ctaHref: string;
+  imagePrimary: string;
+  imageSecondary: string;
+  floatingStatValue: string;
+  floatingStatLabel: string;
+}
+
+export interface HomeStatItem {
+  value: string;
+  label: string;
+}
+
+export interface HomeStatsContent {
+  backgroundWord: string;
+  items: HomeStatItem[];
+}
+
+export interface HomeSectionHighlightContent {
+  eyebrow: string;
+  title: string;
+  titleHighlight: string;
+  ctaLabel: string;
+  ctaHref: string;
+  emptyMessage: string;
+}
+
+export interface HomePartnersSectionContent {
+  eyebrow: string;
+  emptyMessage: string;
+}
+
+export interface HomeLeasingCtaContent {
+  eyebrow: string;
+  title: string;
+  titleHighlight: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  backgroundImage: string;
+}
+
+export interface HomeContent {
+  hero: HomeHeroContent;
+  institutional: HomeInstitutionalContent;
+  stats: HomeStatsContent;
+  featuredStores: HomeSectionHighlightContent;
+  partners: HomePartnersSectionContent;
+  blogPreview: HomeSectionHighlightContent;
+  leasingCta: HomeLeasingCtaContent;
+}
+
+export interface LeasingBenefit {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface SpaceType {
+  name: string;
+  size: string;
+  description: string;
+}
+
+export interface Testimonial {
+  name: string;
+  store: string;
+  text: string;
+}
+
+export interface AboutValue {
+  title: string;
+  description: string;
+}
+
+export interface AboutTeamMember {
+  name: string;
+  role: string;
+  description: string;
+}
+
+export interface AboutContent {
+  history: string[];
+  mission: string;
+  vision: string;
+  values: AboutValue[];
+  differentials: string[];
+  team: AboutTeamMember[];
+}
+
+export interface SiteContentState {
+  stores: Store[];
+  blogPosts: BlogPost[];
+  partners: Partner[];
+  siteSettings: SiteSettings;
+  homeContent: HomeContent;
+  leasingBenefits: LeasingBenefit[];
+  spaceTypes: SpaceType[];
+  testimonials: Testimonial[];
+  leasingDifferentials: string[];
+  aboutData: AboutContent;
+}
+
+export type ContentSectionValue =
+  | Store[]
+  | BlogPost[]
+  | Partner[]
+  | SiteSettings
+  | HomeContent
+  | LeasingBenefit[]
+  | SpaceType[]
+  | Testimonial[]
+  | string[]
+  | AboutContent;
+
+export interface ContentSectionResponse {
+  section: ContentSection;
+  value: ContentSectionValue;
+}
+
+export interface ContentSectionUpdateRequest {
+  value: ContentSectionValue;
+}
+
+export interface AdminMe {
+  userId: string;
+  email: string;
+  role: string;
 }

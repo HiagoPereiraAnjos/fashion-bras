@@ -54,7 +54,7 @@ export default function LeasingSection() {
     }),
   );
   const [notice, setNotice] = useState<SaveNotice>(null);
-  const { saved, trigger } = useSaveState();
+  const { saved, isSaving, trigger } = useSaveState();
 
   useEffect(() => {
     setForm(
@@ -68,39 +68,121 @@ export default function LeasingSection() {
     setNotice(null);
   }, [leasingBenefits, spaceTypes, testimonials, leasingDifferentials]);
 
-  const saveAll = () => {
+  const saveAll = async () => {
     const result = buildLeasingSectionSaveResult(form);
     if (result.error || !result.payload) {
-      setNotice({ tone: 'error', message: result.error ?? 'Falha ao salvar conteúdo de locação.' });
+      setNotice({ tone: 'error', message: result.error ?? 'Falha ao salvar conteudo de locacao.' });
       return;
     }
 
     const { benefits, spaces, testimonials: nextTestimonials, differentials, removedCount } =
       result.payload;
 
-    trigger(() => {
-      setLeasingBenefits(benefits);
-      setSpaceTypes(spaces);
-      setTestimonials(nextTestimonials);
-      setLeasingDifferentials(differentials);
+    try {
+      await trigger(async () => {
+        await setLeasingBenefits(benefits);
+        await setSpaceTypes(spaces);
+        await setTestimonials(nextTestimonials);
+        await setLeasingDifferentials(differentials);
 
-      setForm(
-        buildInitialForm({
-          benefits,
-          spaces,
-          testimonials: nextTestimonials,
-          differentials,
-        }),
-      );
-    });
+        setForm(
+          buildInitialForm({
+            benefits,
+            spaces,
+            testimonials: nextTestimonials,
+            differentials,
+          }),
+        );
+      });
 
-    setNotice({
-      tone: 'success',
-      message:
-        removedCount > 0
-          ? `${removedCount} item(ns) vazio(s) foram removidos no salvamento.`
-          : 'Conteúdo de locação atualizado com sucesso.',
-    });
+      setNotice({
+        tone: 'success',
+        message:
+          removedCount > 0
+            ? `${removedCount} item(ns) vazio(s) foram removidos no salvamento.`
+            : 'Conteudo de locacao atualizado com sucesso.',
+      });
+    } catch (error) {
+      setNotice({
+        tone: 'error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Nao foi possivel salvar o conteudo de locacao.',
+      });
+    }
+  };
+
+  const resetBenefits = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('leasingBenefits');
+        setForm((current) => ({ ...current, benefits: [...defaults] }));
+        setNotice(null);
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Nao foi possivel restaurar os beneficios padrao.',
+        });
+      }
+    })();
+  };
+
+  const resetSpaces = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('spaceTypes');
+        setForm((current) => ({ ...current, spaces: [...defaults] }));
+        setNotice(null);
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Nao foi possivel restaurar os tipos de espaco padrao.',
+        });
+      }
+    })();
+  };
+
+  const resetTestimonials = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('testimonials');
+        setForm((current) => ({ ...current, testimonials: [...defaults] }));
+        setNotice(null);
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Nao foi possivel restaurar os depoimentos padrao.',
+        });
+      }
+    })();
+  };
+
+  const resetDifferentials = () => {
+    void (async () => {
+      try {
+        const defaults = await resetSection('leasingDifferentials');
+        setForm((current) => ({ ...current, differentials: [...defaults] }));
+        setNotice(null);
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Nao foi possivel restaurar os diferenciais padrao.',
+        });
+      }
+    })();
   };
 
   return (
@@ -113,11 +195,7 @@ export default function LeasingSection() {
             benefits: typeof updater === 'function' ? updater(current.benefits) : updater,
           }))
         }
-        onReset={() => {
-          const defaults = resetSection('leasingBenefits');
-          setForm((current) => ({ ...current, benefits: [...defaults] }));
-          setNotice(null);
-        }}
+        onReset={resetBenefits}
       />
 
       <SpaceTypesCard
@@ -128,11 +206,7 @@ export default function LeasingSection() {
             spaces: typeof updater === 'function' ? updater(current.spaces) : updater,
           }))
         }
-        onReset={() => {
-          const defaults = resetSection('spaceTypes');
-          setForm((current) => ({ ...current, spaces: [...defaults] }));
-          setNotice(null);
-        }}
+        onReset={resetSpaces}
       />
 
       <TestimonialsCard
@@ -140,15 +214,10 @@ export default function LeasingSection() {
         setTestimonials={(updater) =>
           setForm((current) => ({
             ...current,
-            testimonials:
-              typeof updater === 'function' ? updater(current.testimonials) : updater,
+            testimonials: typeof updater === 'function' ? updater(current.testimonials) : updater,
           }))
         }
-        onReset={() => {
-          const defaults = resetSection('testimonials');
-          setForm((current) => ({ ...current, testimonials: [...defaults] }));
-          setNotice(null);
-        }}
+        onReset={resetTestimonials}
       />
 
       <LeasingDifferentialsCard
@@ -160,15 +229,11 @@ export default function LeasingSection() {
               typeof updater === 'function' ? updater(current.differentials) : updater,
           }))
         }
-        onReset={() => {
-          const defaults = resetSection('leasingDifferentials');
-          setForm((current) => ({ ...current, differentials: [...defaults] }));
-          setNotice(null);
-        }}
+        onReset={resetDifferentials}
       />
 
       {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
-      <SaveButton onClick={saveAll} saved={saved} />
+      <SaveButton onClick={saveAll} saved={saved} isSaving={isSaving} />
     </div>
   );
 }

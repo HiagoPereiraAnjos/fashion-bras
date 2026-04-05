@@ -4,9 +4,7 @@ import { Check, RotateCcw, Save } from 'lucide-react';
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="admin-field-label">
-        {label}
-      </label>
+      <label className="admin-field-label">{label}</label>
       {children}
     </div>
   );
@@ -82,16 +80,29 @@ export function Select({
   );
 }
 
-export function SaveButton({ onClick, saved }: { onClick: () => void; saved: boolean }) {
+export function SaveButton({
+  onClick,
+  saved,
+  isSaving = false,
+}: {
+  onClick: () => void | Promise<void>;
+  saved: boolean;
+  isSaving?: boolean;
+}) {
   return (
     <button
       onClick={onClick}
+      disabled={isSaving}
       className={`inline-flex items-center gap-2 px-5 py-2.5 text-xs font-medium uppercase tracking-wider transition-all duration-300 ${
-        saved ? 'bg-green-600 text-white' : 'bg-stone-900 text-white hover:bg-amber-700'
+        saved
+          ? 'bg-green-600 text-white'
+          : isSaving
+            ? 'bg-stone-600 text-white cursor-wait'
+            : 'bg-stone-900 text-white hover:bg-amber-700'
       }`}
     >
       {saved ? <Check size={14} /> : <Save size={14} />}
-      {saved ? 'Salvo!' : 'Salvar alterações'}
+      {saved ? 'Salvo!' : isSaving ? 'Salvando...' : 'Salvar alteracoes'}
     </button>
   );
 }
@@ -133,20 +144,26 @@ export function EmptyAdminState({
 
 export function useSaveState() {
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
-  const trigger = (action: () => void) => {
-    action();
-    setSaved(true);
+  const trigger = async (action: () => void | Promise<void>) => {
+    setIsSaving(true);
+    try {
+      await action();
+      setSaved(true);
 
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = window.setTimeout(() => {
+        setSaved(false);
+        timeoutRef.current = null;
+      }, 2500);
+    } finally {
+      setIsSaving(false);
     }
-
-    timeoutRef.current = window.setTimeout(() => {
-      setSaved(false);
-      timeoutRef.current = null;
-    }, 2500);
   };
 
   useEffect(() => {
@@ -157,7 +174,7 @@ export function useSaveState() {
     };
   }, []);
 
-  return { saved, trigger };
+  return { saved, isSaving, trigger };
 }
 
 export function SectionCard({
@@ -179,7 +196,7 @@ export function SectionCard({
             className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-red-500 transition-colors"
           >
             <RotateCcw size={12} />
-            Restaurar padrão
+            Restaurar padrao
           </button>
         )}
       </div>

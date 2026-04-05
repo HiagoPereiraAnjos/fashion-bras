@@ -49,6 +49,12 @@ export const seoPagePresets = {
     canonicalPath: '/admin',
     noIndex: true,
   },
+  adminLogin: {
+    title: 'Login Administrativo',
+    description: 'Acesso ao painel de administracao do Fashion Bras.',
+    canonicalPath: '/admin/login',
+    noIndex: true,
+  },
   notFound: {
     title: 'Pagina nao encontrada',
     description: 'A pagina solicitada nao foi encontrada no Fashion Bras.',

@@ -14,3 +14,1447 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Get full site content snapshot
+ */
+export const GetContentSnapshotResponse = zod.object({
+  stores: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      segment: zod.string(),
+      segmentSlug: zod.string(),
+      floor: zod.string(),
+      description: zod.string(),
+      longDescription: zod.string(),
+      phone: zod.string(),
+      instagram: zod.string(),
+      images: zod.array(zod.string()),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  blogPosts: zod.array(
+    zod.object({
+      slug: zod.string(),
+      title: zod.string(),
+      category: zod.string(),
+      date: zod.string(),
+      excerpt: zod.string(),
+      content: zod.string(),
+      coverImage: zod.string(),
+      author: zod.string(),
+      readTime: zod.string(),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  partners: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      logo: zod.string().optional(),
+    }),
+  ),
+  siteSettings: zod.object({
+    name: zod.string(),
+    tagline: zod.string(),
+    institutionalDescription: zod.string(),
+    address: zod.string(),
+    phone: zod.string(),
+    email: zod.string(),
+    hours: zod.string(),
+    instagram: zod.string(),
+    facebook: zod.string(),
+    footerLeasingLabel: zod.string(),
+    footerLeasingHref: zod.string(),
+    footerLegalNote: zod.string(),
+    navLinks: zod.array(
+      zod.object({
+        label: zod.string(),
+        href: zod.string(),
+      }),
+    ),
+  }),
+  homeContent: zod.object({
+    hero: zod.object({
+      eyebrow: zod.string(),
+      slides: zod.array(
+        zod.object({
+          id: zod.string().optional(),
+          title: zod.string(),
+          subtitle: zod.string(),
+          cta: zod.string(),
+          href: zod.string(),
+          image: zod.string(),
+        }),
+      ),
+    }),
+    institutional: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      leadParagraph: zod.string(),
+      secondaryParagraph: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      imagePrimary: zod.string(),
+      imageSecondary: zod.string(),
+      floatingStatValue: zod.string(),
+      floatingStatLabel: zod.string(),
+    }),
+    stats: zod.object({
+      backgroundWord: zod.string(),
+      items: zod.array(
+        zod.object({
+          value: zod.string(),
+          label: zod.string(),
+        }),
+      ),
+    }),
+    featuredStores: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    partners: zod.object({
+      eyebrow: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    blogPreview: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    leasingCta: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      description: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      backgroundImage: zod.string(),
+    }),
+  }),
+  leasingBenefits: zod.array(
+    zod.object({
+      icon: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  spaceTypes: zod.array(
+    zod.object({
+      name: zod.string(),
+      size: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  testimonials: zod.array(
+    zod.object({
+      name: zod.string(),
+      store: zod.string(),
+      text: zod.string(),
+    }),
+  ),
+  leasingDifferentials: zod.array(zod.string()),
+  aboutData: zod.object({
+    history: zod.array(zod.string()),
+    mission: zod.string(),
+    vision: zod.string(),
+    values: zod.array(
+      zod.object({
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    differentials: zod.array(zod.string()),
+    team: zod.array(
+      zod.object({
+        name: zod.string(),
+        role: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+  }),
+});
+
+/**
+ * @summary Get one content section
+ */
+export const GetContentSectionParams = zod.object({
+  section: zod.enum([
+    "stores",
+    "blogPosts",
+    "partners",
+    "siteSettings",
+    "homeContent",
+    "leasingBenefits",
+    "spaceTypes",
+    "testimonials",
+    "leasingDifferentials",
+    "aboutData",
+  ]),
+});
+
+export const GetContentSectionResponse = zod.object({
+  section: zod.enum([
+    "stores",
+    "blogPosts",
+    "partners",
+    "siteSettings",
+    "homeContent",
+    "leasingBenefits",
+    "spaceTypes",
+    "testimonials",
+    "leasingDifferentials",
+    "aboutData",
+  ]),
+  value: zod.union([
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        segment: zod.string(),
+        segmentSlug: zod.string(),
+        floor: zod.string(),
+        description: zod.string(),
+        longDescription: zod.string(),
+        phone: zod.string(),
+        instagram: zod.string(),
+        images: zod.array(zod.string()),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        slug: zod.string(),
+        title: zod.string(),
+        category: zod.string(),
+        date: zod.string(),
+        excerpt: zod.string(),
+        content: zod.string(),
+        coverImage: zod.string(),
+        author: zod.string(),
+        readTime: zod.string(),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        logo: zod.string().optional(),
+      }),
+    ),
+    zod.object({
+      name: zod.string(),
+      tagline: zod.string(),
+      institutionalDescription: zod.string(),
+      address: zod.string(),
+      phone: zod.string(),
+      email: zod.string(),
+      hours: zod.string(),
+      instagram: zod.string(),
+      facebook: zod.string(),
+      footerLeasingLabel: zod.string(),
+      footerLeasingHref: zod.string(),
+      footerLegalNote: zod.string(),
+      navLinks: zod.array(
+        zod.object({
+          label: zod.string(),
+          href: zod.string(),
+        }),
+      ),
+    }),
+    zod.object({
+      hero: zod.object({
+        eyebrow: zod.string(),
+        slides: zod.array(
+          zod.object({
+            id: zod.string().optional(),
+            title: zod.string(),
+            subtitle: zod.string(),
+            cta: zod.string(),
+            href: zod.string(),
+            image: zod.string(),
+          }),
+        ),
+      }),
+      institutional: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        leadParagraph: zod.string(),
+        secondaryParagraph: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        imagePrimary: zod.string(),
+        imageSecondary: zod.string(),
+        floatingStatValue: zod.string(),
+        floatingStatLabel: zod.string(),
+      }),
+      stats: zod.object({
+        backgroundWord: zod.string(),
+        items: zod.array(
+          zod.object({
+            value: zod.string(),
+            label: zod.string(),
+          }),
+        ),
+      }),
+      featuredStores: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      partners: zod.object({
+        eyebrow: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      blogPreview: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      leasingCta: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        description: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        backgroundImage: zod.string(),
+      }),
+    }),
+    zod.array(
+      zod.object({
+        icon: zod.string(),
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        size: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        store: zod.string(),
+        text: zod.string(),
+      }),
+    ),
+    zod.array(zod.string()),
+    zod.object({
+      history: zod.array(zod.string()),
+      mission: zod.string(),
+      vision: zod.string(),
+      values: zod.array(
+        zod.object({
+          title: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+      differentials: zod.array(zod.string()),
+      team: zod.array(
+        zod.object({
+          name: zod.string(),
+          role: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+    }),
+  ]),
+});
+
+/**
+ * @summary Get current authenticated admin user
+ */
+export const AdminMeResponse = zod.object({
+  userId: zod.string().uuid(),
+  email: zod.string(),
+  role: zod.string(),
+});
+
+/**
+ * @summary Replace one content section
+ */
+export const PutAdminContentSectionParams = zod.object({
+  section: zod.enum([
+    "stores",
+    "blogPosts",
+    "partners",
+    "siteSettings",
+    "homeContent",
+    "leasingBenefits",
+    "spaceTypes",
+    "testimonials",
+    "leasingDifferentials",
+    "aboutData",
+  ]),
+});
+
+export const PutAdminContentSectionBody = zod.object({
+  value: zod.union([
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        segment: zod.string(),
+        segmentSlug: zod.string(),
+        floor: zod.string(),
+        description: zod.string(),
+        longDescription: zod.string(),
+        phone: zod.string(),
+        instagram: zod.string(),
+        images: zod.array(zod.string()),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        slug: zod.string(),
+        title: zod.string(),
+        category: zod.string(),
+        date: zod.string(),
+        excerpt: zod.string(),
+        content: zod.string(),
+        coverImage: zod.string(),
+        author: zod.string(),
+        readTime: zod.string(),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        logo: zod.string().optional(),
+      }),
+    ),
+    zod.object({
+      name: zod.string(),
+      tagline: zod.string(),
+      institutionalDescription: zod.string(),
+      address: zod.string(),
+      phone: zod.string(),
+      email: zod.string(),
+      hours: zod.string(),
+      instagram: zod.string(),
+      facebook: zod.string(),
+      footerLeasingLabel: zod.string(),
+      footerLeasingHref: zod.string(),
+      footerLegalNote: zod.string(),
+      navLinks: zod.array(
+        zod.object({
+          label: zod.string(),
+          href: zod.string(),
+        }),
+      ),
+    }),
+    zod.object({
+      hero: zod.object({
+        eyebrow: zod.string(),
+        slides: zod.array(
+          zod.object({
+            id: zod.string().optional(),
+            title: zod.string(),
+            subtitle: zod.string(),
+            cta: zod.string(),
+            href: zod.string(),
+            image: zod.string(),
+          }),
+        ),
+      }),
+      institutional: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        leadParagraph: zod.string(),
+        secondaryParagraph: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        imagePrimary: zod.string(),
+        imageSecondary: zod.string(),
+        floatingStatValue: zod.string(),
+        floatingStatLabel: zod.string(),
+      }),
+      stats: zod.object({
+        backgroundWord: zod.string(),
+        items: zod.array(
+          zod.object({
+            value: zod.string(),
+            label: zod.string(),
+          }),
+        ),
+      }),
+      featuredStores: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      partners: zod.object({
+        eyebrow: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      blogPreview: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      leasingCta: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        description: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        backgroundImage: zod.string(),
+      }),
+    }),
+    zod.array(
+      zod.object({
+        icon: zod.string(),
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        size: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        store: zod.string(),
+        text: zod.string(),
+      }),
+    ),
+    zod.array(zod.string()),
+    zod.object({
+      history: zod.array(zod.string()),
+      mission: zod.string(),
+      vision: zod.string(),
+      values: zod.array(
+        zod.object({
+          title: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+      differentials: zod.array(zod.string()),
+      team: zod.array(
+        zod.object({
+          name: zod.string(),
+          role: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+    }),
+  ]),
+});
+
+export const PutAdminContentSectionResponse = zod.object({
+  section: zod.enum([
+    "stores",
+    "blogPosts",
+    "partners",
+    "siteSettings",
+    "homeContent",
+    "leasingBenefits",
+    "spaceTypes",
+    "testimonials",
+    "leasingDifferentials",
+    "aboutData",
+  ]),
+  value: zod.union([
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        segment: zod.string(),
+        segmentSlug: zod.string(),
+        floor: zod.string(),
+        description: zod.string(),
+        longDescription: zod.string(),
+        phone: zod.string(),
+        instagram: zod.string(),
+        images: zod.array(zod.string()),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        slug: zod.string(),
+        title: zod.string(),
+        category: zod.string(),
+        date: zod.string(),
+        excerpt: zod.string(),
+        content: zod.string(),
+        coverImage: zod.string(),
+        author: zod.string(),
+        readTime: zod.string(),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        logo: zod.string().optional(),
+      }),
+    ),
+    zod.object({
+      name: zod.string(),
+      tagline: zod.string(),
+      institutionalDescription: zod.string(),
+      address: zod.string(),
+      phone: zod.string(),
+      email: zod.string(),
+      hours: zod.string(),
+      instagram: zod.string(),
+      facebook: zod.string(),
+      footerLeasingLabel: zod.string(),
+      footerLeasingHref: zod.string(),
+      footerLegalNote: zod.string(),
+      navLinks: zod.array(
+        zod.object({
+          label: zod.string(),
+          href: zod.string(),
+        }),
+      ),
+    }),
+    zod.object({
+      hero: zod.object({
+        eyebrow: zod.string(),
+        slides: zod.array(
+          zod.object({
+            id: zod.string().optional(),
+            title: zod.string(),
+            subtitle: zod.string(),
+            cta: zod.string(),
+            href: zod.string(),
+            image: zod.string(),
+          }),
+        ),
+      }),
+      institutional: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        leadParagraph: zod.string(),
+        secondaryParagraph: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        imagePrimary: zod.string(),
+        imageSecondary: zod.string(),
+        floatingStatValue: zod.string(),
+        floatingStatLabel: zod.string(),
+      }),
+      stats: zod.object({
+        backgroundWord: zod.string(),
+        items: zod.array(
+          zod.object({
+            value: zod.string(),
+            label: zod.string(),
+          }),
+        ),
+      }),
+      featuredStores: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      partners: zod.object({
+        eyebrow: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      blogPreview: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      leasingCta: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        description: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        backgroundImage: zod.string(),
+      }),
+    }),
+    zod.array(
+      zod.object({
+        icon: zod.string(),
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        size: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        store: zod.string(),
+        text: zod.string(),
+      }),
+    ),
+    zod.array(zod.string()),
+    zod.object({
+      history: zod.array(zod.string()),
+      mission: zod.string(),
+      vision: zod.string(),
+      values: zod.array(
+        zod.object({
+          title: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+      differentials: zod.array(zod.string()),
+      team: zod.array(
+        zod.object({
+          name: zod.string(),
+          role: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+    }),
+  ]),
+});
+
+/**
+ * @summary Reset one section to baseline defaults
+ */
+export const PostAdminResetContentSectionParams = zod.object({
+  section: zod.enum([
+    "stores",
+    "blogPosts",
+    "partners",
+    "siteSettings",
+    "homeContent",
+    "leasingBenefits",
+    "spaceTypes",
+    "testimonials",
+    "leasingDifferentials",
+    "aboutData",
+  ]),
+});
+
+export const PostAdminResetContentSectionResponse = zod.object({
+  section: zod.enum([
+    "stores",
+    "blogPosts",
+    "partners",
+    "siteSettings",
+    "homeContent",
+    "leasingBenefits",
+    "spaceTypes",
+    "testimonials",
+    "leasingDifferentials",
+    "aboutData",
+  ]),
+  value: zod.union([
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        segment: zod.string(),
+        segmentSlug: zod.string(),
+        floor: zod.string(),
+        description: zod.string(),
+        longDescription: zod.string(),
+        phone: zod.string(),
+        instagram: zod.string(),
+        images: zod.array(zod.string()),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        slug: zod.string(),
+        title: zod.string(),
+        category: zod.string(),
+        date: zod.string(),
+        excerpt: zod.string(),
+        content: zod.string(),
+        coverImage: zod.string(),
+        author: zod.string(),
+        readTime: zod.string(),
+        featured: zod.boolean().optional(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        logo: zod.string().optional(),
+      }),
+    ),
+    zod.object({
+      name: zod.string(),
+      tagline: zod.string(),
+      institutionalDescription: zod.string(),
+      address: zod.string(),
+      phone: zod.string(),
+      email: zod.string(),
+      hours: zod.string(),
+      instagram: zod.string(),
+      facebook: zod.string(),
+      footerLeasingLabel: zod.string(),
+      footerLeasingHref: zod.string(),
+      footerLegalNote: zod.string(),
+      navLinks: zod.array(
+        zod.object({
+          label: zod.string(),
+          href: zod.string(),
+        }),
+      ),
+    }),
+    zod.object({
+      hero: zod.object({
+        eyebrow: zod.string(),
+        slides: zod.array(
+          zod.object({
+            id: zod.string().optional(),
+            title: zod.string(),
+            subtitle: zod.string(),
+            cta: zod.string(),
+            href: zod.string(),
+            image: zod.string(),
+          }),
+        ),
+      }),
+      institutional: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        leadParagraph: zod.string(),
+        secondaryParagraph: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        imagePrimary: zod.string(),
+        imageSecondary: zod.string(),
+        floatingStatValue: zod.string(),
+        floatingStatLabel: zod.string(),
+      }),
+      stats: zod.object({
+        backgroundWord: zod.string(),
+        items: zod.array(
+          zod.object({
+            value: zod.string(),
+            label: zod.string(),
+          }),
+        ),
+      }),
+      featuredStores: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      partners: zod.object({
+        eyebrow: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      blogPreview: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        emptyMessage: zod.string(),
+      }),
+      leasingCta: zod.object({
+        eyebrow: zod.string(),
+        title: zod.string(),
+        titleHighlight: zod.string(),
+        description: zod.string(),
+        ctaLabel: zod.string(),
+        ctaHref: zod.string(),
+        backgroundImage: zod.string(),
+      }),
+    }),
+    zod.array(
+      zod.object({
+        icon: zod.string(),
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        size: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    zod.array(
+      zod.object({
+        name: zod.string(),
+        store: zod.string(),
+        text: zod.string(),
+      }),
+    ),
+    zod.array(zod.string()),
+    zod.object({
+      history: zod.array(zod.string()),
+      mission: zod.string(),
+      vision: zod.string(),
+      values: zod.array(
+        zod.object({
+          title: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+      differentials: zod.array(zod.string()),
+      team: zod.array(
+        zod.object({
+          name: zod.string(),
+          role: zod.string(),
+          description: zod.string(),
+        }),
+      ),
+    }),
+  ]),
+});
+
+/**
+ * @summary Reset all sections to baseline defaults
+ */
+export const PostAdminResetAllContentResponse = zod.object({
+  stores: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      segment: zod.string(),
+      segmentSlug: zod.string(),
+      floor: zod.string(),
+      description: zod.string(),
+      longDescription: zod.string(),
+      phone: zod.string(),
+      instagram: zod.string(),
+      images: zod.array(zod.string()),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  blogPosts: zod.array(
+    zod.object({
+      slug: zod.string(),
+      title: zod.string(),
+      category: zod.string(),
+      date: zod.string(),
+      excerpt: zod.string(),
+      content: zod.string(),
+      coverImage: zod.string(),
+      author: zod.string(),
+      readTime: zod.string(),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  partners: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      logo: zod.string().optional(),
+    }),
+  ),
+  siteSettings: zod.object({
+    name: zod.string(),
+    tagline: zod.string(),
+    institutionalDescription: zod.string(),
+    address: zod.string(),
+    phone: zod.string(),
+    email: zod.string(),
+    hours: zod.string(),
+    instagram: zod.string(),
+    facebook: zod.string(),
+    footerLeasingLabel: zod.string(),
+    footerLeasingHref: zod.string(),
+    footerLegalNote: zod.string(),
+    navLinks: zod.array(
+      zod.object({
+        label: zod.string(),
+        href: zod.string(),
+      }),
+    ),
+  }),
+  homeContent: zod.object({
+    hero: zod.object({
+      eyebrow: zod.string(),
+      slides: zod.array(
+        zod.object({
+          id: zod.string().optional(),
+          title: zod.string(),
+          subtitle: zod.string(),
+          cta: zod.string(),
+          href: zod.string(),
+          image: zod.string(),
+        }),
+      ),
+    }),
+    institutional: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      leadParagraph: zod.string(),
+      secondaryParagraph: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      imagePrimary: zod.string(),
+      imageSecondary: zod.string(),
+      floatingStatValue: zod.string(),
+      floatingStatLabel: zod.string(),
+    }),
+    stats: zod.object({
+      backgroundWord: zod.string(),
+      items: zod.array(
+        zod.object({
+          value: zod.string(),
+          label: zod.string(),
+        }),
+      ),
+    }),
+    featuredStores: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    partners: zod.object({
+      eyebrow: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    blogPreview: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    leasingCta: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      description: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      backgroundImage: zod.string(),
+    }),
+  }),
+  leasingBenefits: zod.array(
+    zod.object({
+      icon: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  spaceTypes: zod.array(
+    zod.object({
+      name: zod.string(),
+      size: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  testimonials: zod.array(
+    zod.object({
+      name: zod.string(),
+      store: zod.string(),
+      text: zod.string(),
+    }),
+  ),
+  leasingDifferentials: zod.array(zod.string()),
+  aboutData: zod.object({
+    history: zod.array(zod.string()),
+    mission: zod.string(),
+    vision: zod.string(),
+    values: zod.array(
+      zod.object({
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    differentials: zod.array(zod.string()),
+    team: zod.array(
+      zod.object({
+        name: zod.string(),
+        role: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+  }),
+});
+
+/**
+ * @summary Import full snapshot (optional migration endpoint)
+ */
+export const PostAdminImportContentBody = zod.object({
+  stores: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      segment: zod.string(),
+      segmentSlug: zod.string(),
+      floor: zod.string(),
+      description: zod.string(),
+      longDescription: zod.string(),
+      phone: zod.string(),
+      instagram: zod.string(),
+      images: zod.array(zod.string()),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  blogPosts: zod.array(
+    zod.object({
+      slug: zod.string(),
+      title: zod.string(),
+      category: zod.string(),
+      date: zod.string(),
+      excerpt: zod.string(),
+      content: zod.string(),
+      coverImage: zod.string(),
+      author: zod.string(),
+      readTime: zod.string(),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  partners: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      logo: zod.string().optional(),
+    }),
+  ),
+  siteSettings: zod.object({
+    name: zod.string(),
+    tagline: zod.string(),
+    institutionalDescription: zod.string(),
+    address: zod.string(),
+    phone: zod.string(),
+    email: zod.string(),
+    hours: zod.string(),
+    instagram: zod.string(),
+    facebook: zod.string(),
+    footerLeasingLabel: zod.string(),
+    footerLeasingHref: zod.string(),
+    footerLegalNote: zod.string(),
+    navLinks: zod.array(
+      zod.object({
+        label: zod.string(),
+        href: zod.string(),
+      }),
+    ),
+  }),
+  homeContent: zod.object({
+    hero: zod.object({
+      eyebrow: zod.string(),
+      slides: zod.array(
+        zod.object({
+          id: zod.string().optional(),
+          title: zod.string(),
+          subtitle: zod.string(),
+          cta: zod.string(),
+          href: zod.string(),
+          image: zod.string(),
+        }),
+      ),
+    }),
+    institutional: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      leadParagraph: zod.string(),
+      secondaryParagraph: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      imagePrimary: zod.string(),
+      imageSecondary: zod.string(),
+      floatingStatValue: zod.string(),
+      floatingStatLabel: zod.string(),
+    }),
+    stats: zod.object({
+      backgroundWord: zod.string(),
+      items: zod.array(
+        zod.object({
+          value: zod.string(),
+          label: zod.string(),
+        }),
+      ),
+    }),
+    featuredStores: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    partners: zod.object({
+      eyebrow: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    blogPreview: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    leasingCta: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      description: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      backgroundImage: zod.string(),
+    }),
+  }),
+  leasingBenefits: zod.array(
+    zod.object({
+      icon: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  spaceTypes: zod.array(
+    zod.object({
+      name: zod.string(),
+      size: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  testimonials: zod.array(
+    zod.object({
+      name: zod.string(),
+      store: zod.string(),
+      text: zod.string(),
+    }),
+  ),
+  leasingDifferentials: zod.array(zod.string()),
+  aboutData: zod.object({
+    history: zod.array(zod.string()),
+    mission: zod.string(),
+    vision: zod.string(),
+    values: zod.array(
+      zod.object({
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    differentials: zod.array(zod.string()),
+    team: zod.array(
+      zod.object({
+        name: zod.string(),
+        role: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+  }),
+});
+
+export const PostAdminImportContentResponse = zod.object({
+  stores: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      segment: zod.string(),
+      segmentSlug: zod.string(),
+      floor: zod.string(),
+      description: zod.string(),
+      longDescription: zod.string(),
+      phone: zod.string(),
+      instagram: zod.string(),
+      images: zod.array(zod.string()),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  blogPosts: zod.array(
+    zod.object({
+      slug: zod.string(),
+      title: zod.string(),
+      category: zod.string(),
+      date: zod.string(),
+      excerpt: zod.string(),
+      content: zod.string(),
+      coverImage: zod.string(),
+      author: zod.string(),
+      readTime: zod.string(),
+      featured: zod.boolean().optional(),
+    }),
+  ),
+  partners: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      logo: zod.string().optional(),
+    }),
+  ),
+  siteSettings: zod.object({
+    name: zod.string(),
+    tagline: zod.string(),
+    institutionalDescription: zod.string(),
+    address: zod.string(),
+    phone: zod.string(),
+    email: zod.string(),
+    hours: zod.string(),
+    instagram: zod.string(),
+    facebook: zod.string(),
+    footerLeasingLabel: zod.string(),
+    footerLeasingHref: zod.string(),
+    footerLegalNote: zod.string(),
+    navLinks: zod.array(
+      zod.object({
+        label: zod.string(),
+        href: zod.string(),
+      }),
+    ),
+  }),
+  homeContent: zod.object({
+    hero: zod.object({
+      eyebrow: zod.string(),
+      slides: zod.array(
+        zod.object({
+          id: zod.string().optional(),
+          title: zod.string(),
+          subtitle: zod.string(),
+          cta: zod.string(),
+          href: zod.string(),
+          image: zod.string(),
+        }),
+      ),
+    }),
+    institutional: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      leadParagraph: zod.string(),
+      secondaryParagraph: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      imagePrimary: zod.string(),
+      imageSecondary: zod.string(),
+      floatingStatValue: zod.string(),
+      floatingStatLabel: zod.string(),
+    }),
+    stats: zod.object({
+      backgroundWord: zod.string(),
+      items: zod.array(
+        zod.object({
+          value: zod.string(),
+          label: zod.string(),
+        }),
+      ),
+    }),
+    featuredStores: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    partners: zod.object({
+      eyebrow: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    blogPreview: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      emptyMessage: zod.string(),
+    }),
+    leasingCta: zod.object({
+      eyebrow: zod.string(),
+      title: zod.string(),
+      titleHighlight: zod.string(),
+      description: zod.string(),
+      ctaLabel: zod.string(),
+      ctaHref: zod.string(),
+      backgroundImage: zod.string(),
+    }),
+  }),
+  leasingBenefits: zod.array(
+    zod.object({
+      icon: zod.string(),
+      title: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  spaceTypes: zod.array(
+    zod.object({
+      name: zod.string(),
+      size: zod.string(),
+      description: zod.string(),
+    }),
+  ),
+  testimonials: zod.array(
+    zod.object({
+      name: zod.string(),
+      store: zod.string(),
+      text: zod.string(),
+    }),
+  ),
+  leasingDifferentials: zod.array(zod.string()),
+  aboutData: zod.object({
+    history: zod.array(zod.string()),
+    mission: zod.string(),
+    vision: zod.string(),
+    values: zod.array(
+      zod.object({
+        title: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+    differentials: zod.array(zod.string()),
+    team: zod.array(
+      zod.object({
+        name: zod.string(),
+        role: zod.string(),
+        description: zod.string(),
+      }),
+    ),
+  }),
+});

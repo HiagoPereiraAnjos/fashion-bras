@@ -5,7 +5,10 @@ import { useAdminData } from '@/context/AdminDataContext';
 import { BLOG_ALL_CATEGORY } from '@/services/content/defaults';
 import { AdminCollectionHeader } from '@/features/admin/components/shared/AdminCollectionHeader';
 import { AdminCreateButton } from '@/features/admin/components/shared/AdminCreateButton';
-import { EmptyAdminState } from '@/features/admin/components/shared/AdminFormControls';
+import {
+  EmptyAdminState,
+  InlineNotice,
+} from '@/features/admin/components/shared/AdminFormControls';
 import { BlogPostEditorModal } from '@/features/admin/components/sections/blog/BlogPostEditorModal';
 import {
   buildNewBlogPostDraft,
@@ -13,32 +16,85 @@ import {
 } from '@/features/admin/components/sections/blog/blogPostForm';
 import type { BlogPost, BlogPostFormData } from '@/types';
 
+type SaveNotice = { tone: 'success' | 'error'; message: string } | null;
+
 export default function BlogSection() {
   const { blogPosts, setBlogPosts, resetSection, blogCategories } = useAdminData();
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [saved, setSaved] = useState(false);
+  const [notice, setNotice] = useState<SaveNotice>(null);
   const defaultCategory =
     blogCategories.find((category) => category !== BLOG_ALL_CATEGORY) ??
     blogPosts[0]?.category ??
     'Categoria';
 
-  const savePost = (updated: BlogPostFormData) => {
-    const normalizedPost = toBlogPostEntity(updated);
-    setBlogPosts(blogPosts.map((post) => (post.slug === normalizedPost.slug ? normalizedPost : post)));
+  const toggleSaved = () => {
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    window.setTimeout(() => setSaved(false), 2000);
+  };
+
+  const savePost = async (updated: BlogPostFormData) => {
+    const normalizedPost = toBlogPostEntity(updated);
+    await setBlogPosts(
+      blogPosts.map((post) => (post.slug === normalizedPost.slug ? normalizedPost : post)),
+    );
+    toggleSaved();
+    setNotice({ tone: 'success', message: 'Artigo salvo com sucesso.' });
   };
 
   const deletePost = (slug: string) => {
-    if (confirm('Remover este artigo?')) {
-      setBlogPosts(blogPosts.filter((post) => post.slug !== slug));
-    }
+    void (async () => {
+      if (!confirm('Remover este artigo?')) return;
+      try {
+        await setBlogPosts(blogPosts.filter((post) => post.slug !== slug));
+        toggleSaved();
+        setNotice({ tone: 'success', message: 'Artigo removido com sucesso.' });
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error ? error.message : 'Nao foi possivel remover o artigo agora.',
+        });
+      }
+    })();
   };
 
   const addPost = () => {
-    const newPost = buildNewBlogPostDraft(defaultCategory);
-    setBlogPosts([...blogPosts, newPost]);
-    setEditing(newPost);
+    void (async () => {
+      const newPost = buildNewBlogPostDraft(defaultCategory);
+      try {
+        await setBlogPosts([...blogPosts, newPost]);
+        setEditing(newPost);
+        toggleSaved();
+        setNotice({
+          tone: 'success',
+          message: 'Novo artigo criado. Complete os campos no editor.',
+        });
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error ? error.message : 'Nao foi possivel criar um novo artigo.',
+        });
+      }
+    })();
+  };
+
+  const resetBlog = () => {
+    void (async () => {
+      try {
+        await resetSection('blogPosts');
+        setNotice({ tone: 'success', message: 'Lista de artigos restaurada para o padrao.' });
+      } catch (error) {
+        setNotice({
+          tone: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Nao foi possivel restaurar os artigos padrao.',
+        });
+      }
+    })();
   };
 
   return (
@@ -46,21 +102,26 @@ export default function BlogSection() {
       <AdminCollectionHeader
         countLabel={`${blogPosts.length} artigos`}
         saved={saved}
-        onReset={() => resetSection('blogPosts')}
+        onReset={resetBlog}
         onCreate={addPost}
         createLabel="Novo Artigo"
       />
+
+      {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
 
       <div className="space-y-2">
         {blogPosts.length === 0 ? (
           <EmptyAdminState
             title="Nenhum artigo cadastrado"
-            description="Crie conteúdos para alimentar a página de blog e o destaque da home."
+            description="Crie conteudos para alimentar a pagina de blog e o destaque da home."
             action={<AdminCreateButton onClick={addPost} label="Novo Artigo" />}
           />
         ) : (
           blogPosts.map((post) => (
-            <div key={post.slug} className="flex items-center gap-4 bg-white border border-stone-100 p-4">
+            <div
+              key={post.slug}
+              className="flex items-center gap-4 bg-white border border-stone-100 p-4"
+            >
               <img
                 src={
                   post.coverImage ||
@@ -72,7 +133,7 @@ export default function BlogSection() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-stone-800 text-sm truncate">
-                    {post.title || 'Sem título'}
+                    {post.title || 'Sem titulo'}
                   </p>
                   {post.featured && (
                     <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 shrink-0">
@@ -81,8 +142,8 @@ export default function BlogSection() {
                   )}
                 </div>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  {post.category || 'Sem categoria'} · {post.date || 'Data não informada'} ·{' '}
-                  {post.readTime || 'Tempo não informado'}
+                  {post.category || 'Sem categoria'} · {post.date || 'Data nao informada'} ·{' '}
+                  {post.readTime || 'Tempo nao informado'}
                 </p>
                 <p className="text-xs text-stone-500 mt-1 truncate">
                   {post.excerpt || 'Sem resumo.'}

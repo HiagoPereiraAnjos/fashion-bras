@@ -10,6 +10,7 @@ import {
   mapStoredToDomainSectionValue,
 } from '@/services/content/mappers/contentStorageMapper';
 import type { ContentRepository } from '@/services/content/repositories/ContentRepository';
+import { getDefaultSection } from '@/services/content/defaults';
 import { CONTENT_SECTIONS, type ContentSection, type ContentState } from '@/types';
 
 const DEFAULT_STORAGE_NAMESPACE = 'fashionbras_admin_data';
@@ -29,12 +30,19 @@ export function createLocalContentRepository(
     return mapStoredToDomainSectionValue(section, storedValue);
   };
 
-  const saveSection = <K extends ContentSection>(section: K, value: ContentState[K]) => {
+  const saveSection = async <K extends ContentSection>(
+    section: K,
+    value: ContentState[K],
+  ): Promise<ContentState[K]> => {
     writeJson(resolvedStorage, sectionKey(section), mapDomainToStoredValue(value));
+    return value;
   };
 
-  const removeSection = (section: ContentSection) => {
+  const removeSection = async <K extends ContentSection>(
+    section: K,
+  ): Promise<ContentState[K]> => {
     removeKey(resolvedStorage, sectionKey(section));
+    return getDefaultSection(section);
   };
 
   const hasStoredSection = (section: ContentSection): boolean => {
@@ -49,10 +57,23 @@ export function createLocalContentRepository(
 
   const hasAnyStoredSection = () => CONTENT_SECTIONS.some(hasStoredSection);
 
-  const clearAll = () => {
+  const clearAll = async (): Promise<ContentState> => {
     for (const section of CONTENT_SECTIONS) {
-      removeSection(section);
+      await removeSection(section);
     }
+
+    return {
+      stores: getDefaultSection('stores'),
+      blogPosts: getDefaultSection('blogPosts'),
+      partners: getDefaultSection('partners'),
+      siteSettings: getDefaultSection('siteSettings'),
+      homeContent: getDefaultSection('homeContent'),
+      leasingBenefits: getDefaultSection('leasingBenefits'),
+      spaceTypes: getDefaultSection('spaceTypes'),
+      testimonials: getDefaultSection('testimonials'),
+      leasingDifferentials: getDefaultSection('leasingDifferentials'),
+      aboutData: getDefaultSection('aboutData'),
+    };
   };
 
   return {

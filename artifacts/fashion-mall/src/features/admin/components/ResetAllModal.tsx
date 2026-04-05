@@ -5,10 +5,12 @@ export function ResetAllModal({
   open,
   onCancel,
   onConfirm,
+  isProcessing = false,
 }: {
   open: boolean;
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
+  isProcessing?: boolean;
 }) {
   return (
     <AnimatePresence>
@@ -30,21 +32,23 @@ export function ResetAllModal({
               <h3 className="font-serif text-xl font-bold text-stone-900">Resetar tudo?</h3>
             </div>
             <p className="text-stone-500 text-sm mb-6">
-              Todas as suas personalizações serão removidas e o conteúdo padrão será restaurado.
-              Esta ação não pode ser desfeita.
+              Todas as personalizacoes serao removidas e o conteudo padrao sera restaurado. Esta
+              acao nao pode ser desfeita.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={onCancel}
-                className="flex-1 border border-stone-200 py-2.5 text-xs uppercase tracking-wider text-stone-600 hover:border-stone-400"
+                className="flex-1 border border-stone-200 py-2.5 text-xs uppercase tracking-wider text-stone-600 hover:border-stone-400 disabled:opacity-50"
+                disabled={isProcessing}
               >
                 Cancelar
               </button>
               <button
                 onClick={onConfirm}
-                className="flex-1 bg-red-600 text-white py-2.5 text-xs uppercase tracking-wider hover:bg-red-700"
+                className="flex-1 bg-red-600 text-white py-2.5 text-xs uppercase tracking-wider hover:bg-red-700 disabled:opacity-70 disabled:cursor-wait"
+                disabled={isProcessing}
               >
-                Resetar
+                {isProcessing ? 'Resetando...' : 'Resetar'}
               </button>
             </div>
           </motion.div>

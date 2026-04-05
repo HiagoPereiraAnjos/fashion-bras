@@ -33,18 +33,18 @@ export interface AdminDataContextType extends ContentState {
   blogCategories: BlogCategory[];
   isBootstrapping: boolean;
   bootstrapError: string | null;
-  setStores: (stores: Store[]) => void;
-  setBlogPosts: (posts: BlogPost[]) => void;
-  setPartners: (partners: Partner[]) => void;
-  setSiteSettings: (settings: SiteSettings) => void;
-  setHomeContent: (content: HomePageContent) => void;
-  setLeasingBenefits: (benefits: LeasingBenefit[]) => void;
-  setSpaceTypes: (types: SpaceType[]) => void;
-  setTestimonials: (testimonials: Testimonial[]) => void;
-  setLeasingDifferentials: (diffs: string[]) => void;
-  setAboutData: (data: AboutContent) => void;
-  resetAll: () => void;
-  resetSection: <K extends ContentSection>(section: K) => ContentState[K];
+  setStores: (stores: Store[]) => Promise<void>;
+  setBlogPosts: (posts: BlogPost[]) => Promise<void>;
+  setPartners: (partners: Partner[]) => Promise<void>;
+  setSiteSettings: (settings: SiteSettings) => Promise<void>;
+  setHomeContent: (content: HomePageContent) => Promise<void>;
+  setLeasingBenefits: (benefits: LeasingBenefit[]) => Promise<void>;
+  setSpaceTypes: (types: SpaceType[]) => Promise<void>;
+  setTestimonials: (testimonials: Testimonial[]) => Promise<void>;
+  setLeasingDifferentials: (diffs: string[]) => Promise<void>;
+  setAboutData: (data: AboutContent) => Promise<void>;
+  resetAll: () => Promise<void>;
+  resetSection: <K extends ContentSection>(section: K) => Promise<ContentState[K]>;
   hasCustomData: boolean;
 }
 
@@ -64,7 +64,6 @@ export function ContentProvider({
   const repository = useMemo(
     () =>
       repositoryOverride ??
-      // Future integration: switch to "supabase" when remote repository is implemented.
       createContentRepository({ kind: repositoryKind }),
     [repositoryKind, repositoryOverride],
   );
@@ -155,90 +154,88 @@ export function ContentProvider({
   }, [applySnapshotState, repository]);
 
   const setStores = useCallback(
-    (value: Store[]) => {
-      setStoresState(value);
-      // Persist writes in one place so repository migration stays isolated.
-      repository.saveSection('stores', value);
+    async (value: Store[]) => {
+      const nextValue = await repository.saveSection('stores', value);
+      setStoresState(nextValue);
     },
     [repository],
   );
 
   const setBlogPosts = useCallback(
-    (value: BlogPost[]) => {
-      setBlogPostsState(value);
-      repository.saveSection('blogPosts', value);
+    async (value: BlogPost[]) => {
+      const nextValue = await repository.saveSection('blogPosts', value);
+      setBlogPostsState(nextValue);
     },
     [repository],
   );
 
   const setPartners = useCallback(
-    (value: Partner[]) => {
-      setPartnersState(value);
-      repository.saveSection('partners', value);
+    async (value: Partner[]) => {
+      const nextValue = await repository.saveSection('partners', value);
+      setPartnersState(nextValue);
     },
     [repository],
   );
 
   const setSiteSettings = useCallback(
-    (value: SiteSettings) => {
-      setSiteSettingsState(value);
-      repository.saveSection('siteSettings', value);
+    async (value: SiteSettings) => {
+      const nextValue = await repository.saveSection('siteSettings', value);
+      setSiteSettingsState(nextValue);
     },
     [repository],
   );
 
   const setHomeContent = useCallback(
-    (value: HomePageContent) => {
-      setHomeContentState(value);
-      repository.saveSection('homeContent', value);
+    async (value: HomePageContent) => {
+      const nextValue = await repository.saveSection('homeContent', value);
+      setHomeContentState(nextValue);
     },
     [repository],
   );
 
   const setLeasingBenefits = useCallback(
-    (value: LeasingBenefit[]) => {
-      setLeasingBenefitsState(value);
-      repository.saveSection('leasingBenefits', value);
+    async (value: LeasingBenefit[]) => {
+      const nextValue = await repository.saveSection('leasingBenefits', value);
+      setLeasingBenefitsState(nextValue);
     },
     [repository],
   );
 
   const setSpaceTypes = useCallback(
-    (value: SpaceType[]) => {
-      setSpaceTypesState(value);
-      repository.saveSection('spaceTypes', value);
+    async (value: SpaceType[]) => {
+      const nextValue = await repository.saveSection('spaceTypes', value);
+      setSpaceTypesState(nextValue);
     },
     [repository],
   );
 
   const setTestimonials = useCallback(
-    (value: Testimonial[]) => {
-      setTestimonialsState(value);
-      repository.saveSection('testimonials', value);
+    async (value: Testimonial[]) => {
+      const nextValue = await repository.saveSection('testimonials', value);
+      setTestimonialsState(nextValue);
     },
     [repository],
   );
 
   const setLeasingDifferentials = useCallback(
-    (value: string[]) => {
-      setLeasingDifferentialsState(value);
-      repository.saveSection('leasingDifferentials', value);
+    async (value: string[]) => {
+      const nextValue = await repository.saveSection('leasingDifferentials', value);
+      setLeasingDifferentialsState(nextValue);
     },
     [repository],
   );
 
   const setAboutData = useCallback(
-    (value: AboutContent) => {
-      setAboutDataState(value);
-      repository.saveSection('aboutData', value);
+    async (value: AboutContent) => {
+      const nextValue = await repository.saveSection('aboutData', value);
+      setAboutDataState(nextValue);
     },
     [repository],
   );
 
   const resetSection = useCallback(
-    <K extends ContentSection>(section: K): ContentState[K] => {
-      const defaultValue = getDefaultSection(section);
-      repository.removeSection(section);
+    async <K extends ContentSection>(section: K): Promise<ContentState[K]> => {
+      const defaultValue = await repository.removeSection(section);
 
       switch (section) {
         case 'stores':
@@ -273,25 +270,15 @@ export function ContentProvider({
           break;
       }
 
-      return defaultValue;
+      return defaultValue as ContentState[K];
     },
     [repository],
   );
 
-  const resetAll = useCallback(() => {
-    repository.clearAll();
-
-    setStoresState(getDefaultSection('stores'));
-    setBlogPostsState(getDefaultSection('blogPosts'));
-    setPartnersState(getDefaultSection('partners'));
-    setSiteSettingsState(getDefaultSection('siteSettings'));
-    setHomeContentState(getDefaultSection('homeContent'));
-    setLeasingBenefitsState(getDefaultSection('leasingBenefits'));
-    setSpaceTypesState(getDefaultSection('spaceTypes'));
-    setTestimonialsState(getDefaultSection('testimonials'));
-    setLeasingDifferentialsState(getDefaultSection('leasingDifferentials'));
-    setAboutDataState(getDefaultSection('aboutData'));
-  }, [repository]);
+  const resetAll = useCallback(async () => {
+    const snapshot = await repository.clearAll();
+    applySnapshotState(snapshot);
+  }, [applySnapshotState, repository]);
 
   const storeSegments = useMemo(() => buildStoreSegments(stores), [stores]);
   const blogCategories = useMemo(() => buildBlogCategories(blogPosts), [blogPosts]);

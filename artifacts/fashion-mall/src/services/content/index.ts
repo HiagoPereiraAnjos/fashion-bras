@@ -9,6 +9,7 @@ export type {
   ContentRepositorySnapshot,
 } from '@/services/content/repositories/ContentRepository';
 export { createLocalContentRepository } from '@/services/content/repositories/LocalContentRepository';
+export { createRemoteContentRepository } from '@/services/content/repositories/RemoteContentRepository';
 export { createSupabaseContentRepository } from '@/services/content/repositories/SupabaseContentRepository';
 export { createContentRepository } from '@/services/content/repositories/createContentRepository';
 export type {

@@ -19,7 +19,7 @@ import type { BlogPost, BlogPostFormData } from '@/types';
 interface BlogPostEditorModalProps {
   post: BlogPost;
   blogCategories: string[];
-  onSave: (post: BlogPostFormData) => void;
+  onSave: (post: BlogPostFormData) => Promise<void>;
   onClose: () => void;
 }
 
@@ -32,8 +32,13 @@ export function BlogPostEditorModal({
   const [form, setForm] = useState<BlogPostFormData>(() => toBlogPostFormData(post));
   const [errors, setErrors] = useState<BlogPostErrors>({});
   const [attemptedSave, setAttemptedSave] = useState(false);
-  const update = (key: keyof BlogPostFormData, value: string | boolean) =>
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const update = (key: keyof BlogPostFormData, value: string | boolean) => {
     setForm((current) => ({ ...current, [key]: value }));
+    if (saveError) setSaveError(null);
+  };
 
   const updateWithValidation = (key: keyof BlogPostFormData, value: string | boolean) => {
     update(key, value);
@@ -42,22 +47,29 @@ export function BlogPostEditorModal({
     setErrors(validatePostForm(nextForm));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setAttemptedSave(true);
     const nextErrors = validatePostForm(form);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    onSave(sanitizePostForm(form));
-    onClose();
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      await onSave(sanitizePostForm(form));
+      onClose();
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : 'Nao foi possivel salvar este artigo.',
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const selectableCategories = Array.from(
-    new Set([
-      form.category,
-      ...blogCategories.filter((category) => category !== BLOG_ALL_CATEGORY),
-    ]),
+    new Set([form.category, ...blogCategories.filter((category) => category !== BLOG_ALL_CATEGORY)]),
   ).filter(Boolean);
 
   return (
@@ -67,8 +79,9 @@ export function BlogPostEditorModal({
       onSave={handleSave}
       saveLabel="Salvar Post"
       titleClassName="font-medium text-stone-800 truncate pr-4"
+      isSaving={isSaving}
     >
-      <Field label="Título">
+      <Field label="Titulo">
         <Input value={form.title} onChange={(value) => updateWithValidation('title', value)} />
         {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
       </Field>
@@ -107,7 +120,7 @@ export function BlogPostEditorModal({
           {errors.readTime && <p className="mt-1 text-xs text-red-600">{errors.readTime}</p>}
         </Field>
       </div>
-      <Field label="Data de Publicação">
+      <Field label="Data de Publicacao">
         <Input value={form.date} onChange={(value) => updateWithValidation('date', value)} />
         {errors.date && <p className="mt-1 text-xs text-red-600">{errors.date}</p>}
       </Field>
@@ -129,12 +142,12 @@ export function BlogPostEditorModal({
         />
         {errors.excerpt && <p className="mt-1 text-xs text-red-600">{errors.excerpt}</p>}
       </Field>
-      <Field label="Conteúdo Completo">
+      <Field label="Conteudo Completo">
         <Textarea
           value={form.content}
           onChange={(value) => updateWithValidation('content', value)}
           rows={10}
-          placeholder="Use **texto** para negrito, duas linhas em branco para novo parágrafo..."
+          placeholder="Use **texto** para negrito, duas linhas em branco para novo paragrafo..."
         />
         {errors.content && <p className="mt-1 text-xs text-red-600">{errors.content}</p>}
       </Field>
@@ -157,6 +170,7 @@ export function BlogPostEditorModal({
           message="Corrija os campos destacados antes de salvar este artigo."
         />
       )}
+      {saveError && <InlineNotice tone="error" message={saveError} />}
     </AdminEditorModal>
   );
 }

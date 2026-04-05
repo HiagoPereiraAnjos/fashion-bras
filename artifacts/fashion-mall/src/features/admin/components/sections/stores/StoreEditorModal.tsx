@@ -19,7 +19,7 @@ import type { Store, StoreCategory, StoreFormData } from '@/types';
 interface StoreEditorModalProps {
   store: Store;
   storeSegments: StoreCategory[];
-  onSave: (store: StoreFormData) => void;
+  onSave: (store: StoreFormData) => Promise<void>;
   onClose: () => void;
 }
 
@@ -32,9 +32,13 @@ export function StoreEditorModal({
   const [form, setForm] = useState<StoreFormData>(() => toStoreFormData(store));
   const [errors, setErrors] = useState<StoreFormErrors>({});
   const [attemptedSave, setAttemptedSave] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const update = (key: keyof StoreFormData, value: string) =>
+  const update = (key: keyof StoreFormData, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
+    if (saveError) setSaveError(null);
+  };
 
   const updateWithValidation = (key: keyof StoreFormData, value: string) => {
     update(key, value);
@@ -44,15 +48,23 @@ export function StoreEditorModal({
     setErrors(validateStoreForm(nextForm));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setAttemptedSave(true);
     const nextErrors = validateStoreForm(form);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    onSave(sanitizeStoreForm(form));
-    onClose();
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      await onSave(sanitizeStoreForm(form));
+      onClose();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Nao foi possivel salvar esta loja.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -61,6 +73,7 @@ export function StoreEditorModal({
       onClose={onClose}
       onSave={handleSave}
       saveLabel="Salvar Loja"
+      isSaving={isSaving}
     >
       <div className="grid grid-cols-2 gap-4">
         <Field label="Nome da Loja">
@@ -84,6 +97,7 @@ export function StoreEditorModal({
               }));
 
               if (attemptedSave) setErrors(validateStoreForm(nextForm));
+              if (saveError) setSaveError(null);
             }}
             options={storeSegments
               .filter((item) => item.slug !== 'todos')
@@ -93,7 +107,7 @@ export function StoreEditorModal({
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Piso / Localização">
+        <Field label="Piso / Localizacao">
           <Input value={form.floor} onChange={(value) => updateWithValidation('floor', value)} />
           {errors.floor && <p className="mt-1 text-xs text-red-600">{errors.floor}</p>}
         </Field>
@@ -106,7 +120,7 @@ export function StoreEditorModal({
         <Input value={form.instagram} onChange={(value) => updateWithValidation('instagram', value)} />
         {errors.instagram && <p className="mt-1 text-xs text-red-600">{errors.instagram}</p>}
       </Field>
-      <Field label="Descrição Curta">
+      <Field label="Descricao Curta">
         <Textarea
           value={form.description}
           onChange={(value) => updateWithValidation('description', value)}
@@ -114,7 +128,7 @@ export function StoreEditorModal({
         />
         {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description}</p>}
       </Field>
-      <Field label="Descrição Completa">
+      <Field label="Descricao Completa">
         <Textarea
           value={form.longDescription}
           onChange={(value) => updateWithValidation('longDescription', value)}
@@ -138,6 +152,7 @@ export function StoreEditorModal({
                 const nextForm = { ...form, images };
                 setForm((current) => ({ ...current, images }));
                 if (attemptedSave) setErrors(validateStoreForm(nextForm));
+                if (saveError) setSaveError(null);
               }}
               placeholder="https://..."
             />
@@ -150,6 +165,7 @@ export function StoreEditorModal({
                   images: current.images.filter((_, imageIndex) => imageIndex !== index),
                 }));
                 if (attemptedSave) setErrors(validateStoreForm(nextForm));
+                if (saveError) setSaveError(null);
               }}
               className="text-red-400 hover:text-red-600 px-2"
             >
@@ -162,6 +178,7 @@ export function StoreEditorModal({
             const nextForm = { ...form, images: [...form.images, ''] };
             setForm((current) => ({ ...current, images: [...current.images, ''] }));
             if (attemptedSave) setErrors(validateStoreForm(nextForm));
+            if (saveError) setSaveError(null);
           }}
           className="text-xs text-amber-700 hover:underline flex items-center gap-1 mt-1"
         >
@@ -181,7 +198,7 @@ export function StoreEditorModal({
             className="accent-amber-600"
           />
           <span className="text-sm text-stone-700">
-            Exibir como loja em destaque na página inicial
+            Exibir como loja em destaque na pagina inicial
           </span>
         </label>
       </Field>
@@ -191,6 +208,7 @@ export function StoreEditorModal({
           message="Corrija os campos destacados antes de salvar esta loja."
         />
       )}
+      {saveError && <InlineNotice tone="error" message={saveError} />}
     </AdminEditorModal>
   );
 }

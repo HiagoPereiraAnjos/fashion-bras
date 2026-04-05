@@ -6,9 +6,8 @@ Este pacote (`artifacts/fashion-mall`) contem o frontend SPA do Fashion Bras:
 - painel administrativo frontend-only (`/admin`)
 
 Estado atual:
-- sem backend
-- sem API real
-- persistencia local em `localStorage`
+- modo local (default): persistencia em `localStorage`
+- modo remoto (feature flag): leitura/escrita via API backend
 - fallback de conteudo via mocks em `src/data/content`
 - fonte unica de leitura da UI via `useSiteContent()`
 
@@ -23,6 +22,7 @@ Meta de arquitetura:
 - Tailwind CSS 4
 - Framer Motion
 - Lucide React
+- `@supabase/supabase-js` (auth admin em modo remoto)
 
 Plugins/build:
 - `@vitejs/plugin-react`
@@ -87,6 +87,7 @@ pnpm install
 ```powershell
 $env:PORT='4173'
 $env:BASE_PATH='/'
+$env:VITE_CONTENT_BACKEND_MODE='local' # ou 'remote'
 pnpm.cmd --filter @workspace/fashion-mall dev
 ```
 
@@ -94,8 +95,21 @@ pnpm.cmd --filter @workspace/fashion-mall dev
 ```bat
 set PORT=4173
 set BASE_PATH=/
+set VITE_CONTENT_BACKEND_MODE=local
 pnpm --filter @workspace/fashion-mall dev
 ```
+
+Variaveis adicionais no modo remoto:
+```bash
+VITE_CONTENT_BACKEND_MODE=remote
+VITE_API_BASE_URL=http://localhost:3000
+VITE_SUPABASE_URL=https://<project>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
+```
+
+Compatibilidade:
+- o frontend tambem aceita `NEXT_PUBLIC_SUPABASE_URL`
+- e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
 
 Build:
 ```powershell
@@ -129,6 +143,7 @@ Arquivos-chave:
 - contrato: `src/services/content/repositories/ContentRepository.ts`
 - fabrica: `src/services/content/repositories/createContentRepository.ts`
 - local atual: `src/services/content/repositories/LocalContentRepository.ts`
+- remoto atual: `src/services/content/repositories/RemoteContentRepository.ts`
 - snapshot para UI: `src/services/content/siteContent.ts`
 
 ## 6) Como o admin funciona hoje
@@ -146,9 +161,10 @@ Secoes atuais:
 
 Comportamento:
 - cada secao tem formulario proprio com validacao frontend
-- salvar escreve no contexto + `localStorage`
-- reset por secao e reset global restauram defaults
-- sem autenticacao real nesta fase
+- salvar escreve no contexto + repositorio selecionado por flag
+- reset por secao e reset global usam a mesma camada de dados
+- modo local: acesso direto em `/admin`
+- modo remoto: `/admin` exige login Supabase e validacao em `GET /api/admin/me`
 
 ## 7) Limitacoes atuais
 - persistencia local por navegador/dispositivo
@@ -163,6 +179,8 @@ Ja preparado:
 - contrato unico de repositorio (`ContentRepository`)
 - selecao central de origem em `createContentRepository()`
 - placeholder explicito: `SupabaseContentRepository` (hoje faz fallback local)
+- provider de auth admin: `src/context/auth/AdminAuthProvider.tsx`
+- guard do painel admin: `src/components/auth/AdminRouteGuard.tsx`
 - UI desacoplada da origem por `useSiteContent()` e snapshot derivado
 - tipos de dominio centralizados em `src/types/domain/*`
 
