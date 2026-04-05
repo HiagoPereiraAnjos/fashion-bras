@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useAdminData } from '@/context/AdminDataContext';
+import { useAdminAuth } from '@/context/auth/AdminAuthProvider';
 import { AdminLayout } from '@/features/admin/components/AdminLayout';
 import { AdminSectionsPanel } from '@/features/admin/components/AdminSectionsPanel';
 import { ResetAllModal } from '@/features/admin/components/ResetAllModal';
@@ -9,11 +11,14 @@ import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 export default function AdminPage() {
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<AdminTabId>('settings');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResettingAll, setIsResettingAll] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
   const { resetAll, hasCustomData } = useAdminData();
+  const { isRemoteMode, session, signOut } = useAdminAuth();
 
   usePageSeo(getSeoMetadata('admin'));
 
@@ -34,12 +39,26 @@ export default function AdminPage() {
     }
   };
 
+  const handleLogout = async () => {
+    if (!isRemoteMode || !session) return;
+
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+    } finally {
+      setIsLoggingOut(false);
+      setLocation('/admin/login');
+    }
+  };
+
   return (
     <AdminLayout
       activeTab={activeTab}
       onTabChange={setActiveTab}
       hasCustomData={hasCustomData}
       onRequestResetAll={() => setShowResetConfirm(true)}
+      onLogout={isRemoteMode && session ? handleLogout : undefined}
+      isLoggingOut={isLoggingOut}
     >
       {resetError && <InlineNotice tone="error" message={resetError} />}
       <AdminSectionsPanel activeTab={activeTab} />

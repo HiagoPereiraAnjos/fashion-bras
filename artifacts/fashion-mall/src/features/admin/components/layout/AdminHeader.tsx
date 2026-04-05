@@ -1,8 +1,13 @@
 import { Link } from 'wouter';
-import { ExternalLink, RotateCcw, Settings } from 'lucide-react';
+import { ExternalLink, LogOut, RotateCcw, Settings } from 'lucide-react';
 import type { AdminHeaderProps } from '@/features/admin/types/admin';
 
-export function AdminHeader({ hasCustomData, onRequestResetAll }: AdminHeaderProps) {
+export function AdminHeader({
+  hasCustomData,
+  onRequestResetAll,
+  onLogout,
+  isLoggingOut = false,
+}: AdminHeaderProps) {
   return (
     <header className="bg-stone-950 text-white sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
@@ -21,6 +26,16 @@ export function AdminHeader({ hasCustomData, onRequestResetAll }: AdminHeaderPro
             >
               <RotateCcw size={12} />
               Resetar tudo
+            </button>
+          )}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-white transition-colors disabled:text-stone-600 disabled:cursor-not-allowed"
+              disabled={isLoggingOut}
+            >
+              <LogOut size={12} />
+              {isLoggingOut ? 'Saindo...' : 'Sair'}
             </button>
           )}
           <Link href="/">

@@ -8,11 +8,18 @@ export function AdminLayout({
   onTabChange,
   hasCustomData,
   onRequestResetAll,
+  onLogout,
+  isLoggingOut,
   children,
 }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-stone-50">
-      <AdminHeader hasCustomData={hasCustomData} onRequestResetAll={onRequestResetAll} />
+      <AdminHeader
+        hasCustomData={hasCustomData}
+        onRequestResetAll={onRequestResetAll}
+        onLogout={onLogout}
+        isLoggingOut={isLoggingOut}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AdminPageIntro />

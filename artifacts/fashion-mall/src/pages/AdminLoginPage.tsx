@@ -59,8 +59,7 @@ export default function AdminLoginPage() {
           <p className="text-xs uppercase tracking-[0.2em] text-amber-700">Painel Administrativo</p>
           <h1 className="font-serif text-3xl text-stone-900 mt-2">Login</h1>
           <p className="text-sm text-stone-500 mt-3">
-            Acesso restrito para usuarios admin cadastrados no Supabase Auth + tabela
-            <code className="mx-1">admin_users</code>.
+            Acesso restrito para usuarios admin cadastrados.
           </p>
         </div>
 

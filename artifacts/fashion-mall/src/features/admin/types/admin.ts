@@ -11,6 +11,8 @@ export type AdminNavigationProps = {
 export type AdminHeaderProps = {
   hasCustomData: boolean;
   onRequestResetAll: () => void;
+  onLogout?: () => Promise<void> | void;
+  isLoggingOut?: boolean;
 };
 
 export type AdminLayoutProps = AdminNavigationProps &

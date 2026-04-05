@@ -12,6 +12,7 @@ import {
   PutAdminContentSectionResponse,
 } from "@workspace/api-zod";
 import type { SiteContentState } from "@workspace/api-zod";
+import { adminRateLimit } from "../middlewares/adminRateLimit";
 import { requireAdmin } from "../middlewares/admin";
 import { requireAuth } from "../middlewares/auth";
 import {
@@ -32,7 +33,7 @@ function parseSectionValue<K extends ContentSection>(
 
 const router: IRouter = Router();
 
-router.use(requireAuth, requireAdmin);
+router.use(requireAuth, requireAdmin, adminRateLimit);
 
 router.get("/admin/me", (request, response) => {
   response.json(

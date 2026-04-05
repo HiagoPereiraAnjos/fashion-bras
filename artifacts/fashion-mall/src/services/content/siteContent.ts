@@ -64,6 +64,11 @@ function isInternalPath(value: string): boolean {
   return normalizeText(value).startsWith('/');
 }
 
+function resolveInternalPath(value: string | undefined, fallback: string): string {
+  const normalized = normalizeText(value);
+  return isInternalPath(normalized) ? normalized : fallback;
+}
+
 function resolveNavigationLinks(navLinks: NavLink[] | undefined): NavLink[] {
   const validLinks = (navLinks ?? [])
     .map((link) => ({
@@ -214,18 +219,41 @@ function splitBlogPosts(posts: BlogPost[]): {
 function resolveHomeContent(sourceContent: HomePageContent): HomePageContent {
   const defaults = getDefaultSection('homeContent');
 
-  const heroSlides = sourceContent.hero.slides.filter(
-    (slide) =>
-      normalizeText(slide.title) &&
-      normalizeText(slide.subtitle) &&
-      normalizeText(slide.cta) &&
-      normalizeText(slide.href) &&
-      normalizeText(slide.image),
-  );
+  const fallbackHeroHref = defaults.hero.slides[0]?.href ?? '/';
+  const heroSlides = sourceContent.hero.slides
+    .map((slide) => ({
+      ...slide,
+      href: resolveInternalPath(slide.href, fallbackHeroHref),
+    }))
+    .filter(
+      (slide) =>
+        normalizeText(slide.title) &&
+        normalizeText(slide.subtitle) &&
+        normalizeText(slide.cta) &&
+        isInternalPath(slide.href) &&
+        normalizeText(slide.image),
+    );
 
   const statsItems = sourceContent.stats.items.filter(
     (item) => normalizeText(item.value) && normalizeText(item.label),
   );
+
+  const institutional = {
+    ...defaults.institutional,
+    ...sourceContent.institutional,
+  };
+  const featuredStores = {
+    ...defaults.featuredStores,
+    ...sourceContent.featuredStores,
+  };
+  const blogPreview = {
+    ...defaults.blogPreview,
+    ...sourceContent.blogPreview,
+  };
+  const leasingCta = {
+    ...defaults.leasingCta,
+    ...sourceContent.leasingCta,
+  };
 
   return {
     ...defaults,
@@ -236,8 +264,8 @@ function resolveHomeContent(sourceContent: HomePageContent): HomePageContent {
       slides: heroSlides.length > 0 ? heroSlides : defaults.hero.slides,
     },
     institutional: {
-      ...defaults.institutional,
-      ...sourceContent.institutional,
+      ...institutional,
+      ctaHref: resolveInternalPath(institutional.ctaHref, defaults.institutional.ctaHref),
     },
     stats: {
       ...defaults.stats,
@@ -245,20 +273,20 @@ function resolveHomeContent(sourceContent: HomePageContent): HomePageContent {
       items: statsItems.length > 0 ? statsItems : defaults.stats.items,
     },
     featuredStores: {
-      ...defaults.featuredStores,
-      ...sourceContent.featuredStores,
+      ...featuredStores,
+      ctaHref: resolveInternalPath(featuredStores.ctaHref, defaults.featuredStores.ctaHref),
     },
     partners: {
       ...defaults.partners,
       ...sourceContent.partners,
     },
     blogPreview: {
-      ...defaults.blogPreview,
-      ...sourceContent.blogPreview,
+      ...blogPreview,
+      ctaHref: resolveInternalPath(blogPreview.ctaHref, defaults.blogPreview.ctaHref),
     },
     leasingCta: {
-      ...defaults.leasingCta,
-      ...sourceContent.leasingCta,
+      ...leasingCta,
+      ctaHref: resolveInternalPath(leasingCta.ctaHref, defaults.leasingCta.ctaHref),
     },
   };
 }
