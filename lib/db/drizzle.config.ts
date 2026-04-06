@@ -7,6 +7,8 @@ if (!process.env.DATABASE_URL) {
 export default defineConfig({
   // Relative path avoids Windows absolute-path resolution issues in drizzle-kit.
   schema: "./src/schema/index.ts",
+  out: "./migrations",
+  strict: true,
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL,

@@ -18,11 +18,13 @@ import type {
 
 import type {
   AdminMe,
+  AdminMediaDeleteRequest,
   AdminMediaUploadRequest,
   ContentSection,
   ContentSectionResponse,
   ContentSectionUpdateRequest,
   HealthStatus,
+  MediaDeleteResponse,
   MediaUploadResponse,
   ProblemDetails,
   SiteContentState,
@@ -702,6 +704,9 @@ export const postAdminMediaUpload = async (
   if (adminMediaUploadRequest.folder !== undefined) {
     formData.append(`folder`, adminMediaUploadRequest.folder);
   }
+  if (adminMediaUploadRequest.replacePath !== undefined) {
+    formData.append(`replacePath`, adminMediaUploadRequest.replacePath);
+  }
   formData.append(`file`, adminMediaUploadRequest.file);
 
   return customFetch<MediaUploadResponse>(getPostAdminMediaUploadUrl(), {
@@ -777,4 +782,91 @@ export const usePostAdminMediaUpload = <
   TContext
 > => {
   return useMutation(getPostAdminMediaUploadMutationOptions(options));
+};
+
+/**
+ * @summary Delete admin media object
+ */
+export const getDeleteAdminMediaObjectUrl = () => {
+  return `/api/admin/media/object`;
+};
+
+export const deleteAdminMediaObject = async (
+  adminMediaDeleteRequest: AdminMediaDeleteRequest,
+  options?: RequestInit,
+): Promise<MediaDeleteResponse> => {
+  return customFetch<MediaDeleteResponse>(getDeleteAdminMediaObjectUrl(), {
+    ...options,
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminMediaDeleteRequest),
+  });
+};
+
+export const getDeleteAdminMediaObjectMutationOptions = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminMediaObject>>,
+    TError,
+    { data: BodyType<AdminMediaDeleteRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteAdminMediaObject>>,
+  TError,
+  { data: BodyType<AdminMediaDeleteRequest> },
+  TContext
+> => {
+  const mutationKey = ["deleteAdminMediaObject"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteAdminMediaObject>>,
+    { data: BodyType<AdminMediaDeleteRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return deleteAdminMediaObject(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteAdminMediaObjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteAdminMediaObject>>
+>;
+export type DeleteAdminMediaObjectMutationBody =
+  BodyType<AdminMediaDeleteRequest>;
+export type DeleteAdminMediaObjectMutationError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Delete admin media object
+ */
+export const useDeleteAdminMediaObject = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteAdminMediaObject>>,
+    TError,
+    { data: BodyType<AdminMediaDeleteRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteAdminMediaObject>>,
+  TError,
+  { data: BodyType<AdminMediaDeleteRequest> },
+  TContext
+> => {
+  return useMutation(getDeleteAdminMediaObjectMutationOptions(options));
 };

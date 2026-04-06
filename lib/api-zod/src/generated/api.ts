@@ -1464,7 +1464,28 @@ export const PostAdminImportContentResponse = zod.object({
  */
 export const postAdminMediaUploadBodyFolderMax = 120;
 
+export const postAdminMediaUploadBodyReplacePathMax = 400;
+
 export const PostAdminMediaUploadBody = zod.object({
   folder: zod.string().max(postAdminMediaUploadBodyFolderMax).optional(),
+  replacePath: zod
+    .string()
+    .max(postAdminMediaUploadBodyReplacePathMax)
+    .optional(),
   file: zod.instanceof(File),
+});
+
+/**
+ * @summary Delete admin media object
+ */
+export const deleteAdminMediaObjectBodyPathMax = 400;
+
+export const DeleteAdminMediaObjectBody = zod.object({
+  path: zod.string().max(deleteAdminMediaObjectBodyPathMax),
+});
+
+export const DeleteAdminMediaObjectResponse = zod.object({
+  bucket: zod.string(),
+  path: zod.string(),
+  deleted: zod.boolean(),
 });

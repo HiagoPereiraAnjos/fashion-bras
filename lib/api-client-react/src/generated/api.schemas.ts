@@ -243,8 +243,21 @@ export interface MediaUploadResponse {
   url: string;
 }
 
+export interface MediaDeleteResponse {
+  bucket: string;
+  path: string;
+  deleted: boolean;
+}
+
 export interface AdminMediaUploadRequest {
   /** @maxLength 120 */
   folder?: string;
+  /** @maxLength 400 */
+  replacePath?: string;
   file: Blob;
+}
+
+export interface AdminMediaDeleteRequest {
+  /** @maxLength 400 */
+  path: string;
 }

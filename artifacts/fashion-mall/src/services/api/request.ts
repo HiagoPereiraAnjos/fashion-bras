@@ -49,7 +49,10 @@ export async function requestApi<T>(
   options: RequestInit,
   parser: { parse: (value: unknown) => T },
 ): Promise<T> {
-  const response = await fetch(resolveApiUrl(path), options);
+  const response = await fetch(resolveApiUrl(path), {
+    credentials: 'omit',
+    ...options,
+  });
   const payload = await parseJson(response);
 
   if (!response.ok) {

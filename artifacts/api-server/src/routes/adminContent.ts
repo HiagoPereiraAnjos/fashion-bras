@@ -5,6 +5,8 @@ import { extname } from "node:path";
 import { z } from "zod";
 import {
   AdminMeResponse,
+  DeleteAdminMediaObjectBody,
+  DeleteAdminMediaObjectResponse,
   GetContentSnapshotResponse,
   PostAdminImportContentBody,
   PostAdminImportContentResponse,
@@ -18,6 +20,7 @@ import {
 import type { SiteContentState } from "@workspace/api-zod";
 import { adminRateLimit } from "../middlewares/adminRateLimit";
 import { HttpError } from "../lib/httpError";
+import { logger } from "../lib/logger";
 import { getSupabaseAdminClient } from "../lib/supabaseAdmin";
 import { requireAdmin } from "../middlewares/admin";
 import { requireAuth } from "../middlewares/auth";
@@ -39,12 +42,14 @@ const ALLOWED_IMAGE_TYPES = new Set([
 ]);
 const UploadMediaBody = z.object({
   folder: z.string().trim().max(120).optional(),
+  replacePath: z.string().trim().max(400).optional(),
 });
 const UploadMediaResponse = z.object({
   bucket: z.string().min(1),
   path: z.string().min(1),
   url: z.string().url(),
 });
+const STORAGE_OBJECT_PATH_PATTERN = /^[a-z0-9/_\-.]+$/i;
 
 const uploadImage = multer({
   storage: multer.memoryStorage(),
@@ -74,6 +79,38 @@ function normalizeFolder(rawFolder?: string): string {
     .replace(/^\/+|\/+$/g, "");
 
   return sanitized || "general";
+}
+
+function normalizeStorageObjectPath(rawPath: string): string {
+  const normalized = rawPath
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/\/+/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+
+  if (!normalized) {
+    throw new HttpError(400, "Validation Error", "Storage object path is required.");
+  }
+
+  if (!STORAGE_OBJECT_PATH_PATTERN.test(normalized)) {
+    throw new HttpError(
+      400,
+      "Validation Error",
+      "Storage object path contains invalid characters.",
+    );
+  }
+
+  const parts = normalized.split("/");
+  if (parts.some((part) => part === "." || part === "..")) {
+    throw new HttpError(
+      400,
+      "Validation Error",
+      "Storage object path cannot contain traversal segments.",
+    );
+  }
+
+  return normalized;
 }
 
 function resolveStorageBucket(): string {
@@ -121,7 +158,13 @@ function parseSectionValue<K extends ContentSection>(
 
 const router: IRouter = Router();
 
-router.use(requireAuth, requireAdmin, adminRateLimit);
+router.use((_request, response, next) => {
+  response.setHeader("Cache-Control", "no-store");
+  response.setHeader("Pragma", "no-cache");
+  next();
+});
+
+router.use(adminRateLimit, requireAuth, requireAdmin);
 
 router.get("/admin/me", (request, response) => {
   response.json(
@@ -210,6 +253,9 @@ router.post(
 
       const body = UploadMediaBody.parse(request.body ?? {});
       const folder = normalizeFolder(body.folder);
+      const replacePath = body.replacePath
+        ? normalizeStorageObjectPath(body.replacePath)
+        : null;
       const extension = resolveImageExtension(file);
       const fileName = `${Date.now()}-${randomUUID()}${extension}`;
       const objectPath = `${folder}/${fileName}`;
@@ -237,6 +283,18 @@ router.post(
         );
       }
 
+      if (replacePath && replacePath !== objectPath) {
+        const { error: removeError } = await supabase.storage
+          .from(bucket)
+          .remove([replacePath]);
+        if (removeError) {
+          logger.warn(
+            { replacePath, error: removeError.message },
+            "Uploaded new media but failed to remove previous object.",
+          );
+        }
+      }
+
       response.status(201).json(
         UploadMediaResponse.parse({
           bucket,
@@ -249,5 +307,29 @@ router.post(
     }
   },
 );
+
+router.delete("/admin/media/object", async (request, response, next) => {
+  try {
+    const body = DeleteAdminMediaObjectBody.parse(request.body ?? {});
+    const objectPath = normalizeStorageObjectPath(body.path);
+    const bucket = resolveStorageBucket();
+    const supabase = getSupabaseAdminClient();
+
+    const { error } = await supabase.storage.from(bucket).remove([objectPath]);
+    if (error && !/not\s+found/i.test(error.message)) {
+      throw new HttpError(500, "Storage Delete Failed", error.message);
+    }
+
+    response.json(
+      DeleteAdminMediaObjectResponse.parse({
+        bucket,
+        path: objectPath,
+        deleted: true,
+      }),
+    );
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

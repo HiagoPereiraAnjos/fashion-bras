@@ -2,6 +2,7 @@
 
 # compiled output
 dist
+**/dist/
 tmp
 out-tsc
 *.tsbuildinfo
@@ -31,8 +32,10 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+**/coverage/
 /libpeerconnection.log
 npm-debug.log
+pnpm-debug.log
 yarn-error.log
 testem.log
 /typings
@@ -47,10 +50,22 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+**/.replit-artifact/
 
 # Environment files
 .env
 .env.*
 !.env.example
 
-.vercel
+**/.vercel/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+.eslintcache
+**/dev-run.log
+**/.vite/
+**/.vite-temp/
+**/.turbo/
+**/.pnpm-store/

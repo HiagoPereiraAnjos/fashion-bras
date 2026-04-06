@@ -11,7 +11,8 @@ export function getSupabaseBrowserClient(): SupabaseClient | null {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      detectSessionInUrl: false,
+      storageKey: 'fashionbras-admin-auth',
     },
   });
 

@@ -324,6 +324,51 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
+  /admin/media/object:
+    delete:
+      operationId: deleteAdminMediaObject
+      tags: [admin-content]
+      summary: Delete admin media object
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminMediaDeleteRequest"
+      responses:
+        "200":
+          description: Deleted media metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaDeleteResponse"
+        "400":
+          description: Validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -920,14 +965,40 @@ components:
         - path
         - url
 
+    MediaDeleteResponse:
+      type: object
+      properties:
+        bucket:
+          type: string
+        path:
+          type: string
+        deleted:
+          type: boolean
+      required:
+        - bucket
+        - path
+        - deleted
+
     AdminMediaUploadRequest:
       type: object
       properties:
         folder:
           type: string
           maxLength: 120
+        replacePath:
+          type: string
+          maxLength: 400
         file:
           type: string
           format: binary
       required:
         - file
+
+    AdminMediaDeleteRequest:
+      type: object
+      properties:
+        path:
+          type: string
+          maxLength: 400
+      required:
+        - path

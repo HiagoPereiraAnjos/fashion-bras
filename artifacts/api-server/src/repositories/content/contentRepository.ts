@@ -20,29 +20,56 @@ import {
   storeImagesTable,
   storesTable,
 } from "@workspace/db";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, inArray, notInArray, sql } from "drizzle-orm";
 import type { SiteContentState } from "@workspace/api-zod";
 import { getContentBaseline, getDefaultSection } from "../../content/baseline";
 import { CONTENT_SECTIONS, type ContentSection } from "../../content/sections";
+import { HttpError } from "../../lib/httpError";
 
 const SINGLETON_ID = "singleton";
+const ENABLE_BASELINE_FALLBACK = process.env.CONTENT_BASELINE_FALLBACK === "true";
 
 type DbExecutor = typeof db | any;
 
-async function readSectionWithFallback<T>(
-  section: ContentSection,
-  read: () => Promise<T | null>,
-  fallback: T,
-): Promise<T> {
-  try {
-    const value = await read();
-    return value ?? fallback;
-  } catch (error) {
-    // Future supabase/db outages should not break public snapshot reads.
-    const reason = error instanceof Error ? error.message : String(error);
-    console.warn(`[content] Section "${section}" fallback to baseline: ${reason}`);
-    return fallback;
+function ensureSectionValue<K extends ContentSection>(
+  section: K,
+  value: SiteContentState[K] | null,
+): SiteContentState[K] {
+  if (value !== null) return value;
+
+  if (ENABLE_BASELINE_FALLBACK) {
+    console.warn(
+      `[content] Section "${section}" missing in DB, using baseline fallback because CONTENT_BASELINE_FALLBACK=true.`,
+    );
+    return getDefaultSection(section);
   }
+
+  throw new HttpError(
+    503,
+    "Content Not Initialized",
+    `Section "${section}" has no persisted records in Postgres. Run the baseline seed before serving content.`,
+  );
+}
+
+function resolvePublicStorageBaseUrl(): string | null {
+  const supabaseUrl = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  if (!supabaseUrl) return null;
+
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET?.trim() || "site-media";
+  return `${supabaseUrl}/storage/v1/object/public/${bucket}`;
+}
+
+function normalizeMediaReference(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  if (/^data:/i.test(trimmed)) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  const normalizedPath = trimmed.replace(/^\/+/, "");
+  const publicBaseUrl = resolvePublicStorageBaseUrl();
+  if (!publicBaseUrl) return normalizedPath;
+
+  return `${publicBaseUrl}/${normalizedPath}`;
 }
 
 async function readStoresFromDb(executor: DbExecutor): Promise<SiteContentState["stores"] | null> {
@@ -50,7 +77,7 @@ async function readStoresFromDb(executor: DbExecutor): Promise<SiteContentState[
     .select()
     .from(storesTable)
     .orderBy(asc(storesTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   const imageRows = await executor
     .select()
@@ -86,7 +113,7 @@ async function readBlogPostsFromDb(
     .select()
     .from(blogPostsTable)
     .orderBy(asc(blogPostsTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   return rows.map((row: typeof blogPostsTable.$inferSelect) => ({
     slug: row.slug,
@@ -107,7 +134,7 @@ async function readPartnersFromDb(executor: DbExecutor): Promise<SiteContentStat
     .select()
     .from(partnersTable)
     .orderBy(asc(partnersTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   return rows.map((row: typeof partnersTable.$inferSelect) => ({
     id: row.id,
@@ -247,7 +274,7 @@ async function readLeasingBenefitsFromDb(
     .select()
     .from(leasingBenefitsTable)
     .orderBy(asc(leasingBenefitsTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   return rows.map((row: typeof leasingBenefitsTable.$inferSelect) => ({
     icon: row.icon,
@@ -263,7 +290,7 @@ async function readSpaceTypesFromDb(
     .select()
     .from(leasingSpaceTypesTable)
     .orderBy(asc(leasingSpaceTypesTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   return rows.map((row: typeof leasingSpaceTypesTable.$inferSelect) => ({
     name: row.name,
@@ -279,7 +306,7 @@ async function readTestimonialsFromDb(
     .select()
     .from(leasingTestimonialsTable)
     .orderBy(asc(leasingTestimonialsTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   return rows.map((row: typeof leasingTestimonialsTable.$inferSelect) => ({
     name: row.name,
@@ -295,7 +322,7 @@ async function readLeasingDifferentialsFromDb(
     .select()
     .from(leasingDifferentialsTable)
     .orderBy(asc(leasingDifferentialsTable.position));
-  if (rows.length === 0) return null;
+  if (rows.length === 0) return [];
 
   return rows.map((row: typeof leasingDifferentialsTable.$inferSelect) => row.value);
 }
@@ -346,32 +373,57 @@ async function readAboutDataFromDb(executor: DbExecutor): Promise<SiteContentSta
 }
 
 async function writeStores(executor: DbExecutor, stores: SiteContentState["stores"]) {
-  await executor.delete(storeImagesTable);
-  await executor.delete(storesTable);
+  if (stores.length === 0) {
+    await executor.delete(storeImagesTable);
+    await executor.delete(storesTable);
+    return;
+  }
 
-  if (stores.length === 0) return;
+  const now = new Date();
+  const incomingStoreIds = stores.map((store: SiteContentState["stores"][number]) => store.id);
 
-  await executor.insert(storesTable).values(
-    stores.map((store: SiteContentState["stores"][number], index: number) => ({
-      id: store.id,
-      position: index,
-      name: store.name,
-      segment: store.segment,
-      segmentSlug: store.segmentSlug,
-      floor: store.floor,
-      description: store.description,
-      longDescription: store.longDescription,
-      phone: store.phone,
-      instagram: store.instagram,
-      featured: Boolean(store.featured),
-    })),
-  );
+  await executor
+    .insert(storesTable)
+    .values(
+      stores.map((store: SiteContentState["stores"][number], index: number) => ({
+        id: store.id,
+        position: index,
+        name: store.name,
+        segment: store.segment,
+        segmentSlug: store.segmentSlug,
+        floor: store.floor,
+        description: store.description,
+        longDescription: store.longDescription,
+        phone: store.phone,
+        instagram: store.instagram,
+        featured: Boolean(store.featured),
+      })),
+    )
+    .onConflictDoUpdate({
+      target: storesTable.id,
+      set: {
+        position: sql`excluded.position`,
+        name: sql`excluded.name`,
+        segment: sql`excluded.segment`,
+        segmentSlug: sql`excluded.segment_slug`,
+        floor: sql`excluded.floor`,
+        description: sql`excluded.description`,
+        longDescription: sql`excluded.long_description`,
+        phone: sql`excluded.phone`,
+        instagram: sql`excluded.instagram`,
+        featured: sql`excluded.featured`,
+        updatedAt: now,
+      },
+    });
+
+  await executor.delete(storesTable).where(notInArray(storesTable.id, incomingStoreIds));
+  await executor.delete(storeImagesTable).where(inArray(storeImagesTable.storeId, incomingStoreIds));
 
   const imageValues = stores.flatMap((store: SiteContentState["stores"][number]) =>
     store.images.map((image: string, index: number) => ({
       storeId: store.id,
       position: index,
-      url: image,
+      url: normalizeMediaReference(image),
     })),
   );
 
@@ -384,64 +436,130 @@ async function writeBlogPosts(
   executor: DbExecutor,
   blogPosts: SiteContentState["blogPosts"],
 ) {
-  await executor.delete(blogPostsTable);
-  if (blogPosts.length === 0) return;
+  if (blogPosts.length === 0) {
+    await executor.delete(blogPostsTable);
+    return;
+  }
 
-  await executor.insert(blogPostsTable).values(
-    blogPosts.map((post: SiteContentState["blogPosts"][number], index: number) => ({
-      slug: post.slug,
-      position: index,
-      title: post.title,
-      category: post.category,
-      date: post.date,
-      excerpt: post.excerpt,
-      content: post.content,
-      coverImage: post.coverImage,
-      author: post.author,
-      readTime: post.readTime,
-      featured: Boolean(post.featured),
-    })),
-  );
+  const now = new Date();
+  const incomingSlugs = blogPosts.map((post: SiteContentState["blogPosts"][number]) => post.slug);
+
+  await executor
+    .insert(blogPostsTable)
+    .values(
+      blogPosts.map((post: SiteContentState["blogPosts"][number], index: number) => ({
+        slug: post.slug,
+        position: index,
+        title: post.title,
+        category: post.category,
+        date: post.date,
+        excerpt: post.excerpt,
+        content: post.content,
+        coverImage: normalizeMediaReference(post.coverImage),
+        author: post.author,
+        readTime: post.readTime,
+        featured: Boolean(post.featured),
+      })),
+    )
+    .onConflictDoUpdate({
+      target: blogPostsTable.slug,
+      set: {
+        position: sql`excluded.position`,
+        title: sql`excluded.title`,
+        category: sql`excluded.category`,
+        date: sql`excluded.date`,
+        excerpt: sql`excluded.excerpt`,
+        content: sql`excluded.content`,
+        coverImage: sql`excluded.cover_image`,
+        author: sql`excluded.author`,
+        readTime: sql`excluded.read_time`,
+        featured: sql`excluded.featured`,
+        updatedAt: now,
+      },
+    });
+
+  await executor.delete(blogPostsTable).where(notInArray(blogPostsTable.slug, incomingSlugs));
 }
 
 async function writePartners(executor: DbExecutor, partners: SiteContentState["partners"]) {
-  await executor.delete(partnersTable);
-  if (partners.length === 0) return;
+  if (partners.length === 0) {
+    await executor.delete(partnersTable);
+    return;
+  }
 
-  await executor.insert(partnersTable).values(
-    partners.map((partner: SiteContentState["partners"][number], index: number) => ({
-      id: partner.id,
-      position: index,
-      name: partner.name,
-      logo: partner.logo ?? null,
-    })),
+  const now = new Date();
+  const incomingPartnerIds = partners.map(
+    (partner: SiteContentState["partners"][number]) => partner.id,
   );
+
+  await executor
+    .insert(partnersTable)
+    .values(
+      partners.map((partner: SiteContentState["partners"][number], index: number) => ({
+        id: partner.id,
+        position: index,
+        name: partner.name,
+        logo: partner.logo ? normalizeMediaReference(partner.logo) : null,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: partnersTable.id,
+      set: {
+        position: sql`excluded.position`,
+        name: sql`excluded.name`,
+        logo: sql`excluded.logo`,
+        updatedAt: now,
+      },
+    });
+
+  await executor.delete(partnersTable).where(notInArray(partnersTable.id, incomingPartnerIds));
 }
 
 async function writeSiteSettings(
   executor: DbExecutor,
   siteSettings: SiteContentState["siteSettings"],
 ) {
+  const now = new Date();
+
+  await executor
+    .insert(siteSettingsTable)
+    .values({
+      id: SINGLETON_ID,
+      name: siteSettings.name,
+      tagline: siteSettings.tagline,
+      institutionalDescription: siteSettings.institutionalDescription,
+      address: siteSettings.address,
+      phone: siteSettings.phone,
+      email: siteSettings.email,
+      hours: siteSettings.hours,
+      instagram: siteSettings.instagram,
+      facebook: siteSettings.facebook,
+      footerLeasingLabel: siteSettings.footerLeasingLabel,
+      footerLeasingHref: siteSettings.footerLeasingHref,
+      footerLegalNote: siteSettings.footerLegalNote,
+    })
+    .onConflictDoUpdate({
+      target: siteSettingsTable.id,
+      set: {
+        name: sql`excluded.name`,
+        tagline: sql`excluded.tagline`,
+        institutionalDescription: sql`excluded.institutional_description`,
+        address: sql`excluded.address`,
+        phone: sql`excluded.phone`,
+        email: sql`excluded.email`,
+        hours: sql`excluded.hours`,
+        instagram: sql`excluded.instagram`,
+        facebook: sql`excluded.facebook`,
+        footerLeasingLabel: sql`excluded.footer_leasing_label`,
+        footerLeasingHref: sql`excluded.footer_leasing_href`,
+        footerLegalNote: sql`excluded.footer_legal_note`,
+        updatedAt: now,
+      },
+    });
+
   await executor
     .delete(siteNavLinksTable)
     .where(eq(siteNavLinksTable.siteSettingsId, SINGLETON_ID));
-  await executor.delete(siteSettingsTable).where(eq(siteSettingsTable.id, SINGLETON_ID));
-
-  await executor.insert(siteSettingsTable).values({
-    id: SINGLETON_ID,
-    name: siteSettings.name,
-    tagline: siteSettings.tagline,
-    institutionalDescription: siteSettings.institutionalDescription,
-    address: siteSettings.address,
-    phone: siteSettings.phone,
-    email: siteSettings.email,
-    hours: siteSettings.hours,
-    instagram: siteSettings.instagram,
-    facebook: siteSettings.facebook,
-    footerLeasingLabel: siteSettings.footerLeasingLabel,
-    footerLeasingHref: siteSettings.footerLeasingHref,
-    footerLegalNote: siteSettings.footerLegalNote,
-  });
 
   if (siteSettings.navLinks.length > 0) {
     await executor.insert(siteNavLinksTable).values(
@@ -461,51 +579,100 @@ async function writeHomeContent(
   executor: DbExecutor,
   homeContent: SiteContentState["homeContent"],
 ) {
+  const now = new Date();
+
+  await executor
+    .insert(homeSettingsTable)
+    .values({
+      id: SINGLETON_ID,
+      heroEyebrow: homeContent.hero.eyebrow,
+      institutionalEyebrow: homeContent.institutional.eyebrow,
+      institutionalTitle: homeContent.institutional.title,
+      institutionalTitleHighlight: homeContent.institutional.titleHighlight,
+      institutionalLeadParagraph: homeContent.institutional.leadParagraph,
+      institutionalSecondaryParagraph: homeContent.institutional.secondaryParagraph,
+      institutionalCtaLabel: homeContent.institutional.ctaLabel,
+      institutionalCtaHref: homeContent.institutional.ctaHref,
+      institutionalImagePrimary: normalizeMediaReference(
+        homeContent.institutional.imagePrimary,
+      ),
+      institutionalImageSecondary: normalizeMediaReference(
+        homeContent.institutional.imageSecondary,
+      ),
+      institutionalFloatingStatValue: homeContent.institutional.floatingStatValue,
+      institutionalFloatingStatLabel: homeContent.institutional.floatingStatLabel,
+      statsBackgroundWord: homeContent.stats.backgroundWord,
+      featuredStoresEyebrow: homeContent.featuredStores.eyebrow,
+      featuredStoresTitle: homeContent.featuredStores.title,
+      featuredStoresTitleHighlight: homeContent.featuredStores.titleHighlight,
+      featuredStoresCtaLabel: homeContent.featuredStores.ctaLabel,
+      featuredStoresCtaHref: homeContent.featuredStores.ctaHref,
+      featuredStoresEmptyMessage: homeContent.featuredStores.emptyMessage,
+      partnersEyebrow: homeContent.partners.eyebrow,
+      partnersEmptyMessage: homeContent.partners.emptyMessage,
+      blogPreviewEyebrow: homeContent.blogPreview.eyebrow,
+      blogPreviewTitle: homeContent.blogPreview.title,
+      blogPreviewTitleHighlight: homeContent.blogPreview.titleHighlight,
+      blogPreviewCtaLabel: homeContent.blogPreview.ctaLabel,
+      blogPreviewCtaHref: homeContent.blogPreview.ctaHref,
+      blogPreviewEmptyMessage: homeContent.blogPreview.emptyMessage,
+      leasingCtaEyebrow: homeContent.leasingCta.eyebrow,
+      leasingCtaTitle: homeContent.leasingCta.title,
+      leasingCtaTitleHighlight: homeContent.leasingCta.titleHighlight,
+      leasingCtaDescription: homeContent.leasingCta.description,
+      leasingCtaLabel: homeContent.leasingCta.ctaLabel,
+      leasingCtaHref: homeContent.leasingCta.ctaHref,
+      leasingCtaBackgroundImage: normalizeMediaReference(
+        homeContent.leasingCta.backgroundImage,
+      ),
+    })
+    .onConflictDoUpdate({
+      target: homeSettingsTable.id,
+      set: {
+        heroEyebrow: sql`excluded.hero_eyebrow`,
+        institutionalEyebrow: sql`excluded.institutional_eyebrow`,
+        institutionalTitle: sql`excluded.institutional_title`,
+        institutionalTitleHighlight: sql`excluded.institutional_title_highlight`,
+        institutionalLeadParagraph: sql`excluded.institutional_lead_paragraph`,
+        institutionalSecondaryParagraph: sql`excluded.institutional_secondary_paragraph`,
+        institutionalCtaLabel: sql`excluded.institutional_cta_label`,
+        institutionalCtaHref: sql`excluded.institutional_cta_href`,
+        institutionalImagePrimary: sql`excluded.institutional_image_primary`,
+        institutionalImageSecondary: sql`excluded.institutional_image_secondary`,
+        institutionalFloatingStatValue: sql`excluded.institutional_floating_stat_value`,
+        institutionalFloatingStatLabel: sql`excluded.institutional_floating_stat_label`,
+        statsBackgroundWord: sql`excluded.stats_background_word`,
+        featuredStoresEyebrow: sql`excluded.featured_stores_eyebrow`,
+        featuredStoresTitle: sql`excluded.featured_stores_title`,
+        featuredStoresTitleHighlight: sql`excluded.featured_stores_title_highlight`,
+        featuredStoresCtaLabel: sql`excluded.featured_stores_cta_label`,
+        featuredStoresCtaHref: sql`excluded.featured_stores_cta_href`,
+        featuredStoresEmptyMessage: sql`excluded.featured_stores_empty_message`,
+        partnersEyebrow: sql`excluded.partners_eyebrow`,
+        partnersEmptyMessage: sql`excluded.partners_empty_message`,
+        blogPreviewEyebrow: sql`excluded.blog_preview_eyebrow`,
+        blogPreviewTitle: sql`excluded.blog_preview_title`,
+        blogPreviewTitleHighlight: sql`excluded.blog_preview_title_highlight`,
+        blogPreviewCtaLabel: sql`excluded.blog_preview_cta_label`,
+        blogPreviewCtaHref: sql`excluded.blog_preview_cta_href`,
+        blogPreviewEmptyMessage: sql`excluded.blog_preview_empty_message`,
+        leasingCtaEyebrow: sql`excluded.leasing_cta_eyebrow`,
+        leasingCtaTitle: sql`excluded.leasing_cta_title`,
+        leasingCtaTitleHighlight: sql`excluded.leasing_cta_title_highlight`,
+        leasingCtaDescription: sql`excluded.leasing_cta_description`,
+        leasingCtaLabel: sql`excluded.leasing_cta_label`,
+        leasingCtaHref: sql`excluded.leasing_cta_href`,
+        leasingCtaBackgroundImage: sql`excluded.leasing_cta_background_image`,
+        updatedAt: now,
+      },
+    });
+
   await executor
     .delete(homeHeroSlidesTable)
     .where(eq(homeHeroSlidesTable.homeSettingsId, SINGLETON_ID));
   await executor
     .delete(homeStatsItemsTable)
     .where(eq(homeStatsItemsTable.homeSettingsId, SINGLETON_ID));
-  await executor.delete(homeSettingsTable).where(eq(homeSettingsTable.id, SINGLETON_ID));
-
-  await executor.insert(homeSettingsTable).values({
-    id: SINGLETON_ID,
-    heroEyebrow: homeContent.hero.eyebrow,
-    institutionalEyebrow: homeContent.institutional.eyebrow,
-    institutionalTitle: homeContent.institutional.title,
-    institutionalTitleHighlight: homeContent.institutional.titleHighlight,
-    institutionalLeadParagraph: homeContent.institutional.leadParagraph,
-    institutionalSecondaryParagraph: homeContent.institutional.secondaryParagraph,
-    institutionalCtaLabel: homeContent.institutional.ctaLabel,
-    institutionalCtaHref: homeContent.institutional.ctaHref,
-    institutionalImagePrimary: homeContent.institutional.imagePrimary,
-    institutionalImageSecondary: homeContent.institutional.imageSecondary,
-    institutionalFloatingStatValue: homeContent.institutional.floatingStatValue,
-    institutionalFloatingStatLabel: homeContent.institutional.floatingStatLabel,
-    statsBackgroundWord: homeContent.stats.backgroundWord,
-    featuredStoresEyebrow: homeContent.featuredStores.eyebrow,
-    featuredStoresTitle: homeContent.featuredStores.title,
-    featuredStoresTitleHighlight: homeContent.featuredStores.titleHighlight,
-    featuredStoresCtaLabel: homeContent.featuredStores.ctaLabel,
-    featuredStoresCtaHref: homeContent.featuredStores.ctaHref,
-    featuredStoresEmptyMessage: homeContent.featuredStores.emptyMessage,
-    partnersEyebrow: homeContent.partners.eyebrow,
-    partnersEmptyMessage: homeContent.partners.emptyMessage,
-    blogPreviewEyebrow: homeContent.blogPreview.eyebrow,
-    blogPreviewTitle: homeContent.blogPreview.title,
-    blogPreviewTitleHighlight: homeContent.blogPreview.titleHighlight,
-    blogPreviewCtaLabel: homeContent.blogPreview.ctaLabel,
-    blogPreviewCtaHref: homeContent.blogPreview.ctaHref,
-    blogPreviewEmptyMessage: homeContent.blogPreview.emptyMessage,
-    leasingCtaEyebrow: homeContent.leasingCta.eyebrow,
-    leasingCtaTitle: homeContent.leasingCta.title,
-    leasingCtaTitleHighlight: homeContent.leasingCta.titleHighlight,
-    leasingCtaDescription: homeContent.leasingCta.description,
-    leasingCtaLabel: homeContent.leasingCta.ctaLabel,
-    leasingCtaHref: homeContent.leasingCta.ctaHref,
-    leasingCtaBackgroundImage: homeContent.leasingCta.backgroundImage,
-  });
 
   if (homeContent.hero.slides.length > 0) {
     await executor.insert(homeHeroSlidesTable).values(
@@ -518,7 +685,7 @@ async function writeHomeContent(
         subtitle: slide.subtitle,
         cta: slide.cta,
         href: slide.href,
-        image: slide.image,
+        image: normalizeMediaReference(slide.image),
       }),
       ),
     );
@@ -542,120 +709,270 @@ async function writeLeasingBenefits(
   executor: DbExecutor,
   leasingBenefits: SiteContentState["leasingBenefits"],
 ) {
-  await executor.delete(leasingBenefitsTable);
-  if (leasingBenefits.length === 0) return;
+  if (leasingBenefits.length === 0) {
+    await executor.delete(leasingBenefitsTable);
+    return;
+  }
 
-  await executor.insert(leasingBenefitsTable).values(
-    leasingBenefits.map(
-      (benefit: SiteContentState["leasingBenefits"][number], index: number) => ({
-      position: index,
-      icon: benefit.icon,
-      title: benefit.title,
-      description: benefit.description,
-      }),
-    ),
-  );
+  const now = new Date();
+  const positions = leasingBenefits.map((_benefit, index) => index);
+
+  await executor
+    .insert(leasingBenefitsTable)
+    .values(
+      leasingBenefits.map(
+        (benefit: SiteContentState["leasingBenefits"][number], index: number) => ({
+          position: index,
+          icon: benefit.icon,
+          title: benefit.title,
+          description: benefit.description,
+        }),
+      ),
+    )
+    .onConflictDoUpdate({
+      target: leasingBenefitsTable.position,
+      set: {
+        icon: sql`excluded.icon`,
+        title: sql`excluded.title`,
+        description: sql`excluded.description`,
+        updatedAt: now,
+      },
+    });
+
+  await executor
+    .delete(leasingBenefitsTable)
+    .where(notInArray(leasingBenefitsTable.position, positions));
 }
 
 async function writeSpaceTypes(executor: DbExecutor, spaceTypes: SiteContentState["spaceTypes"]) {
-  await executor.delete(leasingSpaceTypesTable);
-  if (spaceTypes.length === 0) return;
+  if (spaceTypes.length === 0) {
+    await executor.delete(leasingSpaceTypesTable);
+    return;
+  }
 
-  await executor.insert(leasingSpaceTypesTable).values(
-    spaceTypes.map((spaceType: SiteContentState["spaceTypes"][number], index: number) => ({
-      position: index,
-      name: spaceType.name,
-      size: spaceType.size,
-      description: spaceType.description,
-    })),
-  );
+  const now = new Date();
+  const positions = spaceTypes.map((_spaceType, index) => index);
+
+  await executor
+    .insert(leasingSpaceTypesTable)
+    .values(
+      spaceTypes.map((spaceType: SiteContentState["spaceTypes"][number], index: number) => ({
+        position: index,
+        name: spaceType.name,
+        size: spaceType.size,
+        description: spaceType.description,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: leasingSpaceTypesTable.position,
+      set: {
+        name: sql`excluded.name`,
+        size: sql`excluded.size`,
+        description: sql`excluded.description`,
+        updatedAt: now,
+      },
+    });
+
+  await executor
+    .delete(leasingSpaceTypesTable)
+    .where(notInArray(leasingSpaceTypesTable.position, positions));
 }
 
 async function writeTestimonials(
   executor: DbExecutor,
   testimonials: SiteContentState["testimonials"],
 ) {
-  await executor.delete(leasingTestimonialsTable);
-  if (testimonials.length === 0) return;
+  if (testimonials.length === 0) {
+    await executor.delete(leasingTestimonialsTable);
+    return;
+  }
 
-  await executor.insert(leasingTestimonialsTable).values(
-    testimonials.map(
-      (testimonial: SiteContentState["testimonials"][number], index: number) => ({
-      position: index,
-      name: testimonial.name,
-      store: testimonial.store,
-      text: testimonial.text,
-      }),
-    ),
-  );
+  const now = new Date();
+  const positions = testimonials.map((_testimonial, index) => index);
+
+  await executor
+    .insert(leasingTestimonialsTable)
+    .values(
+      testimonials.map(
+        (testimonial: SiteContentState["testimonials"][number], index: number) => ({
+          position: index,
+          name: testimonial.name,
+          store: testimonial.store,
+          text: testimonial.text,
+        }),
+      ),
+    )
+    .onConflictDoUpdate({
+      target: leasingTestimonialsTable.position,
+      set: {
+        name: sql`excluded.name`,
+        store: sql`excluded.store`,
+        text: sql`excluded.text`,
+        updatedAt: now,
+      },
+    });
+
+  await executor
+    .delete(leasingTestimonialsTable)
+    .where(notInArray(leasingTestimonialsTable.position, positions));
 }
 
 async function writeLeasingDifferentials(
   executor: DbExecutor,
   differentials: SiteContentState["leasingDifferentials"],
 ) {
-  await executor.delete(leasingDifferentialsTable);
-  if (differentials.length === 0) return;
-
-  await executor.insert(leasingDifferentialsTable).values(
-    differentials.map((value: string, index: number) => ({
-      position: index,
-      value,
-    })),
-  );
-}
-
-async function writeAboutData(executor: DbExecutor, aboutData: SiteContentState["aboutData"]) {
-  await executor.delete(aboutHistoryItemsTable);
-  await executor.delete(aboutValuesTable);
-  await executor.delete(aboutDifferentialsTable);
-  await executor.delete(aboutTeamMembersTable);
-  await executor.delete(aboutMetaTable).where(eq(aboutMetaTable.id, SINGLETON_ID));
-
-  await executor.insert(aboutMetaTable).values({
-    id: SINGLETON_ID,
-    mission: aboutData.mission,
-    vision: aboutData.vision,
-  });
-
-  if (aboutData.history.length > 0) {
-    await executor.insert(aboutHistoryItemsTable).values(
-      aboutData.history.map((value: string, index: number) => ({ position: index, value })),
-    );
+  if (differentials.length === 0) {
+    await executor.delete(leasingDifferentialsTable);
+    return;
   }
 
-  if (aboutData.values.length > 0) {
-    await executor.insert(aboutValuesTable).values(
-      aboutData.values.map(
-        (value: SiteContentState["aboutData"]["values"][number], index: number) => ({
-        position: index,
-        title: value.title,
-        description: value.description,
-      }),
-      ),
-    );
-  }
+  const now = new Date();
+  const positions = differentials.map((_value, index) => index);
 
-  if (aboutData.differentials.length > 0) {
-    await executor.insert(aboutDifferentialsTable).values(
-      aboutData.differentials.map((value: string, index: number) => ({
+  await executor
+    .insert(leasingDifferentialsTable)
+    .values(
+      differentials.map((value: string, index: number) => ({
         position: index,
         value,
       })),
-    );
+    )
+    .onConflictDoUpdate({
+      target: leasingDifferentialsTable.position,
+      set: {
+        value: sql`excluded.value`,
+        updatedAt: now,
+      },
+    });
+
+  await executor
+    .delete(leasingDifferentialsTable)
+    .where(notInArray(leasingDifferentialsTable.position, positions));
+}
+
+async function writeAboutData(executor: DbExecutor, aboutData: SiteContentState["aboutData"]) {
+  const now = new Date();
+
+  await executor
+    .insert(aboutMetaTable)
+    .values({
+      id: SINGLETON_ID,
+      mission: aboutData.mission,
+      vision: aboutData.vision,
+    })
+    .onConflictDoUpdate({
+      target: aboutMetaTable.id,
+      set: {
+        mission: sql`excluded.mission`,
+        vision: sql`excluded.vision`,
+        updatedAt: now,
+      },
+    });
+
+  if (aboutData.history.length === 0) {
+    await executor.delete(aboutHistoryItemsTable);
+  } else {
+    const historyPositions = aboutData.history.map((_value, index) => index);
+    await executor
+      .insert(aboutHistoryItemsTable)
+      .values(
+        aboutData.history.map((value: string, index: number) => ({
+          position: index,
+          value,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: aboutHistoryItemsTable.position,
+        set: {
+          value: sql`excluded.value`,
+          updatedAt: now,
+        },
+      });
+    await executor
+      .delete(aboutHistoryItemsTable)
+      .where(notInArray(aboutHistoryItemsTable.position, historyPositions));
   }
 
-  if (aboutData.team.length > 0) {
-    await executor.insert(aboutTeamMembersTable).values(
-      aboutData.team.map(
-        (member: SiteContentState["aboutData"]["team"][number], index: number) => ({
-        position: index,
-        name: member.name,
-        role: member.role,
-        description: member.description,
-      }),
-      ),
-    );
+  if (aboutData.values.length === 0) {
+    await executor.delete(aboutValuesTable);
+  } else {
+    const valuesPositions = aboutData.values.map((_value, index) => index);
+    await executor
+      .insert(aboutValuesTable)
+      .values(
+        aboutData.values.map(
+          (value: SiteContentState["aboutData"]["values"][number], index: number) => ({
+            position: index,
+            title: value.title,
+            description: value.description,
+          }),
+        ),
+      )
+      .onConflictDoUpdate({
+        target: aboutValuesTable.position,
+        set: {
+          title: sql`excluded.title`,
+          description: sql`excluded.description`,
+          updatedAt: now,
+        },
+      });
+    await executor
+      .delete(aboutValuesTable)
+      .where(notInArray(aboutValuesTable.position, valuesPositions));
+  }
+
+  if (aboutData.differentials.length === 0) {
+    await executor.delete(aboutDifferentialsTable);
+  } else {
+    const differentialPositions = aboutData.differentials.map((_value, index) => index);
+    await executor
+      .insert(aboutDifferentialsTable)
+      .values(
+        aboutData.differentials.map((value: string, index: number) => ({
+          position: index,
+          value,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: aboutDifferentialsTable.position,
+        set: {
+          value: sql`excluded.value`,
+          updatedAt: now,
+        },
+      });
+    await executor
+      .delete(aboutDifferentialsTable)
+      .where(notInArray(aboutDifferentialsTable.position, differentialPositions));
+  }
+
+  if (aboutData.team.length === 0) {
+    await executor.delete(aboutTeamMembersTable);
+  } else {
+    const teamPositions = aboutData.team.map((_member, index) => index);
+    await executor
+      .insert(aboutTeamMembersTable)
+      .values(
+        aboutData.team.map(
+          (member: SiteContentState["aboutData"]["team"][number], index: number) => ({
+            position: index,
+            name: member.name,
+            role: member.role,
+            description: member.description,
+          }),
+        ),
+      )
+      .onConflictDoUpdate({
+        target: aboutTeamMembersTable.position,
+        set: {
+          name: sql`excluded.name`,
+          role: sql`excluded.role`,
+          description: sql`excluded.description`,
+          updatedAt: now,
+        },
+      });
+    await executor
+      .delete(aboutTeamMembersTable)
+      .where(notInArray(aboutTeamMembersTable.position, teamPositions));
   }
 }
 
@@ -702,54 +1019,22 @@ async function writeSection<K extends ContentSection>(
 }
 
 export async function getContentSnapshot(): Promise<SiteContentState> {
-  const baseline = getContentBaseline();
-
-  const stores = await readSectionWithFallback("stores", () => readStoresFromDb(db), baseline.stores);
-  const blogPosts = await readSectionWithFallback(
-    "blogPosts",
-    () => readBlogPostsFromDb(db),
-    baseline.blogPosts,
-  );
-  const partners = await readSectionWithFallback(
-    "partners",
-    () => readPartnersFromDb(db),
-    baseline.partners,
-  );
-  const siteSettings = await readSectionWithFallback(
-    "siteSettings",
-    () => readSiteSettingsFromDb(db),
-    baseline.siteSettings,
-  );
-  const homeContent = await readSectionWithFallback(
-    "homeContent",
-    () => readHomeContentFromDb(db),
-    baseline.homeContent,
-  );
-  const leasingBenefits = await readSectionWithFallback(
+  const stores = ensureSectionValue("stores", await readStoresFromDb(db));
+  const blogPosts = ensureSectionValue("blogPosts", await readBlogPostsFromDb(db));
+  const partners = ensureSectionValue("partners", await readPartnersFromDb(db));
+  const siteSettings = ensureSectionValue("siteSettings", await readSiteSettingsFromDb(db));
+  const homeContent = ensureSectionValue("homeContent", await readHomeContentFromDb(db));
+  const leasingBenefits = ensureSectionValue(
     "leasingBenefits",
-    () => readLeasingBenefitsFromDb(db),
-    baseline.leasingBenefits,
+    await readLeasingBenefitsFromDb(db),
   );
-  const spaceTypes = await readSectionWithFallback(
-    "spaceTypes",
-    () => readSpaceTypesFromDb(db),
-    baseline.spaceTypes,
-  );
-  const testimonials = await readSectionWithFallback(
-    "testimonials",
-    () => readTestimonialsFromDb(db),
-    baseline.testimonials,
-  );
-  const leasingDifferentials = await readSectionWithFallback(
+  const spaceTypes = ensureSectionValue("spaceTypes", await readSpaceTypesFromDb(db));
+  const testimonials = ensureSectionValue("testimonials", await readTestimonialsFromDb(db));
+  const leasingDifferentials = ensureSectionValue(
     "leasingDifferentials",
-    () => readLeasingDifferentialsFromDb(db),
-    baseline.leasingDifferentials,
+    await readLeasingDifferentialsFromDb(db),
   );
-  const aboutData = await readSectionWithFallback(
-    "aboutData",
-    () => readAboutDataFromDb(db),
-    baseline.aboutData,
-  );
+  const aboutData = ensureSectionValue("aboutData", await readAboutDataFromDb(db));
 
   return {
     stores,

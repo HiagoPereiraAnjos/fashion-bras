@@ -78,7 +78,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       password,
     });
 
-    return error?.message ?? null;
+    if (!error) return null;
+
+    if (error.status === 400 || error.status === 401) {
+      return 'Credenciais invalidas.';
+    }
+
+    return 'Nao foi possivel autenticar agora. Tente novamente em instantes.';
   };
 
   const signOut = async () => {

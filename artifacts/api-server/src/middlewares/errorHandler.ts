@@ -3,6 +3,29 @@ import { ZodError } from "zod";
 import { isHttpError } from "../lib/httpError";
 import { logger } from "../lib/logger";
 
+function isDatabaseUnavailable(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+
+  const pgCode = (error as { code?: string }).code;
+  const causeCode = (
+    (error as { cause?: { code?: string } }).cause ?? {}
+  ).code;
+  const message = error.message.toLowerCase();
+
+  return (
+    error.name === "DrizzleQueryError" ||
+    pgCode === "ECONNREFUSED" ||
+    pgCode === "ENOTFOUND" ||
+    pgCode === "ETIMEDOUT" ||
+    causeCode === "ECONNREFUSED" ||
+    causeCode === "ENOTFOUND" ||
+    causeCode === "ETIMEDOUT" ||
+    message.includes("database_url") ||
+    message.includes("connection") ||
+    message.includes("timeout")
+  );
+}
+
 export const errorHandler: ErrorRequestHandler = (
   error,
   request,
@@ -26,6 +49,18 @@ export const errorHandler: ErrorRequestHandler = (
       title: "Validation Error",
       status: 400,
       detail: error.issues.map((issue) => issue.message).join("; "),
+      instance: request.originalUrl,
+    });
+    return;
+  }
+
+  if (isDatabaseUnavailable(error)) {
+    logger.error({ err: error, url: request.originalUrl }, "Database unavailable");
+    response.status(503).type("application/problem+json").json({
+      type: "about:blank",
+      title: "Service Unavailable",
+      status: 503,
+      detail: "Database temporarily unavailable.",
       instance: request.originalUrl,
     });
     return;

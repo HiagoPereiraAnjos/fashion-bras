@@ -39,10 +39,41 @@ function resolveCorsOrigins(): string[] {
   return origins;
 }
 
+function resolveCorsOriginRegex(): RegExp | null {
+  const raw = process.env.CORS_ALLOWED_ORIGIN_REGEX?.trim();
+  if (!raw) return null;
+
+  try {
+    return new RegExp(raw);
+  } catch {
+    throw new Error("CORS_ALLOWED_ORIGIN_REGEX is not a valid regular expression.");
+  }
+}
+
+function isAllowedOrigin(
+  origin: string,
+  allowedOrigins: string[],
+  allowedOriginRegex: RegExp | null,
+): boolean {
+  const normalized = normalizeOrigin(origin);
+  if (allowedOrigins.includes(normalized)) {
+    return true;
+  }
+
+  if (allowedOriginRegex && allowedOriginRegex.test(normalized)) {
+    return true;
+  }
+
+  return false;
+}
+
 const app: Express = express();
 const allowedOrigins = resolveCorsOrigins();
+const allowedOriginRegex = resolveCorsOriginRegex();
 
 app.disable("x-powered-by");
+// Vercel runs behind a proxy. This keeps request.ip accurate for rate limiting/logging.
+app.set("trust proxy", true);
 app.use(helmet());
 app.use(
   pinoHttp({
@@ -67,18 +98,22 @@ app.use(
   cors({
     origin(origin, callback) {
       if (!origin) {
+        // Non-browser calls (curl/server-to-server) don't send Origin.
         callback(null, true);
         return;
       }
 
-      if (allowedOrigins.includes(normalizeOrigin(origin))) {
+      if (isAllowedOrigin(origin, allowedOrigins, allowedOriginRegex)) {
         callback(null, true);
         return;
       }
 
       callback(new HttpError(403, "Forbidden", "CORS origin not allowed."));
     },
-    credentials: true,
+    credentials: false,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Authorization", "Content-Type"],
+    maxAge: 86400,
   }),
 );
 app.use(express.json({ limit: "1mb" }));

@@ -6,10 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AdminMediaUploadRequest {
-  /** @maxLength 120 */
-  folder?: string;
+export interface AdminMediaDeleteRequest {
   /** @maxLength 400 */
-  replacePath?: string;
-  file: Blob;
+  path: string;
 }
