@@ -49,10 +49,21 @@ export async function requestApi<T>(
   options: RequestInit,
   parser: { parse: (value: unknown) => T },
 ): Promise<T> {
-  const response = await fetch(resolveApiUrl(path), {
-    credentials: 'omit',
-    ...options,
-  });
+  let response: Response;
+  try {
+    response = await fetch(resolveApiUrl(path), {
+      credentials: 'omit',
+      ...options,
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'Erro de rede desconhecido.';
+    throw new ApiRequestError(
+      'Nao foi possivel conectar ao servidor. Verifique API/CORS e tente novamente.',
+      0,
+      detail,
+    );
+  }
+
   const payload = await parseJson(response);
 
   if (!response.ok) {

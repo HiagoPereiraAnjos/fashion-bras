@@ -30,7 +30,7 @@ async function resolveAuthToken(
   const token = (await getAuthToken?.()) ?? (await getSupabaseAccessToken());
   if (!token) {
     throw new ApiRequestError(
-      'Sessao administrativa expirada. Faça login novamente para salvar.',
+      'Sessao administrativa expirada. Faca login novamente para salvar.',
       401,
     );
   }

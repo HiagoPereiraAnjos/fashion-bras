@@ -7,24 +7,18 @@ import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 export default defineConfig(async ({ mode, command }) => {
   const env = loadEnv(mode, path.resolve(import.meta.dirname), "");
 
-  const rawPort = process.env.PORT ?? env.PORT;
-  if (!rawPort) {
-    throw new Error(
-      "PORT environment variable is required but was not provided.",
-    );
-  }
+  const rawPort = process.env.PORT ?? env.PORT ?? "4173";
 
   const port = Number(rawPort);
   if (Number.isNaN(port) || port <= 0) {
     throw new Error(`Invalid PORT value: "${rawPort}"`);
   }
 
-  const basePath = process.env.BASE_PATH ?? env.BASE_PATH;
-  if (!basePath) {
-    throw new Error(
-      "BASE_PATH environment variable is required but was not provided.",
-    );
+  const rawBasePath = (process.env.BASE_PATH ?? env.BASE_PATH ?? "/").trim();
+  if (!rawBasePath.startsWith("/")) {
+    throw new Error(`BASE_PATH must start with "/". Received: "${rawBasePath}"`);
   }
+  const basePath = rawBasePath.endsWith("/") ? rawBasePath : `${rawBasePath}/`;
 
   if (
     command === "build" &&

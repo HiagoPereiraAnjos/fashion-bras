@@ -126,7 +126,7 @@ pnpm.cmd --filter @workspace/fashion-mall typecheck
 ```
 
 Observacoes:
-- `vite.config.ts` exige `PORT` e `BASE_PATH`
+- `PORT` e `BASE_PATH` sao opcionais (`4173` e `/` por padrao)
 - em PowerShell, use `pnpm.cmd` se houver bloqueio de policy
 
 ## 5) Como funciona a camada de dados atual
@@ -196,6 +196,32 @@ Troca futura prevista:
 4. Implementar upload de imagem e troca de URLs manuais por assets gerenciados
 5. Adicionar testes de contrato do repositorio (local e remoto)
 6. Padronizar encoding dos textos para eliminar caracteres corrompidos
+
+## 10) Deploy frontend na Vercel
+Projeto recomendado:
+- `fashion-mall` (frontend separado da API)
+
+Variaveis obrigatorias em `preview` e `production`:
+- `VITE_CONTENT_BACKEND_MODE=remote`
+- `VITE_API_BASE_URL=https://fashion-bras-api.vercel.app`
+- `VITE_SUPABASE_URL=<url publica do projeto Supabase>`
+- `VITE_SUPABASE_ANON_KEY=<anon key publica do Supabase>`
+- `VITE_SITE_URL=<url publica do frontend>`
+
+Variaveis opcionais:
+- `BASE_PATH=/`
+- `PORT=4173`
+
+Passo a passo (CLI):
+```powershell
+pnpm.cmd dlx vercel pull --yes --environment production --cwd artifacts/fashion-mall --scope <seu-time>
+pnpm.cmd dlx vercel build --prod --yes --cwd artifacts/fashion-mall --scope <seu-time>
+pnpm.cmd dlx vercel deploy --prebuilt --prod --yes --cwd artifacts/fashion-mall --scope <seu-time>
+```
+
+Notas de roteamento SPA:
+- `vercel.json` em `artifacts/fashion-mall` inclui fallback para `index.html`.
+- isso evita `404` ao dar refresh em rotas como `/admin`, `/blog/:slug`, `/lojas/:id`.
 
 ---
 
