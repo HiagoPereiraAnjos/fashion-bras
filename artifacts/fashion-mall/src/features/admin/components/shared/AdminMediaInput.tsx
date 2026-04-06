@@ -9,6 +9,7 @@ import {
   resolveStorageObjectPath,
   uploadAdminMedia,
 } from '@/services/media/adminMediaApi';
+import { ApiRequestError } from '@/services/api/request';
 
 interface AdminMediaInputProps {
   value: string;
@@ -20,6 +21,20 @@ interface AdminMediaInputProps {
 }
 
 const ACCEPTED_IMAGE_TYPES = ADMIN_MEDIA_ALLOWED_TYPES.join(',');
+
+function getMediaErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiRequestError) {
+    if (error.status === 401) {
+      return 'Sessao expirada. Faca login novamente para gerenciar imagens.';
+    }
+    if (error.status === 413) {
+      return 'Arquivo excede 8MB.';
+    }
+    return error.message || fallback;
+  }
+
+  return error instanceof Error ? error.message : fallback;
+}
 
 export function AdminMediaInput({
   value,
@@ -83,7 +98,7 @@ export function AdminMediaInput({
     } catch (error) {
       setUploadNotice({
         tone: 'error',
-        message: error instanceof Error ? error.message : 'Nao foi possivel enviar a imagem.',
+        message: getMediaErrorMessage(error, 'Nao foi possivel enviar a imagem.'),
       });
     } finally {
       setIsUploading(false);
@@ -116,7 +131,7 @@ export function AdminMediaInput({
     } catch (error) {
       setUploadNotice({
         tone: 'error',
-        message: error instanceof Error ? error.message : 'Nao foi possivel remover a imagem.',
+        message: getMediaErrorMessage(error, 'Nao foi possivel remover a imagem.'),
       });
     } finally {
       setIsDeleting(false);

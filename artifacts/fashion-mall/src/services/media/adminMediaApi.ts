@@ -12,6 +12,9 @@ export const ADMIN_MEDIA_ALLOWED_TYPES = [
   'image/webp',
   'image/avif',
 ] as const;
+const STORAGE_OBJECT_PATH_PATTERN = /^[a-z0-9/_\-.]+$/i;
+const MAX_STORAGE_OBJECT_PATH_LENGTH = 400;
+const MAX_FOLDER_LENGTH = 120;
 
 interface UploadAdminMediaParams {
   file: File;
@@ -39,18 +42,54 @@ async function resolveToken(providedToken?: string | null): Promise<string> {
   );
 }
 
+function isAllowedMediaType(value: string): value is (typeof ADMIN_MEDIA_ALLOWED_TYPES)[number] {
+  return ADMIN_MEDIA_ALLOWED_TYPES.includes(value as (typeof ADMIN_MEDIA_ALLOWED_TYPES)[number]);
+}
+
+function normalizeFolder(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9/_-]+/g, '-')
+    .replace(/\/+/g, '/')
+    .replace(/^\/+|\/+$/g, '');
+}
+
 export async function uploadAdminMedia({
   file,
   folder,
   replacePath,
   token,
 }: UploadAdminMediaParams): Promise<AdminMediaUpload> {
+  if (!isAllowedMediaType(file.type)) {
+    throw new ApiRequestError('Formato invalido. Envie JPG, PNG, WEBP ou AVIF.', 400);
+  }
+
+  if (file.size <= 0) {
+    throw new ApiRequestError('Arquivo vazio. Envie uma imagem valida.', 400);
+  }
+
+  if (file.size > ADMIN_MEDIA_MAX_SIZE_BYTES) {
+    throw new ApiRequestError('Arquivo excede 8MB.', 413);
+  }
+
   const authToken = await resolveToken(token);
   const body = new FormData();
+  const normalizedFolder = folder?.trim() ? normalizeFolder(folder) : '';
+  if (normalizedFolder && normalizedFolder.length > MAX_FOLDER_LENGTH) {
+    throw new ApiRequestError(
+      `Pasta de upload excede ${MAX_FOLDER_LENGTH} caracteres.`,
+      400,
+    );
+  }
+  const normalizedReplacePath = resolveStorageObjectPath(replacePath);
+  if (replacePath?.trim() && !normalizedReplacePath) {
+    throw new ApiRequestError('Caminho de substituicao invalido.', 400);
+  }
 
   body.append('file', file);
-  if (folder?.trim()) body.append('folder', folder.trim());
-  if (replacePath?.trim()) body.append('replacePath', replacePath.trim());
+  if (normalizedFolder) body.append('folder', normalizedFolder);
+  if (normalizedReplacePath) body.append('replacePath', normalizedReplacePath);
 
   return requestApi(
     '/api/admin/media/upload',
@@ -72,7 +111,11 @@ export async function uploadAdminMedia({
         const path = typeof payload.path === 'string' ? payload.path.trim() : '';
         const url = typeof payload.url === 'string' ? payload.url.trim() : '';
 
-        if (!bucket || !path || !url.startsWith('http')) {
+        if (
+          !bucket ||
+          !resolveStorageObjectPath(path) ||
+          !url.startsWith('http')
+        ) {
           throw new Error('Invalid upload response.');
         }
 
@@ -108,7 +151,10 @@ export function resolveStorageObjectPath(value: string | null | undefined): stri
   }
 
   const normalized = trimmed.replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
-  if (!normalized || normalized.includes('..')) return null;
+  if (!normalized || normalized.length > MAX_STORAGE_OBJECT_PATH_LENGTH) return null;
+  if (!STORAGE_OBJECT_PATH_PATTERN.test(normalized)) return null;
+  const parts = normalized.split('/');
+  if (parts.some((part) => part === '.' || part === '..')) return null;
   return normalized;
 }
 
@@ -117,6 +163,10 @@ export async function deleteAdminMedia({
   token,
 }: DeleteAdminMediaParams): Promise<AdminMediaDelete> {
   const authToken = await resolveToken(token);
+  const normalizedPath = resolveStorageObjectPath(path);
+  if (!normalizedPath) {
+    throw new ApiRequestError('Caminho de arquivo invalido para remocao.', 400);
+  }
 
   return requestApi(
     '/api/admin/media/object',
@@ -126,7 +176,7 @@ export async function deleteAdminMedia({
         'Content-Type': 'application/json',
         Authorization: `Bearer ${authToken}`,
       },
-      body: JSON.stringify({ path: path.trim() }),
+      body: JSON.stringify({ path: normalizedPath }),
     },
     {
       parse(value: unknown): AdminMediaDelete {
@@ -139,7 +189,7 @@ export async function deleteAdminMedia({
         const deletedPath = typeof payload.path === 'string' ? payload.path.trim() : '';
         const deleted = payload.deleted === true;
 
-        if (!bucket || !deletedPath || !deleted) {
+        if (!bucket || !resolveStorageObjectPath(deletedPath) || !deleted) {
           throw new Error('Invalid delete response.');
         }
 

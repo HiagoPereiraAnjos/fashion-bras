@@ -102,6 +102,14 @@ Pre-requisitos na Vercel:
 - variaveis de ambiente do frontend e backend configuradas
 - build command padrao do repo respeitado (`pnpm install --frozen-lockfile`)
 
+### Estrategia recomendada para preview e QA externo
+- Use 2 projetos frontend na Vercel:
+  - `fashion-mall-preview` (interno, com Vercel Authentication em preview)
+  - `fashion-mall-staging` (externo, dominio estavel para QA)
+- Mantenha `fashion-mall-prod` para producao.
+- Admin segue protegido por Supabase Auth + autorizacao backend.
+- Runbook completo: [docs/vercel-preview-staging-strategy.md](docs/vercel-preview-staging-strategy.md)
+
 ## 10. Diagnostico rapido de setup
 Se algo falhar:
 1. confirme Node/pnpm (`node -v`, `pnpm -v`)

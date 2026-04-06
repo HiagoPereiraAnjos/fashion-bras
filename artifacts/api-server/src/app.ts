@@ -8,12 +8,29 @@ import { logger } from "./lib/logger";
 import { errorHandler } from "./middlewares/errorHandler";
 import { notFoundHandler } from "./middlewares/notFound";
 
-function normalizeOrigin(value: string): string {
+const HOSTNAME_LABEL_PATTERN = /^[a-z0-9-]+$/;
+
+function parseUrlOrigin(value: string): URL {
+  let parsed: URL;
   try {
-    return new URL(value).origin;
+    parsed = new URL(value);
   } catch {
-    return value.replace(/\/+$/, "");
+    throw new Error(`Invalid origin URL: "${value}"`);
   }
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error(`Unsupported origin protocol in "${value}"`);
+  }
+
+  if (parsed.pathname !== "/" || parsed.search || parsed.hash) {
+    throw new Error(`Origin must not include path/query/hash: "${value}"`);
+  }
+
+  return parsed;
+}
+
+function normalizeConfiguredOrigin(value: string): string {
+  return parseUrlOrigin(value).origin;
 }
 
 function resolveCorsOrigins(): string[] {
@@ -28,7 +45,7 @@ function resolveCorsOrigins(): string[] {
     .split(",")
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0)
-    .map(normalizeOrigin);
+    .map(normalizeConfiguredOrigin);
 
   if (origins.length === 0) {
     throw new Error(
@@ -39,37 +56,99 @@ function resolveCorsOrigins(): string[] {
   return origins;
 }
 
-function resolveCorsOriginRegex(): RegExp | null {
-  const raw = process.env.CORS_ALLOWED_ORIGIN_REGEX?.trim();
+function resolveVercelPreviewProjects(): string[] {
+  const raw = process.env.CORS_ALLOWED_VERCEL_PROJECTS?.trim();
+  if (!raw) return [];
+
+  const projects = raw
+    .split(",")
+    .map((project) => project.trim().toLowerCase())
+    .filter((project) => project.length > 0);
+
+  for (const project of projects) {
+    if (!HOSTNAME_LABEL_PATTERN.test(project)) {
+      throw new Error(
+        `CORS_ALLOWED_VERCEL_PROJECTS contains invalid slug: "${project}"`,
+      );
+    }
+  }
+
+  return projects;
+}
+
+function resolveVercelTeamSlug(): string | null {
+  const raw = process.env.CORS_ALLOWED_VERCEL_TEAM_SLUG?.trim().toLowerCase();
   if (!raw) return null;
 
+  if (!HOSTNAME_LABEL_PATTERN.test(raw)) {
+    throw new Error("CORS_ALLOWED_VERCEL_TEAM_SLUG must be alphanumeric/hyphen.");
+  }
+
+  return raw;
+}
+
+function isAllowedVercelPreviewOrigin(
+  url: URL,
+  projectSlugs: string[],
+  teamSlug: string | null,
+): boolean {
+  if (url.protocol !== "https:") return false;
+  if (projectSlugs.length === 0) return false;
+  if (url.hostname.includes("..")) return false;
+  if (!url.hostname.endsWith(".vercel.app")) return false;
+
+  const hostWithoutSuffix = url.hostname.slice(0, -".vercel.app".length);
+  if (!hostWithoutSuffix || hostWithoutSuffix.includes(".")) return false;
+
+  for (const projectSlug of projectSlugs) {
+    const prefix = `${projectSlug}-`;
+    if (!hostWithoutSuffix.startsWith(prefix)) continue;
+
+    const remainder = hostWithoutSuffix.slice(prefix.length);
+    if (!remainder || !HOSTNAME_LABEL_PATTERN.test(remainder)) {
+      continue;
+    }
+
+    if (!teamSlug) return true;
+
+    if (remainder === teamSlug) return true;
+    if (remainder.endsWith(`-${teamSlug}`)) return true;
+  }
+
+  return false;
+}
+
+function normalizeRequestOrigin(value: string): string | null {
   try {
-    return new RegExp(raw);
+    return parseUrlOrigin(value).origin;
   } catch {
-    throw new Error("CORS_ALLOWED_ORIGIN_REGEX is not a valid regular expression.");
+    return null;
   }
 }
 
 function isAllowedOrigin(
   origin: string,
   allowedOrigins: string[],
-  allowedOriginRegex: RegExp | null,
+  vercelPreviewProjects: string[],
+  vercelTeamSlug: string | null,
 ): boolean {
-  const normalized = normalizeOrigin(origin);
+  const normalized = normalizeRequestOrigin(origin);
+  if (!normalized) return false;
   if (allowedOrigins.includes(normalized)) {
     return true;
   }
 
-  if (allowedOriginRegex && allowedOriginRegex.test(normalized)) {
-    return true;
-  }
-
-  return false;
+  return isAllowedVercelPreviewOrigin(
+    new URL(normalized),
+    vercelPreviewProjects,
+    vercelTeamSlug,
+  );
 }
 
 const app: Express = express();
 const allowedOrigins = resolveCorsOrigins();
-const allowedOriginRegex = resolveCorsOriginRegex();
+const vercelPreviewProjects = resolveVercelPreviewProjects();
+const vercelTeamSlug = resolveVercelTeamSlug();
 
 app.disable("x-powered-by");
 // Vercel runs behind a proxy. This keeps request.ip accurate for rate limiting/logging.
@@ -103,7 +182,14 @@ app.use(
         return;
       }
 
-      if (isAllowedOrigin(origin, allowedOrigins, allowedOriginRegex)) {
+      if (
+        isAllowedOrigin(
+          origin,
+          allowedOrigins,
+          vercelPreviewProjects,
+          vercelTeamSlug,
+        )
+      ) {
         callback(null, true);
         return;
       }
