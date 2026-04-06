@@ -1458,3 +1458,13 @@ export const PostAdminImportContentResponse = zod.object({
     ),
   }),
 });
+
+/**
+ * @summary Upload admin media image
+ */
+export const postAdminMediaUploadBodyFolderMax = 120;
+
+export const PostAdminMediaUploadBody = zod.object({
+  folder: zod.string().max(postAdminMediaUploadBodyFolderMax).optional(),
+  file: zod.instanceof(File),
+});

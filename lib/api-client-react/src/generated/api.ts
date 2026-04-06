@@ -18,10 +18,12 @@ import type {
 
 import type {
   AdminMe,
+  AdminMediaUploadRequest,
   ContentSection,
   ContentSectionResponse,
   ContentSectionUpdateRequest,
   HealthStatus,
+  MediaUploadResponse,
   ProblemDetails,
   SiteContentState,
 } from "./api.schemas";
@@ -683,4 +685,96 @@ export const usePostAdminImportContent = <
   TContext
 > => {
   return useMutation(getPostAdminImportContentMutationOptions(options));
+};
+
+/**
+ * @summary Upload admin media image
+ */
+export const getPostAdminMediaUploadUrl = () => {
+  return `/api/admin/media/upload`;
+};
+
+export const postAdminMediaUpload = async (
+  adminMediaUploadRequest: AdminMediaUploadRequest,
+  options?: RequestInit,
+): Promise<MediaUploadResponse> => {
+  const formData = new FormData();
+  if (adminMediaUploadRequest.folder !== undefined) {
+    formData.append(`folder`, adminMediaUploadRequest.folder);
+  }
+  formData.append(`file`, adminMediaUploadRequest.file);
+
+  return customFetch<MediaUploadResponse>(getPostAdminMediaUploadUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const getPostAdminMediaUploadMutationOptions = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminMediaUpload>>,
+    TError,
+    { data: BodyType<AdminMediaUploadRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postAdminMediaUpload>>,
+  TError,
+  { data: BodyType<AdminMediaUploadRequest> },
+  TContext
+> => {
+  const mutationKey = ["postAdminMediaUpload"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postAdminMediaUpload>>,
+    { data: BodyType<AdminMediaUploadRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return postAdminMediaUpload(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostAdminMediaUploadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postAdminMediaUpload>>
+>;
+export type PostAdminMediaUploadMutationBody =
+  BodyType<AdminMediaUploadRequest>;
+export type PostAdminMediaUploadMutationError = ErrorType<ProblemDetails>;
+
+/**
+ * @summary Upload admin media image
+ */
+export const usePostAdminMediaUpload = <
+  TError = ErrorType<ProblemDetails>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postAdminMediaUpload>>,
+    TError,
+    { data: BodyType<AdminMediaUploadRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof postAdminMediaUpload>>,
+  TError,
+  { data: BodyType<AdminMediaUploadRequest> },
+  TContext
+> => {
+  return useMutation(getPostAdminMediaUploadMutationOptions(options));
 };

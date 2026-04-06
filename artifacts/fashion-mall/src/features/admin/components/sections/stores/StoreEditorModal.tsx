@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { AdminEditorModal } from '@/features/admin/components/shared/AdminEditorModal';
+import { AdminMediaInput } from '@/features/admin/components/shared/AdminMediaInput';
 import {
   Field,
   InlineNotice,
-  Input,
   Select,
   Textarea,
+  Input,
 } from '@/features/admin/components/shared/AdminFormControls';
 import {
   sanitizeStoreForm,
@@ -139,41 +140,50 @@ export function StoreEditorModal({
         )}
       </Field>
       <div>
-        <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
-          Imagens (URLs)
+        <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-2">
+          Imagens
         </label>
         {form.images.map((image, index) => (
-          <div key={index} className="flex gap-2 mb-2">
-            <Input
-              value={image}
-              onChange={(value) => {
-                const images = [...form.images];
-                images[index] = value;
-                const nextForm = { ...form, images };
-                setForm((current) => ({ ...current, images }));
-                if (attemptedSave) setErrors(validateStoreForm(nextForm));
-                if (saveError) setSaveError(null);
-              }}
-              placeholder="https://..."
-            />
-            <button
-              onClick={() => {
-                const nextImages = form.images.filter((_, imageIndex) => imageIndex !== index);
-                const nextForm = { ...form, images: nextImages };
-                setForm((current) => ({
-                  ...current,
-                  images: current.images.filter((_, imageIndex) => imageIndex !== index),
-                }));
-                if (attemptedSave) setErrors(validateStoreForm(nextForm));
-                if (saveError) setSaveError(null);
-              }}
-              className="text-red-400 hover:text-red-600 px-2"
-            >
-              <Trash2 size={14} />
-            </button>
+          <div key={index} className="mb-3 rounded border border-stone-100 p-3">
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                <AdminMediaInput
+                  value={image}
+                  onChange={(value) => {
+                    const images = [...form.images];
+                    images[index] = value;
+                    const nextForm = { ...form, images };
+                    setForm((current) => ({ ...current, images }));
+                    if (attemptedSave) setErrors(validateStoreForm(nextForm));
+                    if (saveError) setSaveError(null);
+                  }}
+                  folder="stores/gallery"
+                  placeholder="https://..."
+                  showPreview
+                  previewClassName="h-20 w-full object-cover border border-stone-100"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextImages = form.images.filter((_, imageIndex) => imageIndex !== index);
+                  const nextForm = { ...form, images: nextImages };
+                  setForm((current) => ({
+                    ...current,
+                    images: current.images.filter((_, imageIndex) => imageIndex !== index),
+                  }));
+                  if (attemptedSave) setErrors(validateStoreForm(nextForm));
+                  if (saveError) setSaveError(null);
+                }}
+                className="text-red-400 hover:text-red-600 px-2 pt-2"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           </div>
         ))}
         <button
+          type="button"
           onClick={() => {
             const nextForm = { ...form, images: [...form.images, ''] };
             setForm((current) => ({ ...current, images: [...current.images, ''] }));

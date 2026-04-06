@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { Field, Input, SectionCard, Textarea } from '@/features/admin/components/shared/AdminFormControls';
+import { AdminMediaInput } from '@/features/admin/components/shared/AdminMediaInput';
 import type { HomePageContent } from '@/types';
 
 interface HomeSectionCardProps {
@@ -80,7 +81,7 @@ export function HeroSettingsCard({ form, setForm, onReset, errorMessage }: HeroS
                 placeholder="/rota"
               />
             </div>
-            <Input
+            <AdminMediaInput
               value={slide.image}
               onChange={(value) =>
                 setForm((current) => {
@@ -89,7 +90,10 @@ export function HeroSettingsCard({ form, setForm, onReset, errorMessage }: HeroS
                   return { ...current, hero: { ...current.hero, slides } };
                 })
               }
+              folder={`home/hero/slide-${index + 1}`}
               placeholder="URL da imagem"
+              showPreview
+              previewClassName="w-full h-24 object-cover border border-stone-100"
             />
           </div>
         ))}
@@ -169,7 +173,7 @@ export function InstitutionalSettingsCard({
           />
         </Field>
         <Field label="Imagem principal">
-          <Input
+          <AdminMediaInput
             value={form.institutional.imagePrimary}
             onChange={(value) =>
               setForm((current) => ({
@@ -177,10 +181,13 @@ export function InstitutionalSettingsCard({
                 institutional: { ...current.institutional, imagePrimary: value },
               }))
             }
+            folder="home/institutional"
+            showPreview
+            previewClassName="w-full h-24 object-cover border border-stone-100"
           />
         </Field>
         <Field label="Imagem secundaria">
-          <Input
+          <AdminMediaInput
             value={form.institutional.imageSecondary}
             onChange={(value) =>
               setForm((current) => ({
@@ -188,6 +195,9 @@ export function InstitutionalSettingsCard({
                 institutional: { ...current.institutional, imageSecondary: value },
               }))
             }
+            folder="home/institutional"
+            showPreview
+            previewClassName="w-full h-24 object-cover border border-stone-100"
           />
         </Field>
         <Field label="Estatistica flutuante">
@@ -534,7 +544,7 @@ export function SecondaryBlocksSettingsCard({
           />
         </Field>
         <Field label="Imagem de fundo - locacao">
-          <Input
+          <AdminMediaInput
             value={form.leasingCta.backgroundImage}
             onChange={(value) =>
               setForm((current) => ({
@@ -542,6 +552,9 @@ export function SecondaryBlocksSettingsCard({
                 leasingCta: { ...current.leasingCta, backgroundImage: value },
               }))
             }
+            folder="home/leasing"
+            showPreview
+            previewClassName="w-full h-24 object-cover border border-stone-100"
           />
         </Field>
       </div>

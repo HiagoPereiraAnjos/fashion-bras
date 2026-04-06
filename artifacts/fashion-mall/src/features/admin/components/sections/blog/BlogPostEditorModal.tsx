@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BLOG_ALL_CATEGORY } from '@/services/content/defaults';
 import { AdminEditorModal } from '@/features/admin/components/shared/AdminEditorModal';
+import { AdminMediaInput } from '@/features/admin/components/shared/AdminMediaInput';
 import {
   Field,
   InlineNotice,
@@ -124,16 +125,15 @@ export function BlogPostEditorModal({
         <Input value={form.date} onChange={(value) => updateWithValidation('date', value)} />
         {errors.date && <p className="mt-1 text-xs text-red-600">{errors.date}</p>}
       </Field>
-      <Field label="Imagem de Capa (URL)">
-        <Input
+      <Field label="Imagem de Capa">
+        <AdminMediaInput
           value={form.coverImage}
           onChange={(value) => updateWithValidation('coverImage', value)}
+          folder="blog/covers"
+          showPreview
         />
         {errors.coverImage && <p className="mt-1 text-xs text-red-600">{errors.coverImage}</p>}
       </Field>
-      {form.coverImage && (
-        <img src={form.coverImage} alt="" className="w-full h-32 object-cover border border-stone-100" />
-      )}
       <Field label="Resumo (excerpt)">
         <Textarea
           value={form.excerpt}

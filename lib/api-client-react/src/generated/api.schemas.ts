@@ -236,3 +236,15 @@ export interface AdminMe {
   email: string;
   role: string;
 }
+
+export interface MediaUploadResponse {
+  bucket: string;
+  path: string;
+  url: string;
+}
+
+export interface AdminMediaUploadRequest {
+  /** @maxLength 120 */
+  folder?: string;
+  file: Blob;
+}
