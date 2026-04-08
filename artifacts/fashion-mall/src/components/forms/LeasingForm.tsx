@@ -1,6 +1,7 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react';
+import { runtimeConfig } from '@/config/runtime';
 import { useSiteContent } from '@/services/content';
 import {
   hasMinLength,
@@ -46,6 +47,24 @@ function sanitizeForm(values: LeasingFormFields): LeasingFormFields {
     segment: normalizeText(values.segment),
     message: normalizeText(values.message),
   };
+}
+
+function resolveContactEndpoint(): string {
+  return runtimeConfig.apiBaseUrl
+    ? `${runtimeConfig.apiBaseUrl}/api/contact`
+    : '/api/contact';
+}
+
+function resolveApiErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+
+  const detail = (payload as Record<string, unknown>).detail;
+  if (typeof detail === 'string' && detail.trim().length > 0) return detail.trim();
+
+  const title = (payload as Record<string, unknown>).title;
+  if (typeof title === 'string' && title.trim().length > 0) return title.trim();
+
+  return null;
 }
 
 export default function LeasingForm() {
@@ -182,9 +201,36 @@ export default function LeasingForm() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setIsSubmitting(false);
-    setSubmitted(true);
+    try {
+      const response = await fetch(resolveContactEndpoint(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sanitized),
+      });
+
+      const payload = (await response.json().catch(() => null)) as unknown;
+
+      if (!response.ok) {
+        const apiMessage = resolveApiErrorMessage(payload);
+        throw new Error(apiMessage ?? 'Nao foi possivel enviar sua solicitacao agora.');
+      }
+
+      if (!(payload && typeof payload === 'object' && (payload as { success?: unknown }).success === true)) {
+        throw new Error('Resposta inesperada da API de contato.');
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Nao foi possivel enviar sua solicitacao agora. Tente novamente.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -215,13 +261,10 @@ export default function LeasingForm() {
             <CheckCircle size={56} className="text-amber-600" />
           </div>
           <h3 className="font-serif text-2xl font-bold text-stone-900 mb-4">
-            Solicitação registrada com sucesso
+            Solicitação enviada com sucesso
           </h3>
           <p className="text-stone-500 max-w-md mx-auto leading-relaxed">
-            Seus dados foram validados e registrados localmente para demonstração do fluxo.
-          </p>
-          <p className="text-xs text-stone-400 mt-3">
-            Nesta etapa, nenhum envio externo e realizado.
+            Recebemos sua solicitação e nossa equipe comercial entrará em contato em breve.
           </p>
           <button
             onClick={resetForm}
@@ -370,11 +413,8 @@ export default function LeasingForm() {
               disabled={isSubmitting}
               className="w-full md:w-auto bg-stone-900 text-white px-10 py-4 text-xs tracking-widest uppercase font-medium hover:bg-amber-700 transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Validando...' : 'Enviar Solicitação'}
+              {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
             </button>
-            <p className="text-xs text-stone-400 mt-3">
-              Fluxo de validação frontend-only. Sem backend e sem envio externo nesta fase.
-            </p>
           </div>
         </motion.form>
       )}

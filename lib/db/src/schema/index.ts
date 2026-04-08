@@ -272,9 +272,23 @@ export const adminUsersTable = pgTable("admin_users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const contactRequestsTable = pgTable("contact_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  company: text("company").notNull(),
+  spaceType: text("space_type").notNull(),
+  segment: text("segment").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type StoreRow = typeof storesTable.$inferSelect;
 export type BlogPostRow = typeof blogPostsTable.$inferSelect;
 export type PartnerRow = typeof partnersTable.$inferSelect;
 export type SiteSettingsRow = typeof siteSettingsTable.$inferSelect;
 export type HomeSettingsRow = typeof homeSettingsTable.$inferSelect;
 export type AdminUserRow = typeof adminUsersTable.$inferSelect;
+export type ContactRequestRow = typeof contactRequestsTable.$inferSelect;

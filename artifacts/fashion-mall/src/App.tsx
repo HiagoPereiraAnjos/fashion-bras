@@ -1,5 +1,5 @@
-import { Suspense, lazy } from 'react';
-import { Route, Router as WouterRouter, Switch } from 'wouter';
+import { Suspense, lazy, useEffect } from 'react';
+import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { AdminRouteGuard } from '@/components/auth/AdminRouteGuard';
 import { runtimeConfig } from '@/config/runtime';
 import { AdminAuthProvider } from '@/context/auth/AdminAuthProvider';
@@ -15,6 +15,35 @@ import StoresPage from '@/pages/StoresPage';
 import AdminLoginPage from '@/pages/AdminLoginPage';
 
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
+
+function ScrollToTopOnRouteChange() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    // Keep native anchor navigation behavior when URL contains hash.
+    if (window.location.hash) return;
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'auto',
+    });
+  }, [location]);
+
+  useEffect(() => {
+    const { history } = window;
+    if (!('scrollRestoration' in history)) return;
+
+    const previous = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
+
+    return () => {
+      history.scrollRestoration = previous;
+    };
+  }, []);
+
+  return null;
+}
 
 function AdminPageRoute() {
   return (
@@ -48,6 +77,7 @@ function App() {
     <AdminAuthProvider>
       <AdminDataProvider repositoryKind={runtimeConfig.contentBackendMode}>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+          <ScrollToTopOnRouteChange />
           <Router />
         </WouterRouter>
       </AdminDataProvider>
