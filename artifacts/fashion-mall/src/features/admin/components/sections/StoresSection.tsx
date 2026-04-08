@@ -113,48 +113,54 @@ export default function StoresSection() {
           stores.map((store) => (
             <div
               key={store.id}
-              className="flex items-center gap-4 bg-white border border-stone-100 p-4 hover:border-stone-200 transition-colors"
+              className="bg-white border border-stone-100 p-4 hover:border-stone-200 transition-colors"
             >
-              <img
-                src={
-                  store.images[0] ||
-                  'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80'
-                }
-                alt={store.name}
-                className="w-14 h-14 object-cover shrink-0 bg-stone-100"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium text-stone-800 text-sm">
-                    {store.name || 'Loja sem nome'}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                <img
+                  src={
+                    store.images[0] ||
+                    'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&q=80'
+                  }
+                  alt={store.name}
+                  className="w-full h-40 sm:w-14 sm:h-14 object-cover bg-stone-100 sm:shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-stone-800 text-sm">
+                      {store.name || 'Loja sem nome'}
+                    </p>
+                    {store.featured && (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5">
+                        Destaque
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    {store.segment || 'Segmento nao definido'} -{' '}
+                    {store.floor || 'Localizacao nao definida'}
                   </p>
-                  {store.featured && (
-                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5">
-                      Destaque
-                    </span>
-                  )}
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed md:truncate">
+                    {store.description || 'Sem descricao.'}
+                  </p>
                 </div>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  {store.segment || 'Segmento nao definido'} ·{' '}
-                  {store.floor || 'Localizacao nao definida'}
-                </p>
-                <p className="text-xs text-stone-500 mt-1 truncate">
-                  {store.description || 'Sem descricao.'}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setEditing(store)}
-                  className="p-2 text-stone-400 hover:text-amber-700 hover:bg-amber-50 transition-colors"
-                >
-                  <Edit3 size={15} />
-                </button>
-                <button
-                  onClick={() => deleteStoreById(store.id)}
-                  className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 size={15} />
-                </button>
+                <div className="flex gap-2 sm:shrink-0 sm:flex-col md:flex-row">
+                  <button
+                    onClick={() => setEditing(store)}
+                    aria-label={`Editar loja ${store.name || 'sem nome'}`}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                  >
+                    <Edit3 size={15} />
+                    <span className="text-xs sm:hidden">Editar</span>
+                  </button>
+                  <button
+                    onClick={() => deleteStoreById(store.id)}
+                    aria-label={`Remover loja ${store.name || 'sem nome'}`}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={15} />
+                    <span className="text-xs sm:hidden">Remover</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))

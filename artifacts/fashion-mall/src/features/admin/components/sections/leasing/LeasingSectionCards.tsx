@@ -51,7 +51,7 @@ export function LeasingBenefitsCard({
         <div className="space-y-4">
           {benefits.map((benefit, index) => (
             <div key={index} className="border border-stone-100 p-4 space-y-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field label="Ícone">
                   <Input
                     value={benefit.icon}
@@ -149,7 +149,7 @@ export function SpaceTypesCard({ spaces, setSpaces, onReset }: SpaceTypesCardPro
         <div className="space-y-4">
           {spaces.map((space, index) => (
             <div key={index} className="border border-stone-100 p-4 space-y-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field label="Nome">
                   <Input
                     value={space.name}
@@ -246,7 +246,7 @@ export function TestimonialsCard({
         <div className="space-y-4">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="border border-stone-100 p-4 space-y-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field label="Nome">
                   <Input
                     value={testimonial.name}

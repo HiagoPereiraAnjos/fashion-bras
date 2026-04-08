@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAdminData } from '@/context/AdminDataContext';
 import { useAdminAuth } from '@/context/auth/AdminAuthProvider';
@@ -17,17 +17,27 @@ export default function AdminPage() {
   const [isResettingAll, setIsResettingAll] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
-  const { resetAll, hasCustomData } = useAdminData();
+  const [resetSuccess, setResetSuccess] = useState<string | null>(null);
+  const { resetAll, hasCustomData, isBootstrapping, bootstrapError } = useAdminData();
   const { isRemoteMode, session, signOut } = useAdminAuth();
 
   usePageSeo(getSeoMetadata('admin'));
 
+  useEffect(() => {
+    if (!resetSuccess) return;
+
+    const timeout = window.setTimeout(() => setResetSuccess(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [resetSuccess]);
+
   const handleConfirmResetAll = async () => {
     setIsResettingAll(true);
     setResetError(null);
+    setResetSuccess(null);
     try {
       await resetAll();
       setShowResetConfirm(false);
+      setResetSuccess('Conteudo restaurado com sucesso.');
     } catch (error) {
       setResetError(
         error instanceof Error
@@ -60,7 +70,12 @@ export default function AdminPage() {
       onLogout={isRemoteMode && session ? handleLogout : undefined}
       isLoggingOut={isLoggingOut}
     >
+      {isRemoteMode && isBootstrapping && (
+        <InlineNotice tone="info" message="Sincronizando conteudo do admin..." />
+      )}
+      {isRemoteMode && bootstrapError && <InlineNotice tone="error" message={bootstrapError} />}
       {resetError && <InlineNotice tone="error" message={resetError} />}
+      {resetSuccess && <InlineNotice tone="success" message={resetSuccess} />}
       <AdminSectionsPanel activeTab={activeTab} />
       <ResetAllModal
         open={showResetConfirm}

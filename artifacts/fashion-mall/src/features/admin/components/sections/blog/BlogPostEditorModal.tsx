@@ -86,7 +86,7 @@ export function BlogPostEditorModal({
         <Input value={form.title} onChange={(value) => updateWithValidation('title', value)} />
         {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
       </Field>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Slug (URL)">
           <Input
             value={form.slug ?? ''}
@@ -107,7 +107,7 @@ export function BlogPostEditorModal({
           {errors.category && <p className="mt-1 text-xs text-red-600">{errors.category}</p>}
         </Field>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Autor">
           <Input value={form.author} onChange={(value) => updateWithValidation('author', value)} />
           {errors.author && <p className="mt-1 text-xs text-red-600">{errors.author}</p>}

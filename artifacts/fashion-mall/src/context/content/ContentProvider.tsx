@@ -143,7 +143,7 @@ export function ContentProvider({
         if (isCancelled) return;
         // Keep rendering with local defaults/current state if remote bootstrap fails.
         console.warn('[content] Initial content bootstrap failed. Keeping current state.', error);
-        setBootstrapError('Falha ao inicializar dados remotos. Conteudo local mantido.');
+        setBootstrapError('Falha ao inicializar dados remotos. Conteudo atual mantido.');
         setIsBootstrapping(false);
       }
     })();

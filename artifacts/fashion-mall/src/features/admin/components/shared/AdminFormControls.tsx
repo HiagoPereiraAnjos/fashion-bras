@@ -188,12 +188,12 @@ export function SectionCard({
 }) {
   return (
     <div className="surface-card overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50">
-        <h3 className="font-medium text-stone-800 text-sm">{title}</h3>
+      <div className="flex flex-col gap-2 px-6 py-4 border-b border-stone-100 bg-stone-50 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="font-medium text-stone-800 text-sm leading-relaxed">{title}</h3>
         {onReset && (
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-red-500 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs text-stone-400 hover:text-red-500 transition-colors whitespace-nowrap"
           >
             <RotateCcw size={12} />
             Restaurar padrao

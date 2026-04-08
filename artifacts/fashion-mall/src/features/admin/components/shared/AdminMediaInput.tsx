@@ -140,14 +140,14 @@ export function AdminMediaInput({
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <Input value={value} onChange={onChange} placeholder={placeholder} className="flex-1" />
         <button
           type="button"
           onClick={openPicker}
           disabled={!canUpload || isUploading || isDeleting}
           title={canUpload ? 'Enviar imagem' : 'Upload indisponivel neste modo'}
-          className={`inline-flex items-center gap-1.5 px-3 text-xs font-medium uppercase tracking-wider border transition-colors ${
+          className={`w-full sm:w-auto h-10 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-medium uppercase tracking-wider border transition-colors whitespace-nowrap ${
             canUpload && !isUploading && !isDeleting
               ? 'border-amber-300 text-amber-700 hover:bg-amber-50'
               : 'border-stone-200 text-stone-400 cursor-not-allowed'
@@ -161,7 +161,7 @@ export function AdminMediaInput({
           onClick={handleRemoveImage}
           disabled={!value.trim() || isUploading || isDeleting}
           title="Remover imagem"
-          className={`inline-flex items-center gap-1.5 px-3 text-xs font-medium uppercase tracking-wider border transition-colors ${
+          className={`w-full sm:w-auto h-10 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-medium uppercase tracking-wider border transition-colors whitespace-nowrap ${
             value.trim() && !isUploading && !isDeleting
               ? 'border-red-200 text-red-600 hover:bg-red-50'
               : 'border-stone-200 text-stone-400 cursor-not-allowed'

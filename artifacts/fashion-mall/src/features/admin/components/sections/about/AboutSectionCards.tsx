@@ -124,7 +124,7 @@ export function ValuesCard({ values, setValues }: ValuesCardProps) {
         <div className="space-y-3">
           {values.map((value, index) => (
             <div key={index} className="border border-stone-100 p-3 space-y-2">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Field label="Título">
                   <Input
                     value={value.title}
@@ -270,7 +270,7 @@ export function TeamCard({ team, setTeam }: TeamCardProps) {
         <div className="space-y-4">
           {team.map((member, index) => (
             <div key={index} className="border border-stone-100 p-4 space-y-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field label="Nome">
                   <Input
                     value={member.name}

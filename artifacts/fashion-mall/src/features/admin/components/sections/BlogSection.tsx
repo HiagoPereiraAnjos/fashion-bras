@@ -118,50 +118,53 @@ export default function BlogSection() {
           />
         ) : (
           blogPosts.map((post) => (
-            <div
-              key={post.slug}
-              className="flex items-center gap-4 bg-white border border-stone-100 p-4"
-            >
-              <img
-                src={
-                  post.coverImage ||
-                  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80'
-                }
-                alt=""
-                className="w-20 h-14 object-cover shrink-0 bg-stone-100"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium text-stone-800 text-sm truncate">
-                    {post.title || 'Sem titulo'}
+            <div key={post.slug} className="bg-white border border-stone-100 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                <img
+                  src={
+                    post.coverImage ||
+                    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80'
+                  }
+                  alt=""
+                  className="w-full h-40 sm:w-20 sm:h-14 object-cover bg-stone-100 sm:shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-stone-800 text-sm md:truncate">
+                      {post.title || 'Sem titulo'}
+                    </p>
+                    {post.featured && (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 shrink-0">
+                        Destaque
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-400 mt-0.5">
+                    {post.category || 'Sem categoria'} - {post.date || 'Data nao informada'} -{' '}
+                    {post.readTime || 'Tempo nao informado'}
                   </p>
-                  {post.featured && (
-                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 shrink-0">
-                      Destaque
-                    </span>
-                  )}
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed md:truncate">
+                    {post.excerpt || 'Sem resumo.'}
+                  </p>
                 </div>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  {post.category || 'Sem categoria'} · {post.date || 'Data nao informada'} ·{' '}
-                  {post.readTime || 'Tempo nao informado'}
-                </p>
-                <p className="text-xs text-stone-500 mt-1 truncate">
-                  {post.excerpt || 'Sem resumo.'}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setEditing(post)}
-                  className="p-2 text-stone-400 hover:text-amber-700 hover:bg-amber-50 transition-colors"
-                >
-                  <Edit3 size={15} />
-                </button>
-                <button
-                  onClick={() => deletePost(post.slug)}
-                  className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 size={15} />
-                </button>
+                <div className="flex gap-2 sm:shrink-0 sm:flex-col md:flex-row">
+                  <button
+                    onClick={() => setEditing(post)}
+                    aria-label={`Editar artigo ${post.title || 'sem titulo'}`}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                  >
+                    <Edit3 size={15} />
+                    <span className="text-xs sm:hidden">Editar</span>
+                  </button>
+                  <button
+                    onClick={() => deletePost(post.slug)}
+                    aria-label={`Remover artigo ${post.title || 'sem titulo'}`}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={15} />
+                    <span className="text-xs sm:hidden">Remover</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))

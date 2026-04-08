@@ -76,7 +76,7 @@ export function StoreEditorModal({
       saveLabel="Salvar Loja"
       isSaving={isSaving}
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Nome da Loja">
           <Input value={form.name} onChange={(value) => updateWithValidation('name', value)} />
           {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
@@ -107,7 +107,7 @@ export function StoreEditorModal({
           {errors.segmentSlug && <p className="mt-1 text-xs text-red-600">{errors.segmentSlug}</p>}
         </Field>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Piso / Localizacao">
           <Input value={form.floor} onChange={(value) => updateWithValidation('floor', value)} />
           {errors.floor && <p className="mt-1 text-xs text-red-600">{errors.floor}</p>}
@@ -145,7 +145,7 @@ export function StoreEditorModal({
         </label>
         {form.images.map((image, index) => (
           <div key={index} className="mb-3 rounded border border-stone-100 p-3">
-            <div className="flex items-start gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
               <div className="flex-1">
                 <AdminMediaInput
                   value={image}
@@ -175,9 +175,10 @@ export function StoreEditorModal({
                   if (attemptedSave) setErrors(validateStoreForm(nextForm));
                   if (saveError) setSaveError(null);
                 }}
-                className="text-red-400 hover:text-red-600 px-2 pt-2"
+                className="w-full sm:w-auto h-10 sm:h-auto inline-flex items-center justify-center gap-1.5 sm:px-2 sm:pt-2 text-xs text-red-500 hover:text-red-600 border border-red-100 hover:bg-red-50"
               >
                 <Trash2 size={14} />
+                <span className="sm:hidden">Remover imagem</span>
               </button>
             </div>
           </div>
