@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 import { runtimeConfig } from '@/config/runtime';
 import { useSiteContent } from '@/services/content';
+import { ApiRequestError } from '@/services/api/request';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 import {
   hasMinLength,
   isRequired,
@@ -214,20 +216,26 @@ export default function LeasingForm() {
 
       if (!response.ok) {
         const apiMessage = resolveApiErrorMessage(payload);
-        throw new Error(apiMessage ?? 'Nao foi possivel enviar sua solicitacao agora.');
+        throw new ApiRequestError(
+          apiMessage ?? 'Nao foi possivel enviar sua solicitacao agora.',
+          response.status,
+          apiMessage ?? undefined,
+        );
       }
 
       if (!(payload && typeof payload === 'object' && (payload as { success?: unknown }).success === true)) {
-        throw new Error('Resposta inesperada da API de contato.');
+        throw new ApiRequestError('Resposta inesperada da API de contato.', 500);
       }
 
       setSubmitted(true);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'Nao foi possivel enviar sua solicitacao agora. Tente novamente.',
-      );
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel enviar sua solicitacao agora. Tente novamente.',
+        validationMessage: 'Revise os dados informados e tente novamente.',
+        networkMessage:
+          'Nao foi possivel enviar sua solicitacao por falha de conexao. Tente novamente.',
+      });
+      setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }

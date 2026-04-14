@@ -281,6 +281,8 @@ export const contactRequestsTable = pgTable("contact_requests", {
   spaceType: text("space_type").notNull(),
   segment: text("segment").notNull(),
   message: text("message").notNull(),
+  status: text("status").notNull().default("novo"),
+  internalNotes: text("internal_notes").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

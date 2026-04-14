@@ -1,8 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useLocation } from 'wouter';
+import { Loader2 } from 'lucide-react';
 import { useAdminAuth } from '@/context/auth/AdminAuthProvider';
 import { fetchAdminProfile } from '@/services/auth/adminApi';
 import { ApiRequestError } from '@/services/api/request';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
 type AccessStatus = 'idle' | 'checking' | 'allowed' | 'forbidden' | 'api_unavailable';
 
@@ -22,7 +24,7 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
     if (!isConfigured) {
       setAccessStatus('forbidden');
       setAccessMessage(
-        'Autenticacao administrativa nao configurada. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.',
+        'Autenticacao administrativa indisponivel neste ambiente.',
       );
       return;
     }
@@ -53,10 +55,18 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
       } catch (error) {
         if (isCancelled) return;
 
-        const message = error instanceof Error ? error.message : 'Erro ao validar permissao.';
         const status = error instanceof ApiRequestError ? error.status : 0;
         const isAuthError = status === 401;
         const isForbidden = status === 403;
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage:
+            'Nao foi possivel validar seu acesso no momento. Tente novamente em instantes.',
+          authenticationMessage: 'Sua sessao expirou. Faca login novamente.',
+          forbiddenMessage:
+            'Sua conta esta autenticada, mas nao possui permissao para acessar o painel administrativo.',
+          networkMessage:
+            'Nao foi possivel validar seu acesso por falha de conexao. Tente novamente.',
+        });
 
         if (isAuthError) {
           await signOut();
@@ -66,16 +76,12 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
 
         if (isForbidden) {
           setAccessStatus('forbidden');
-          setAccessMessage(
-            'Sua conta esta autenticada, mas nao possui permissao de admin (tabela admin_users).',
-          );
+          setAccessMessage(message);
           return;
         }
 
         setAccessStatus('api_unavailable');
-        setAccessMessage(
-          'Nao foi possivel validar acesso no backend. O painel admin fica bloqueado sem API.',
-        );
+        setAccessMessage(message);
       }
     })();
 
@@ -101,7 +107,7 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
           <h1 className="font-serif text-2xl text-stone-900">Admin indisponivel</h1>
           <p className="text-sm text-stone-600">
             {accessMessage ??
-              'Autenticacao administrativa nao esta configurada para o modo remoto.'}
+              'Autenticacao administrativa nao esta configurada para este ambiente.'}
           </p>
         </div>
       </div>
@@ -109,7 +115,14 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
   }
 
   if (isLoading || accessStatus === 'checking' || accessStatus === 'idle') {
-    return <div className="min-h-screen bg-stone-50" />;
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
+        <div className="bg-white border border-stone-200 px-4 py-3 inline-flex items-center gap-2 text-sm text-stone-600">
+          <Loader2 size={16} className="animate-spin text-amber-700" />
+          Validando acesso administrativo...
+        </div>
+      </div>
+    );
   }
 
   if (accessStatus === 'allowed') {
@@ -120,7 +133,7 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
       <div className="max-w-lg bg-white border border-stone-200 p-8 space-y-3">
         <h1 className="font-serif text-2xl text-stone-900">
-          {accessStatus === 'api_unavailable' ? 'API indisponivel' : 'Acesso negado'}
+          {accessStatus === 'api_unavailable' ? 'Servico temporariamente indisponivel' : 'Acesso negado'}
         </h1>
         <p className="text-sm text-stone-600">
           {accessMessage ?? 'Nao foi possivel acessar o painel administrativo.'}

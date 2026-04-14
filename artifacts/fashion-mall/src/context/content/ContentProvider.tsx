@@ -27,6 +27,7 @@ import type { ContentRepository } from '@/services/content/repositories/ContentR
 import type { ContentRepositoryKind } from '@/services/content/repositories/types';
 import { getDefaultSection } from '@/services/content/defaults';
 import { buildBlogCategories, buildStoreSegments } from '@/services/content/selectors';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
 export interface AdminDataContextType extends ContentState {
   storeSegments: StoreCategory[];
@@ -143,7 +144,16 @@ export function ContentProvider({
         if (isCancelled) return;
         // Keep rendering with local defaults/current state if remote bootstrap fails.
         console.warn('[content] Initial content bootstrap failed. Keeping current state.', error);
-        setBootstrapError('Falha ao inicializar dados remotos. Conteudo atual mantido.');
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage:
+            'Nao foi possivel carregar a versao mais recente do conteudo. Exibindo os dados disponiveis.',
+          validationMessage:
+            'Recebemos dados de conteudo invalidos do servidor. Exibindo os dados disponiveis.',
+          networkMessage:
+            'Nao foi possivel atualizar o conteudo por falha de conexao. Exibindo os dados disponiveis.',
+          allowValidationDetail: false,
+        });
+        setBootstrapError(message);
         setIsBootstrapping(false);
       }
     })();

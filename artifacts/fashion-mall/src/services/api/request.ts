@@ -58,7 +58,7 @@ export async function requestApi<T>(
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Erro de rede desconhecido.';
     throw new ApiRequestError(
-      'Nao foi possivel conectar ao servidor. Verifique API/CORS e tente novamente.',
+      'Nao foi possivel conectar ao servidor. Verifique sua conexao e tente novamente.',
       0,
       detail,
     );

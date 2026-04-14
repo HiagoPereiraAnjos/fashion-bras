@@ -10,12 +10,19 @@ interface HomeSectionCardProps {
 
 interface HeroSettingsCardProps extends HomeSectionCardProps {
   onReset: () => void;
+  isResetting?: boolean;
   errorMessage?: string;
 }
 
-export function HeroSettingsCard({ form, setForm, onReset, errorMessage }: HeroSettingsCardProps) {
+export function HeroSettingsCard({
+  form,
+  setForm,
+  onReset,
+  isResetting = false,
+  errorMessage,
+}: HeroSettingsCardProps) {
   return (
-    <SectionCard title="Hero / Banner Principal" onReset={onReset}>
+    <SectionCard title="Hero / Banner Principal" onReset={onReset} isResetting={isResetting}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Texto de apoio">
           <Input

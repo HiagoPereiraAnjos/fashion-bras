@@ -14,14 +14,20 @@ import {
   buildNewStoreDraft,
   toStoreEntity,
 } from '@/features/admin/components/sections/stores/storeForm';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
-type SaveNotice = { tone: 'success' | 'error'; message: string } | null;
+type SaveNotice = { tone: 'info' | 'success' | 'error'; message: string } | null;
 
 export default function StoresSection() {
   const { stores, setStores, resetSection, storeSegments } = useAdminData();
   const [editing, setEditing] = useState<Store | null>(null);
   const [saved, setSaved] = useState(false);
   const [notice, setNotice] = useState<SaveNotice>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [deletingStoreId, setDeletingStoreId] = useState<string | null>(null);
+
+  const hasPendingAction = isCreating || isResetting || deletingStoreId !== null;
 
   const toggleSaved = () => {
     setSaved(true);
@@ -40,52 +46,79 @@ export default function StoresSection() {
   };
 
   const deleteStoreById = (id: string) => {
+    if (hasPendingAction) return;
+
     void (async () => {
       if (!confirm('Remover esta loja?')) return;
 
+      setDeletingStoreId(id);
+      setNotice({ tone: 'info', message: 'Removendo loja...' });
       try {
         await setStores(stores.filter((store) => store.id !== id));
         toggleSaved();
         setNotice({ tone: 'success', message: 'Loja removida com sucesso.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel remover a loja agora.',
+          validationMessage: 'Nao foi possivel remover a loja com os dados enviados.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error ? error.message : 'Nao foi possivel remover a loja agora.',
+          message,
         });
+      } finally {
+        setDeletingStoreId(null);
       }
     })();
   };
 
   const addStore = () => {
+    if (hasPendingAction) return;
+
     void (async () => {
       const newStore = buildNewStoreDraft();
+      setIsCreating(true);
+      setNotice({ tone: 'info', message: 'Criando nova loja...' });
       try {
         await setStores([...stores, newStore]);
         setEditing(newStore);
         toggleSaved();
         setNotice({ tone: 'success', message: 'Nova loja criada. Complete os dados no editor.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel criar a nova loja agora.',
+          validationMessage: 'Nao foi possivel criar a nova loja com os dados enviados.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error ? error.message : 'Nao foi possivel criar a nova loja agora.',
+          message,
         });
+      } finally {
+        setIsCreating(false);
       }
     })();
   };
 
   const resetStores = () => {
+    if (hasPendingAction) return;
+
     void (async () => {
+      setIsResetting(true);
+      setNotice({ tone: 'info', message: 'Restaurando lista de lojas...' });
       try {
         await resetSection('stores');
         setNotice({ tone: 'success', message: 'Lista de lojas restaurada para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar as lojas padrao.',
+          validationMessage: 'Nao foi possivel restaurar as lojas no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error ? error.message : 'Nao foi possivel restaurar as lojas padrao.',
+          message,
         });
+      } finally {
+        setIsResetting(false);
       }
     })();
   };
@@ -98,6 +131,11 @@ export default function StoresSection() {
         onReset={resetStores}
         onCreate={addStore}
         createLabel="Nova Loja"
+        isResetting={isResetting}
+        isCreating={isCreating}
+        disableActions={deletingStoreId !== null}
+        resetLoadingLabel="Restaurando..."
+        createLoadingLabel="Criando loja..."
       />
 
       {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
@@ -107,13 +145,21 @@ export default function StoresSection() {
           <EmptyAdminState
             title="Nenhuma loja cadastrada"
             description="Adicione sua primeira loja para exibir conteudo na pagina de lojas."
-            action={<AdminCreateButton onClick={addStore} label="Nova Loja" />}
+            action={
+              <AdminCreateButton
+                onClick={addStore}
+                label="Nova Loja"
+                isLoading={isCreating}
+                disabled={hasPendingAction}
+                loadingLabel="Criando loja..."
+              />
+            }
           />
         ) : (
           stores.map((store) => (
             <div
               key={store.id}
-              className="bg-white border border-stone-100 p-4 hover:border-stone-200 transition-colors"
+              className="bg-white border border-stone-100 p-4 hover:border-stone-200 hover:shadow-[0_1px_3px_rgba(28,25,23,0.08)] transition-all"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <img
@@ -126,7 +172,7 @@ export default function StoresSection() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium text-stone-800 text-sm">
+                    <p className="font-medium text-stone-800 text-sm break-words">
                       {store.name || 'Loja sem nome'}
                     </p>
                     {store.featured && (
@@ -135,30 +181,36 @@ export default function StoresSection() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-stone-400 mt-0.5">
+                  <p className="text-xs text-stone-400 mt-0.5 break-words">
                     {store.segment || 'Segmento nao definido'} -{' '}
                     {store.floor || 'Localizacao nao definida'}
                   </p>
-                  <p className="text-xs text-stone-500 mt-1 leading-relaxed md:truncate">
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed break-words md:truncate">
                     {store.description || 'Sem descricao.'}
                   </p>
                 </div>
                 <div className="flex gap-2 sm:shrink-0 sm:flex-col md:flex-row">
                   <button
+                    type="button"
                     onClick={() => setEditing(store)}
                     aria-label={`Editar loja ${store.name || 'sem nome'}`}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                    disabled={hasPendingAction}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-amber-700 hover:bg-amber-50 border border-stone-200 sm:border-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                   >
                     <Edit3 size={15} />
                     <span className="text-xs sm:hidden">Editar</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => deleteStoreById(store.id)}
                     aria-label={`Remover loja ${store.name || 'sem nome'}`}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    disabled={hasPendingAction}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-red-600 hover:bg-red-50 border border-stone-200 sm:border-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                   >
-                    <Trash2 size={15} />
-                    <span className="text-xs sm:hidden">Remover</span>
+                    <Trash2 size={15} className={deletingStoreId === store.id ? 'animate-pulse' : ''} />
+                    <span className="text-xs sm:hidden">
+                      {deletingStoreId === store.id ? 'Removendo...' : 'Remover'}
+                    </span>
                   </button>
                 </div>
               </div>

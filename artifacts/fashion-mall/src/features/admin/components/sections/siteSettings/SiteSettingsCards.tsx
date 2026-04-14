@@ -27,6 +27,7 @@ interface SharedCardProps {
 
 interface IdentitySettingsCardProps extends SharedCardProps {
   onReset: () => void;
+  isResetting?: boolean;
 }
 
 export function IdentitySettingsCard({
@@ -34,12 +35,18 @@ export function IdentitySettingsCard({
   errors,
   update,
   onReset,
+  isResetting = false,
 }: IdentitySettingsCardProps) {
   return (
-    <SectionCard title="Identidade do Site" onReset={onReset}>
+    <SectionCard title="Identidade do Site" onReset={onReset} isResetting={isResetting}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Nome do Shopping">
-          <Input value={form.name} onChange={(value) => update('name', value)} placeholder="Fashion Bras" />
+          <Input
+            value={form.name}
+            onChange={(value) => update('name', value)}
+            placeholder="Fashion Bras"
+            dataTestId="site-settings-name-input"
+          />
           {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
         </Field>
         <Field label="Slogan">
@@ -47,6 +54,7 @@ export function IdentitySettingsCard({
             value={form.tagline}
             onChange={(value) => update('tagline', value)}
             placeholder="O destino da moda..."
+            dataTestId="site-settings-tagline-input"
           />
           {errors.tagline && <p className="mt-1 text-xs text-red-600">{errors.tagline}</p>}
         </Field>
@@ -112,18 +120,18 @@ export function NavigationSettingsCard({
     <SectionCard title="Navegacao">
       <div className="space-y-3">
         {navLinks.map((link, index) => (
-          <div key={index} className="flex gap-3 items-center">
+          <div key={index} className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Input
               value={link.label}
               onChange={(value) => onUpdateNavLink(index, 'label', value)}
               placeholder="Label"
-              className="flex-1"
+              className="w-full sm:flex-1"
             />
             <Input
               value={link.href}
               onChange={(value) => onUpdateNavLink(index, 'href', value)}
               placeholder="/caminho"
-              className="flex-1"
+              className="w-full sm:flex-1"
             />
           </div>
         ))}

@@ -244,6 +244,33 @@ export interface SiteContentSnapshot extends SiteContentState {
 
 export type SiteContentPersistence = SiteContentState;
 
+export const CONTACT_REQUEST_STATUSES = [
+  'novo',
+  'em_contato',
+  'atendido',
+  'arquivado',
+] as const;
+
+export type ContactRequestStatus = (typeof CONTACT_REQUEST_STATUSES)[number];
+
+export interface ContactRequestListItem {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  spaceType: string;
+  segment: string;
+  status: ContactRequestStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactRequestDetail extends ContactRequestListItem {
+  message: string;
+  internalNotes: string;
+}
+
 export type StoreFormData = Draft<Store, 'id'>;
 export type BlogPostFormData = Draft<BlogPost, 'slug'>;
 export type PartnerFormData = Draft<Partner, 'id'>;

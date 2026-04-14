@@ -197,7 +197,7 @@ app.use(
       callback(new HttpError(403, "Forbidden", "CORS origin not allowed."));
     },
     credentials: false,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Authorization", "Content-Type"],
     maxAge: 86400,
   }),

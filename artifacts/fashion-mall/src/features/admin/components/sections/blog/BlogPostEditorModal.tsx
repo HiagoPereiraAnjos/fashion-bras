@@ -15,6 +15,7 @@ import {
   type BlogPostErrors,
   validatePostForm,
 } from '@/features/admin/components/sections/blog/blogPostForm';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 import type { BlogPost, BlogPostFormData } from '@/types';
 
 interface BlogPostEditorModalProps {
@@ -61,8 +62,12 @@ export function BlogPostEditorModal({
       await onSave(sanitizePostForm(form));
       onClose();
     } catch (error) {
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel salvar este artigo.',
+        validationMessage: 'Existem campos invalidos neste artigo.',
+      });
       setSaveError(
-        error instanceof Error ? error.message : 'Nao foi possivel salvar este artigo.',
+        message,
       );
     } finally {
       setIsSaving(false);
@@ -79,7 +84,7 @@ export function BlogPostEditorModal({
       onClose={onClose}
       onSave={handleSave}
       saveLabel="Salvar Post"
-      titleClassName="font-medium text-stone-800 truncate pr-4"
+      titleClassName="font-medium text-stone-800 pr-4"
       isSaving={isSaving}
     >
       <Field label="Titulo">
@@ -152,7 +157,7 @@ export function BlogPostEditorModal({
         {errors.content && <p className="mt-1 text-xs text-red-600">{errors.content}</p>}
       </Field>
       <Field label="Destaque">
-        <label className="flex items-center gap-2 cursor-pointer mt-1">
+        <label className="flex items-start gap-2 cursor-pointer mt-1">
           <input
             type="checkbox"
             checked={!!form.featured}

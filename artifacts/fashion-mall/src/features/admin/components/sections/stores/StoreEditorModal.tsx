@@ -15,6 +15,7 @@ import {
   type StoreFormErrors,
   validateStoreForm,
 } from '@/features/admin/components/sections/stores/storeForm';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 import type { Store, StoreCategory, StoreFormData } from '@/types';
 
 interface StoreEditorModalProps {
@@ -62,7 +63,11 @@ export function StoreEditorModal({
       await onSave(sanitizeStoreForm(form));
       onClose();
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Nao foi possivel salvar esta loja.');
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel salvar esta loja.',
+        validationMessage: 'Existem campos invalidos nesta loja.',
+      });
+      setSaveError(message);
     } finally {
       setIsSaving(false);
     }
@@ -144,7 +149,11 @@ export function StoreEditorModal({
           Imagens
         </label>
         {form.images.map((image, index) => (
-          <div key={index} className="mb-3 rounded border border-stone-100 p-3">
+          <div
+            key={index}
+            data-testid={`store-image-row-${index}`}
+            className="mb-3 rounded border border-stone-100 p-3"
+          >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
               <div className="flex-1">
                 <AdminMediaInput
@@ -175,7 +184,7 @@ export function StoreEditorModal({
                   if (attemptedSave) setErrors(validateStoreForm(nextForm));
                   if (saveError) setSaveError(null);
                 }}
-                className="w-full sm:w-auto h-10 sm:h-auto inline-flex items-center justify-center gap-1.5 sm:px-2 sm:pt-2 text-xs text-red-500 hover:text-red-600 border border-red-100 hover:bg-red-50"
+                className="w-full sm:w-auto h-10 inline-flex items-center justify-center gap-1.5 px-3 sm:px-2 sm:self-start text-xs text-red-500 hover:text-red-600 border border-red-100 hover:bg-red-50"
               >
                 <Trash2 size={14} />
                 <span className="sm:hidden">Remover imagem</span>
@@ -185,13 +194,14 @@ export function StoreEditorModal({
         ))}
         <button
           type="button"
+          data-testid="store-add-image"
           onClick={() => {
             const nextForm = { ...form, images: [...form.images, ''] };
             setForm((current) => ({ ...current, images: [...current.images, ''] }));
             if (attemptedSave) setErrors(validateStoreForm(nextForm));
             if (saveError) setSaveError(null);
           }}
-          className="text-xs text-amber-700 hover:underline flex items-center gap-1 mt-1"
+          className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1 mt-1"
         >
           <Plus size={12} />
           Adicionar imagem
@@ -199,7 +209,7 @@ export function StoreEditorModal({
         {errors.images && <p className="mt-2 text-xs text-red-600">{errors.images}</p>}
       </div>
       <Field label="Destaque na Home">
-        <label className="flex items-center gap-2 cursor-pointer mt-1">
+        <label className="flex items-start gap-2 cursor-pointer mt-1">
           <input
             type="checkbox"
             checked={!!form.featured}

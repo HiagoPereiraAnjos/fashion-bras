@@ -54,10 +54,10 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white border border-stone-200 p-8 space-y-6">
+      <div className="w-full max-w-md bg-white border border-stone-200 p-6 sm:p-8 space-y-6">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-amber-700">Painel Administrativo</p>
-          <h1 className="font-serif text-3xl text-stone-900 mt-2">Login</h1>
+          <h1 className="font-serif text-2xl sm:text-3xl text-stone-900 mt-2">Login</h1>
           <p className="text-sm text-stone-500 mt-3">
             Acesso restrito para usuarios admin cadastrados.
           </p>
@@ -65,8 +65,7 @@ export default function AdminLoginPage() {
 
         {!isConfigured && (
           <p className="text-sm text-red-700 border border-red-200 bg-red-50 px-3 py-2">
-            Defina <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_ANON_KEY</code> para
-            habilitar login.
+            O acesso administrativo nao esta disponivel neste ambiente no momento.
           </p>
         )}
 
@@ -81,7 +80,8 @@ export default function AdminLoginPage() {
             <label className="text-xs uppercase tracking-[0.2em] text-stone-500">Email</label>
             <input
               type="email"
-              className="w-full border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-amber-600"
+              data-testid="admin-login-email"
+              className="w-full min-h-10 border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               disabled={!isConfigured || isSubmitting}
@@ -92,7 +92,8 @@ export default function AdminLoginPage() {
             <label className="text-xs uppercase tracking-[0.2em] text-stone-500">Senha</label>
             <input
               type="password"
-              className="w-full border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-amber-600"
+              data-testid="admin-login-password"
+              className="w-full min-h-10 border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               disabled={!isConfigured || isSubmitting}
@@ -101,7 +102,8 @@ export default function AdminLoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-stone-900 text-white py-2.5 text-xs uppercase tracking-[0.2em] hover:bg-amber-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            data-testid="admin-login-submit"
+            className="w-full h-10 bg-stone-900 text-white text-xs uppercase tracking-[0.2em] hover:bg-amber-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={!isConfigured || isSubmitting}
           >
             {isSubmitting ? 'Entrando...' : 'Entrar no Admin'}

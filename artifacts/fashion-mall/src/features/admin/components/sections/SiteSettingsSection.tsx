@@ -18,18 +18,22 @@ import {
   validateSiteSettingsForm,
   type SiteSettingsFormErrors,
 } from '@/features/admin/components/sections/siteSettings/siteSettingsForm';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
+
+type SaveNotice = { tone: 'info' | 'success' | 'error'; message: string } | null;
 
 export default function SiteSettingsSection() {
   const { siteSettings, setSiteSettings, resetSection } = useAdminData();
   const [form, setForm] = useState<SiteSettings>(() => createSiteSettingsFormData(siteSettings));
   const [errors, setErrors] = useState<SiteSettingsFormErrors>({});
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<SaveNotice>(null);
+  const [isResetting, setIsResetting] = useState(false);
   const { saved, isSaving, trigger } = useSaveState();
 
   useEffect(() => {
     setForm(createSiteSettingsFormData(siteSettings));
     setErrors({});
-    setSaveError(null);
+    setNotice(null);
   }, [siteSettings]);
 
   const update = (key: SiteSettingsTextField, value: string) =>
@@ -42,15 +46,17 @@ export default function SiteSettingsSection() {
   };
 
   const handleSave = async () => {
+    if (isResetting) return;
+
     const { errors: nextErrors, normalized, validNavLinks } = validateSiteSettingsForm(form);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      setSaveError('Existem campos invalidos. Revise antes de salvar.');
+      setNotice({ tone: 'error', message: 'Existem campos invalidos. Revise antes de salvar.' });
       return;
     }
 
-    setSaveError(null);
+    setNotice({ tone: 'info', message: 'Salvando configuracoes do site...' });
     try {
       await trigger(async () =>
         setSiteSettings({
@@ -58,28 +64,41 @@ export default function SiteSettingsSection() {
           navLinks: validNavLinks,
         }),
       );
+      setNotice({ tone: 'success', message: 'Configuracoes do site salvas com sucesso.' });
     } catch (error) {
-      setSaveError(
-        error instanceof Error
-          ? error.message
-          : 'Nao foi possivel salvar as configuracoes do site.',
-      );
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel salvar as configuracoes do site.',
+        validationMessage: 'Algumas configuracoes do site precisam de ajuste antes do salvamento.',
+      });
+      setNotice({
+        tone: 'error',
+        message,
+      });
     }
   };
 
   const handleResetSection = () => {
+    if (isSaving || isResetting) return;
+
     void (async () => {
+      setIsResetting(true);
+      setNotice({ tone: 'info', message: 'Restaurando configuracoes do site...' });
       try {
         const defaults = await resetSection('siteSettings');
         setForm(createSiteSettingsFormData(defaults));
         setErrors({});
-        setSaveError(null);
+        setNotice({ tone: 'success', message: 'Configuracoes padrao restauradas com sucesso.' });
       } catch (error) {
-        setSaveError(
-          error instanceof Error
-            ? error.message
-            : 'Nao foi possivel restaurar as configuracoes padrao.',
-        );
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar as configuracoes padrao.',
+          validationMessage: 'Nao foi possivel restaurar as configuracoes no momento.',
+        });
+        setNotice({
+          tone: 'error',
+          message,
+        });
+      } finally {
+        setIsResetting(false);
       }
     })();
   };
@@ -91,6 +110,7 @@ export default function SiteSettingsSection() {
         errors={errors}
         update={update}
         onReset={handleResetSection}
+        isResetting={isResetting}
       />
 
       <ContactSettingsCard form={form} errors={errors} update={update} />
@@ -105,8 +125,8 @@ export default function SiteSettingsSection() {
 
       <FooterSettingsCard form={form} errors={errors} update={update} />
 
-      {saveError && <InlineNotice tone="error" message={saveError} />}
-      <SaveButton onClick={handleSave} saved={saved} isSaving={isSaving} />
+      {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
+      <SaveButton onClick={handleSave} saved={saved} isSaving={isSaving} disabled={isResetting} />
     </div>
   );
 }

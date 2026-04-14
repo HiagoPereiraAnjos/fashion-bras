@@ -15,18 +15,23 @@ import {
   toBlogPostEntity,
 } from '@/features/admin/components/sections/blog/blogPostForm';
 import type { BlogPost, BlogPostFormData } from '@/types';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
-type SaveNotice = { tone: 'success' | 'error'; message: string } | null;
+type SaveNotice = { tone: 'info' | 'success' | 'error'; message: string } | null;
 
 export default function BlogSection() {
   const { blogPosts, setBlogPosts, resetSection, blogCategories } = useAdminData();
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [saved, setSaved] = useState(false);
   const [notice, setNotice] = useState<SaveNotice>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [deletingPostSlug, setDeletingPostSlug] = useState<string | null>(null);
   const defaultCategory =
     blogCategories.find((category) => category !== BLOG_ALL_CATEGORY) ??
     blogPosts[0]?.category ??
     'Categoria';
+  const hasPendingAction = isCreating || isResetting || deletingPostSlug !== null;
 
   const toggleSaved = () => {
     setSaved(true);
@@ -43,25 +48,39 @@ export default function BlogSection() {
   };
 
   const deletePost = (slug: string) => {
+    if (hasPendingAction) return;
+
     void (async () => {
       if (!confirm('Remover este artigo?')) return;
+
+      setDeletingPostSlug(slug);
+      setNotice({ tone: 'info', message: 'Removendo artigo...' });
       try {
         await setBlogPosts(blogPosts.filter((post) => post.slug !== slug));
         toggleSaved();
         setNotice({ tone: 'success', message: 'Artigo removido com sucesso.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel remover o artigo agora.',
+          validationMessage: 'Nao foi possivel remover o artigo com os dados enviados.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error ? error.message : 'Nao foi possivel remover o artigo agora.',
+          message,
         });
+      } finally {
+        setDeletingPostSlug(null);
       }
     })();
   };
 
   const addPost = () => {
+    if (hasPendingAction) return;
+
     void (async () => {
       const newPost = buildNewBlogPostDraft(defaultCategory);
+      setIsCreating(true);
+      setNotice({ tone: 'info', message: 'Criando novo artigo...' });
       try {
         await setBlogPosts([...blogPosts, newPost]);
         setEditing(newPost);
@@ -71,28 +90,40 @@ export default function BlogSection() {
           message: 'Novo artigo criado. Complete os campos no editor.',
         });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel criar um novo artigo.',
+          validationMessage: 'Nao foi possivel criar o artigo com os dados enviados.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error ? error.message : 'Nao foi possivel criar um novo artigo.',
+          message,
         });
+      } finally {
+        setIsCreating(false);
       }
     })();
   };
 
   const resetBlog = () => {
+    if (hasPendingAction) return;
+
     void (async () => {
+      setIsResetting(true);
+      setNotice({ tone: 'info', message: 'Restaurando lista de artigos...' });
       try {
         await resetSection('blogPosts');
         setNotice({ tone: 'success', message: 'Lista de artigos restaurada para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar os artigos padrao.',
+          validationMessage: 'Nao foi possivel restaurar os artigos no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Nao foi possivel restaurar os artigos padrao.',
+          message,
         });
+      } finally {
+        setIsResetting(false);
       }
     })();
   };
@@ -105,6 +136,11 @@ export default function BlogSection() {
         onReset={resetBlog}
         onCreate={addPost}
         createLabel="Novo Artigo"
+        isResetting={isResetting}
+        isCreating={isCreating}
+        disableActions={deletingPostSlug !== null}
+        resetLoadingLabel="Restaurando..."
+        createLoadingLabel="Criando artigo..."
       />
 
       {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
@@ -114,11 +150,22 @@ export default function BlogSection() {
           <EmptyAdminState
             title="Nenhum artigo cadastrado"
             description="Crie conteudos para alimentar a pagina de blog e o destaque da home."
-            action={<AdminCreateButton onClick={addPost} label="Novo Artigo" />}
+            action={
+              <AdminCreateButton
+                onClick={addPost}
+                label="Novo Artigo"
+                isLoading={isCreating}
+                disabled={hasPendingAction}
+                loadingLabel="Criando artigo..."
+              />
+            }
           />
         ) : (
           blogPosts.map((post) => (
-            <div key={post.slug} className="bg-white border border-stone-100 p-4">
+            <div
+              key={post.slug}
+              className="bg-white border border-stone-100 p-4 hover:border-stone-200 hover:shadow-[0_1px_3px_rgba(28,25,23,0.08)] transition-all"
+            >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <img
                   src={
@@ -130,7 +177,7 @@ export default function BlogSection() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium text-stone-800 text-sm md:truncate">
+                    <p className="font-medium text-stone-800 text-sm break-words md:truncate">
                       {post.title || 'Sem titulo'}
                     </p>
                     {post.featured && (
@@ -139,30 +186,36 @@ export default function BlogSection() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-stone-400 mt-0.5">
+                  <p className="text-xs text-stone-400 mt-0.5 break-words">
                     {post.category || 'Sem categoria'} - {post.date || 'Data nao informada'} -{' '}
                     {post.readTime || 'Tempo nao informado'}
                   </p>
-                  <p className="text-xs text-stone-500 mt-1 leading-relaxed md:truncate">
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed break-words md:truncate">
                     {post.excerpt || 'Sem resumo.'}
                   </p>
                 </div>
                 <div className="flex gap-2 sm:shrink-0 sm:flex-col md:flex-row">
                   <button
+                    type="button"
                     onClick={() => setEditing(post)}
                     aria-label={`Editar artigo ${post.title || 'sem titulo'}`}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                    disabled={hasPendingAction}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-amber-700 hover:bg-amber-50 border border-stone-200 sm:border-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                   >
                     <Edit3 size={15} />
                     <span className="text-xs sm:hidden">Editar</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => deletePost(post.slug)}
                     aria-label={`Remover artigo ${post.title || 'sem titulo'}`}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    disabled={hasPendingAction}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 h-10 px-3 sm:h-9 sm:w-9 sm:px-0 text-stone-500 hover:text-red-600 hover:bg-red-50 border border-stone-200 sm:border-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                   >
-                    <Trash2 size={15} />
-                    <span className="text-xs sm:hidden">Remover</span>
+                    <Trash2 size={15} className={deletingPostSlug === post.slug ? 'animate-pulse' : ''} />
+                    <span className="text-xs sm:hidden">
+                      {deletingPostSlug === post.slug ? 'Removendo...' : 'Remover'}
+                    </span>
                   </button>
                 </div>
               </div>

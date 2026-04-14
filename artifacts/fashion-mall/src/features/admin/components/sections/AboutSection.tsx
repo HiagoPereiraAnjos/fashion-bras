@@ -17,8 +17,9 @@ import {
   createAboutSectionFormData,
   type AboutSectionFormData,
 } from '@/features/admin/components/sections/about/aboutSectionForm';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
-type SaveNotice = { tone: 'success' | 'error'; message: string } | null;
+type SaveNotice = { tone: 'info' | 'success' | 'error'; message: string } | null;
 
 export default function AboutSection() {
   const { aboutData, setAboutData, resetSection } = useAdminData();
@@ -26,7 +27,9 @@ export default function AboutSection() {
     createAboutSectionFormData(aboutData),
   );
   const [notice, setNotice] = useState<SaveNotice>(null);
+  const [isResetting, setIsResetting] = useState(false);
   const { saved, isSaving, trigger } = useSaveState();
+  const isBusy = isSaving || isResetting;
 
   useEffect(() => {
     setForm(createAboutSectionFormData(aboutData));
@@ -34,6 +37,8 @@ export default function AboutSection() {
   }, [aboutData]);
 
   const saveAbout = async () => {
+    if (isResetting) return;
+
     const result = buildAboutSectionSaveResult(form);
     if (result.error || !result.payload) {
       setNotice({ tone: 'error', message: result.error ?? 'Falha ao salvar conteudo de Sobre.' });
@@ -56,28 +61,38 @@ export default function AboutSection() {
             : 'Conteudo de Sobre atualizado com sucesso.',
       });
     } catch (error) {
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel salvar o conteudo de Sobre.',
+        validationMessage: 'Alguns campos de Sobre precisam de ajuste antes do salvamento.',
+      });
       setNotice({
         tone: 'error',
-        message:
-          error instanceof Error ? error.message : 'Nao foi possivel salvar o conteudo de Sobre.',
+        message,
       });
     }
   };
 
   const handleReset = () => {
+    if (isSaving || isResetting) return;
+
     void (async () => {
+      setIsResetting(true);
+      setNotice({ tone: 'info', message: 'Restaurando conteudo da pagina Sobre...' });
       try {
         const defaults = await resetSection('aboutData');
         setForm(createAboutSectionFormData(defaults));
-        setNotice(null);
+        setNotice({ tone: 'success', message: 'Conteudo de Sobre restaurado para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar o conteudo padrao de Sobre.',
+          validationMessage: 'Nao foi possivel restaurar o conteudo de Sobre no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Nao foi possivel restaurar o conteudo padrao de Sobre.',
+          message,
         });
+      } finally {
+        setIsResetting(false);
       }
     })();
   };
@@ -90,10 +105,13 @@ export default function AboutSection() {
         setMission={(value) => setForm((current) => ({ ...current, mission: value }))}
         setVision={(value) => setForm((current) => ({ ...current, vision: value }))}
         onReset={handleReset}
+        isResetting={isResetting}
+        isBusy={isBusy}
       />
 
       <HistoryCard
         history={form.history}
+        isBusy={isBusy}
         setHistory={(updater) =>
           setForm((current) => ({
             ...current,
@@ -104,6 +122,7 @@ export default function AboutSection() {
 
       <ValuesCard
         values={form.values}
+        isBusy={isBusy}
         setValues={(updater) =>
           setForm((current) => ({
             ...current,
@@ -114,6 +133,7 @@ export default function AboutSection() {
 
       <DifferentialsCard
         differentials={form.differentials}
+        isBusy={isBusy}
         setDifferentials={(updater) =>
           setForm((current) => ({
             ...current,
@@ -125,6 +145,7 @@ export default function AboutSection() {
 
       <TeamCard
         team={form.team}
+        isBusy={isBusy}
         setTeam={(updater) =>
           setForm((current) => ({
             ...current,
@@ -134,7 +155,7 @@ export default function AboutSection() {
       />
 
       {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
-      <SaveButton onClick={saveAbout} saved={saved} isSaving={isSaving} />
+      <SaveButton onClick={saveAbout} saved={saved} isSaving={isSaving} disabled={isResetting} />
     </div>
   );
 }

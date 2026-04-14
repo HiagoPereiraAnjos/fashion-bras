@@ -223,6 +223,32 @@ Notas de roteamento SPA:
 - `vercel.json` em `artifacts/fashion-mall` inclui fallback para `index.html`.
 - isso evita `404` ao dar refresh em rotas como `/admin`, `/blog/:slug`, `/lojas/:id`.
 
+## 11) Testes E2E (Playwright)
+Escopo atual dos cenarios automatizados (`e2e/tests`):
+- login admin real + carregamento do painel
+- persistencia de edicao em configuracoes apos refresh
+- reset all (fluxo de cancelamento)
+- logout
+- cenarios opcionais/destrutivos por flag:
+  - reset de secao
+  - reset all confirmado
+  - upload/replace/delete de imagem
+
+Scripts:
+```bash
+pnpm --filter @workspace/fashion-mall e2e:install
+pnpm --filter @workspace/fashion-mall e2e
+```
+
+Variaveis E2E:
+- arquivo base: `artifacts/fashion-mall/.env.e2e.example`
+- credenciais obrigatorias para fluxo autenticado:
+  - `E2E_ADMIN_EMAIL`
+  - `E2E_ADMIN_PASSWORD`
+
+Guia rapido:
+- detalhes de execucao e flags em `artifacts/fashion-mall/e2e/README.md`.
+
 ---
 
 ## Notas de manutencao desta rodada

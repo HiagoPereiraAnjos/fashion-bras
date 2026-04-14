@@ -84,6 +84,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       return 'Credenciais invalidas.';
     }
 
+    if (error.status === 429) {
+      return 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.';
+    }
+
+    if (error.name.toLowerCase().includes('fetch') || error.message.toLowerCase().includes('network')) {
+      return 'Nao foi possivel conectar ao servico de autenticacao. Verifique sua conexao.';
+    }
+
     return 'Nao foi possivel autenticar agora. Tente novamente em instantes.';
   };
 

@@ -17,17 +17,21 @@ import {
   validateHomeContent,
 } from '@/features/admin/components/sections/home/homeSectionForm';
 import type { HomePageContent } from '@/types';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
+
+type SaveNotice = { tone: 'info' | 'success' | 'error'; message: string } | null;
 
 export default function HomeSection() {
   const { homeContent, resetSection, setHomeContent } = useAdminData();
   const [form, setForm] = useState<HomePageContent>(() => ({ ...homeContent }));
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<SaveNotice>(null);
   const [errors, setErrors] = useState<HomeSectionErrors>({});
+  const [isResetting, setIsResetting] = useState(false);
   const { saved, isSaving, trigger } = useSaveState();
 
   useEffect(() => {
     setForm({ ...homeContent });
-    setSaveError(null);
+    setNotice(null);
     setErrors({});
   }, [homeContent]);
 
@@ -41,36 +45,55 @@ export default function HomeSection() {
     errors.blogCta ?? errors.leasingCta ?? errors.leasingImage;
 
   const handleSave = async () => {
+    if (isResetting) return;
+
     const normalized = normalizeHomeContent(form);
     const nextErrors = validateHomeContent(normalized);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      setSaveError('Existem campos invalidos na Home. Revise antes de salvar.');
+      setNotice({ tone: 'error', message: 'Existem campos invalidos na Home. Revise antes de salvar.' });
       return;
     }
 
-    setSaveError(null);
+    setNotice({ tone: 'info', message: 'Salvando conteudo da Home...' });
     try {
       await trigger(async () => setHomeContent(normalized));
+      setNotice({ tone: 'success', message: 'Conteudo da Home salvo com sucesso.' });
     } catch (error) {
-      setSaveError(
-        error instanceof Error ? error.message : 'Nao foi possivel salvar o conteudo da Home.',
-      );
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel salvar o conteudo da Home.',
+        validationMessage: 'Alguns campos da Home precisam de ajuste antes do salvamento.',
+      });
+      setNotice({
+        tone: 'error',
+        message,
+      });
     }
   };
 
   const handleReset = () => {
+    if (isSaving || isResetting) return;
+
     void (async () => {
+      setIsResetting(true);
+      setNotice({ tone: 'info', message: 'Restaurando conteudo da Home...' });
       try {
         const defaults = await resetSection('homeContent');
         setForm(defaults);
-        setSaveError(null);
+        setNotice({ tone: 'success', message: 'Conteudo padrao da Home restaurado com sucesso.' });
         setErrors({});
       } catch (error) {
-        setSaveError(
-          error instanceof Error ? error.message : 'Nao foi possivel restaurar os padroes.',
-        );
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar os padroes.',
+          validationMessage: 'Nao foi possivel restaurar os padroes da Home no momento.',
+        });
+        setNotice({
+          tone: 'error',
+          message,
+        });
+      } finally {
+        setIsResetting(false);
       }
     })();
   };
@@ -82,6 +105,7 @@ export default function HomeSection() {
         setForm={setForm}
         errorMessage={heroErrorMessage}
         onReset={handleReset}
+        isResetting={isResetting}
       />
 
       <InstitutionalSettingsCard
@@ -102,8 +126,8 @@ export default function HomeSection() {
         errorMessage={secondaryBlocksErrorMessage}
       />
 
-      {saveError && <InlineNotice tone="error" message={saveError} />}
-      <SaveButton onClick={handleSave} saved={saved} isSaving={isSaving} />
+      {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
+      <SaveButton onClick={handleSave} saved={saved} isSaving={isSaving} disabled={isResetting} />
     </div>
   );
 }

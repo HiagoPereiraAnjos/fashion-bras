@@ -16,8 +16,10 @@ import {
   createLeasingSectionFormData,
   type LeasingSectionFormData,
 } from '@/features/admin/components/sections/leasing/leasingSectionForm';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
-type SaveNotice = { tone: 'success' | 'error'; message: string } | null;
+type SaveNotice = { tone: 'info' | 'success' | 'error'; message: string } | null;
+type LeasingResetKey = 'benefits' | 'spaces' | 'testimonials' | 'differentials' | null;
 
 function buildInitialForm(params: {
   benefits: LeasingSectionFormData['benefits'];
@@ -54,7 +56,9 @@ export default function LeasingSection() {
     }),
   );
   const [notice, setNotice] = useState<SaveNotice>(null);
+  const [resettingSection, setResettingSection] = useState<LeasingResetKey>(null);
   const { saved, isSaving, trigger } = useSaveState();
+  const isBusy = isSaving || resettingSection !== null;
 
   useEffect(() => {
     setForm(
@@ -69,6 +73,8 @@ export default function LeasingSection() {
   }, [leasingBenefits, spaceTypes, testimonials, leasingDifferentials]);
 
   const saveAll = async () => {
+    if (resettingSection) return;
+
     const result = buildLeasingSectionSaveResult(form);
     if (result.error || !result.payload) {
       setNotice({ tone: 'error', message: result.error ?? 'Falha ao salvar conteudo de locacao.' });
@@ -103,84 +109,113 @@ export default function LeasingSection() {
             : 'Conteudo de locacao atualizado com sucesso.',
       });
     } catch (error) {
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel salvar o conteudo de locacao.',
+        validationMessage: 'Alguns campos de locacao precisam de ajuste antes do salvamento.',
+      });
       setNotice({
         tone: 'error',
-        message:
-          error instanceof Error
-            ? error.message
-            : 'Nao foi possivel salvar o conteudo de locacao.',
+        message,
       });
     }
   };
 
   const resetBenefits = () => {
+    if (isBusy) return;
+
     void (async () => {
+      setResettingSection('benefits');
+      setNotice({ tone: 'info', message: 'Restaurando beneficios...' });
       try {
         const defaults = await resetSection('leasingBenefits');
         setForm((current) => ({ ...current, benefits: [...defaults] }));
-        setNotice(null);
+        setNotice({ tone: 'success', message: 'Beneficios restaurados para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar os beneficios padrao.',
+          validationMessage: 'Nao foi possivel restaurar os beneficios no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Nao foi possivel restaurar os beneficios padrao.',
+          message,
         });
+      } finally {
+        setResettingSection(null);
       }
     })();
   };
 
   const resetSpaces = () => {
+    if (isBusy) return;
+
     void (async () => {
+      setResettingSection('spaces');
+      setNotice({ tone: 'info', message: 'Restaurando tipos de espaco...' });
       try {
         const defaults = await resetSection('spaceTypes');
         setForm((current) => ({ ...current, spaces: [...defaults] }));
-        setNotice(null);
+        setNotice({ tone: 'success', message: 'Tipos de espaco restaurados para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar os tipos de espaco padrao.',
+          validationMessage: 'Nao foi possivel restaurar os tipos de espaco no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Nao foi possivel restaurar os tipos de espaco padrao.',
+          message,
         });
+      } finally {
+        setResettingSection(null);
       }
     })();
   };
 
   const resetTestimonials = () => {
+    if (isBusy) return;
+
     void (async () => {
+      setResettingSection('testimonials');
+      setNotice({ tone: 'info', message: 'Restaurando depoimentos...' });
       try {
         const defaults = await resetSection('testimonials');
         setForm((current) => ({ ...current, testimonials: [...defaults] }));
-        setNotice(null);
+        setNotice({ tone: 'success', message: 'Depoimentos restaurados para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar os depoimentos padrao.',
+          validationMessage: 'Nao foi possivel restaurar os depoimentos no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Nao foi possivel restaurar os depoimentos padrao.',
+          message,
         });
+      } finally {
+        setResettingSection(null);
       }
     })();
   };
 
   const resetDifferentials = () => {
+    if (isBusy) return;
+
     void (async () => {
+      setResettingSection('differentials');
+      setNotice({ tone: 'info', message: 'Restaurando diferenciais...' });
       try {
         const defaults = await resetSection('leasingDifferentials');
         setForm((current) => ({ ...current, differentials: [...defaults] }));
-        setNotice(null);
+        setNotice({ tone: 'success', message: 'Diferenciais restaurados para o padrao.' });
       } catch (error) {
+        const { message } = resolveUserFacingError(error, {
+          unexpectedMessage: 'Nao foi possivel restaurar os diferenciais padrao.',
+          validationMessage: 'Nao foi possivel restaurar os diferenciais no momento.',
+        });
         setNotice({
           tone: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Nao foi possivel restaurar os diferenciais padrao.',
+          message,
         });
+      } finally {
+        setResettingSection(null);
       }
     })();
   };
@@ -196,6 +231,8 @@ export default function LeasingSection() {
           }))
         }
         onReset={resetBenefits}
+        isResetting={resettingSection === 'benefits'}
+        isBusy={isBusy}
       />
 
       <SpaceTypesCard
@@ -207,6 +244,8 @@ export default function LeasingSection() {
           }))
         }
         onReset={resetSpaces}
+        isResetting={resettingSection === 'spaces'}
+        isBusy={isBusy}
       />
 
       <TestimonialsCard
@@ -218,6 +257,8 @@ export default function LeasingSection() {
           }))
         }
         onReset={resetTestimonials}
+        isResetting={resettingSection === 'testimonials'}
+        isBusy={isBusy}
       />
 
       <LeasingDifferentialsCard
@@ -230,10 +271,17 @@ export default function LeasingSection() {
           }))
         }
         onReset={resetDifferentials}
+        isResetting={resettingSection === 'differentials'}
+        isBusy={isBusy}
       />
 
       {notice && <InlineNotice tone={notice.tone} message={notice.message} />}
-      <SaveButton onClick={saveAll} saved={saved} isSaving={isSaving} />
+      <SaveButton
+        onClick={saveAll}
+        saved={saved}
+        isSaving={isSaving}
+        disabled={resettingSection !== null}
+      />
     </div>
   );
 }

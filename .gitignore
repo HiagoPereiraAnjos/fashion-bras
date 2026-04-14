@@ -69,3 +69,8 @@ Thumbs.db
 **/.vite-temp/
 **/.turbo/
 **/.pnpm-store/
+
+# Playwright
+**/playwright-report/
+**/test-results/
+**/.playwright/

@@ -1,4 +1,4 @@
-import { BookOpen, Building2, Home, Info, Settings, Store, Users } from 'lucide-react';
+import { BookOpen, Building2, Home, Inbox, Info, Settings, Store, Users } from 'lucide-react';
 
 export const ADMIN_TABS = [
   { id: 'settings', label: 'Configuracoes', icon: Settings },
@@ -7,6 +7,7 @@ export const ADMIN_TABS = [
   { id: 'blog', label: 'Blog', icon: BookOpen },
   { id: 'partners', label: 'Parceiros', icon: Users },
   { id: 'leasing', label: 'Locacao', icon: Building2 },
+  { id: 'leads', label: 'Leads', icon: Inbox },
   { id: 'about', label: 'Sobre', icon: Info },
 ] as const;
 

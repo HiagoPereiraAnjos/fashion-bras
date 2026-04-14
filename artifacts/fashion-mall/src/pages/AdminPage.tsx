@@ -9,6 +9,7 @@ import { InlineNotice } from '@/features/admin/components/shared/AdminFormContro
 import type { AdminTabId } from '@/features/admin/constants/tabs';
 import { getSeoMetadata } from '@/seo/pages';
 import { usePageSeo } from '@/seo/usePageSeo';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
@@ -39,11 +40,11 @@ export default function AdminPage() {
       setShowResetConfirm(false);
       setResetSuccess('Conteudo restaurado com sucesso.');
     } catch (error) {
-      setResetError(
-        error instanceof Error
-          ? error.message
-          : 'Nao foi possivel resetar todo o conteudo neste momento.',
-      );
+      const { message } = resolveUserFacingError(error, {
+        unexpectedMessage: 'Nao foi possivel resetar todo o conteudo neste momento.',
+        validationMessage: 'Nao foi possivel concluir o reset com os dados atuais.',
+      });
+      setResetError(message);
     } finally {
       setIsResettingAll(false);
     }

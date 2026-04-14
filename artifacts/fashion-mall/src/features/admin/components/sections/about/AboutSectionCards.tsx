@@ -15,6 +15,8 @@ interface MissionVisionCardProps {
   setMission: (value: string) => void;
   setVision: (value: string) => void;
   onReset: () => void;
+  isResetting?: boolean;
+  isBusy?: boolean;
 }
 
 export function MissionVisionCard({
@@ -23,15 +25,17 @@ export function MissionVisionCard({
   setMission,
   setVision,
   onReset,
+  isResetting = false,
+  isBusy = false,
 }: MissionVisionCardProps) {
   return (
-    <SectionCard title="Missão e Visão" onReset={onReset}>
+    <SectionCard title="Missão e Visão" onReset={onReset} isResetting={isResetting}>
       <div className="space-y-4">
         <Field label="Missão">
-          <Textarea value={mission} onChange={setMission} rows={2} />
+          <Textarea value={mission} onChange={setMission} rows={2} disabled={isBusy} />
         </Field>
         <Field label="Visão">
-          <Textarea value={vision} onChange={setVision} rows={2} />
+          <Textarea value={vision} onChange={setVision} rows={2} disabled={isBusy} />
         </Field>
       </div>
     </SectionCard>
@@ -40,10 +44,11 @@ export function MissionVisionCard({
 
 interface HistoryCardProps {
   history: string[];
+  isBusy?: boolean;
   setHistory: Dispatch<SetStateAction<string[]>>;
 }
 
-export function HistoryCard({ history, setHistory }: HistoryCardProps) {
+export function HistoryCard({ history, isBusy = false, setHistory }: HistoryCardProps) {
   return (
     <SectionCard title="História (parágrafos)">
       {history.length === 0 ? (
@@ -52,8 +57,10 @@ export function HistoryCard({ history, setHistory }: HistoryCardProps) {
           description="Adicione parágrafos para preencher a seção institucional."
           action={(
             <button
+              type="button"
               onClick={() => setHistory((current) => [...current, ''])}
-              className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+              disabled={isBusy}
+              className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
             >
               <Plus size={12} />
               Adicionar parágrafo
@@ -63,29 +70,37 @@ export function HistoryCard({ history, setHistory }: HistoryCardProps) {
       ) : (
         <div className="space-y-3">
           {history.map((paragraph, index) => (
-            <div key={index} className="flex gap-2">
-              <Textarea
-                value={paragraph}
-                onChange={(value) =>
-                  setHistory((current) =>
-                    current.map((item, itemIndex) => (itemIndex === index ? value : item)),
-                  )
-                }
-                rows={3}
-              />
+            <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+              <div className="flex-1">
+                <Textarea
+                  value={paragraph}
+                  onChange={(value) =>
+                    setHistory((current) =>
+                      current.map((item, itemIndex) => (itemIndex === index ? value : item)),
+                    )
+                  }
+                  rows={3}
+                  disabled={isBusy}
+                />
+              </div>
               <button
+                type="button"
                 onClick={() =>
                   setHistory((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-red-400 hover:text-red-600 px-2 self-start mt-1"
+                aria-label={`Remover paragrafo ${index + 1}`}
+                disabled={isBusy}
+                className="w-full sm:w-auto h-10 sm:h-auto text-red-400 hover:text-red-600 px-2 border border-red-100 hover:bg-red-50 sm:border-none sm:bg-transparent inline-flex items-center justify-center"
               >
                 <Trash2 size={14} />
               </button>
             </div>
           ))}
           <button
+            type="button"
             onClick={() => setHistory((current) => [...current, ''])}
-            className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+            disabled={isBusy}
+            className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
           >
             <Plus size={12} />
             Adicionar parágrafo
@@ -98,10 +113,11 @@ export function HistoryCard({ history, setHistory }: HistoryCardProps) {
 
 interface ValuesCardProps {
   values: AboutValue[];
+  isBusy?: boolean;
   setValues: Dispatch<SetStateAction<AboutValue[]>>;
 }
 
-export function ValuesCard({ values, setValues }: ValuesCardProps) {
+export function ValuesCard({ values, isBusy = false, setValues }: ValuesCardProps) {
   return (
     <SectionCard title="Valores">
       {values.length === 0 ? (
@@ -110,10 +126,12 @@ export function ValuesCard({ values, setValues }: ValuesCardProps) {
           description="Inclua os valores institucionais para reforçar o posicionamento da marca."
           action={(
             <button
+              type="button"
               onClick={() =>
                 setValues((current) => [...current, { title: '', description: '' }])
               }
-              className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+              disabled={isBusy}
+              className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
             >
               <Plus size={12} />
               Adicionar valor
@@ -135,28 +153,32 @@ export function ValuesCard({ values, setValues }: ValuesCardProps) {
                         ),
                       )
                     }
+                    disabled={isBusy}
                   />
                 </Field>
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <Field label="Descrição">
                     <Input
                       value={value.description}
                       onChange={(nextValue) =>
                         setValues((current) =>
                           current.map((item, itemIndex) =>
-                            itemIndex === index ? { ...item, description: nextValue } : item,
-                          ),
-                        )
-                      }
+                          itemIndex === index ? { ...item, description: nextValue } : item,
+                        ),
+                      )
+                    }
+                    disabled={isBusy}
                     />
                   </Field>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() =>
                   setValues((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-xs text-red-400 hover:text-red-600 flex items-center gap-1"
+                disabled={isBusy}
+                className="w-full sm:w-auto h-10 sm:h-auto px-3 sm:px-0 text-xs text-red-400 hover:text-red-600 inline-flex items-center justify-center sm:justify-start gap-1 border border-red-100 hover:bg-red-50 sm:border-none sm:bg-transparent"
               >
                 <Trash2 size={11} />
                 Remover
@@ -164,10 +186,12 @@ export function ValuesCard({ values, setValues }: ValuesCardProps) {
             </div>
           ))}
           <button
+            type="button"
             onClick={() =>
               setValues((current) => [...current, { title: '', description: '' }])
             }
-            className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+            disabled={isBusy}
+            className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
           >
             <Plus size={12} />
             Adicionar valor
@@ -180,11 +204,13 @@ export function ValuesCard({ values, setValues }: ValuesCardProps) {
 
 interface DifferentialsCardProps {
   differentials: string[];
+  isBusy?: boolean;
   setDifferentials: Dispatch<SetStateAction<string[]>>;
 }
 
 export function DifferentialsCard({
   differentials,
+  isBusy = false,
   setDifferentials,
 }: DifferentialsCardProps) {
   return (
@@ -195,8 +221,10 @@ export function DifferentialsCard({
           description="Adicione argumentos de valor para a página Sobre."
           action={(
             <button
+              type="button"
               onClick={() => setDifferentials((current) => [...current, ''])}
-              className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+              disabled={isBusy}
+              className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
             >
               <Plus size={12} />
               Adicionar
@@ -207,22 +235,28 @@ export function DifferentialsCard({
         <>
           <div className="space-y-2 mb-3">
             {differentials.map((differential, index) => (
-              <div key={index} className="flex gap-2">
-                <Input
-                  value={differential}
-                  onChange={(value) =>
-                    setDifferentials((current) =>
-                      current.map((item, itemIndex) => (itemIndex === index ? value : item)),
-                    )
-                  }
-                />
+              <div key={index} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                <div className="flex-1">
+                  <Input
+                    value={differential}
+                    onChange={(value) =>
+                      setDifferentials((current) =>
+                        current.map((item, itemIndex) => (itemIndex === index ? value : item)),
+                      )
+                    }
+                    disabled={isBusy}
+                  />
+                </div>
                 <button
+                  type="button"
                   onClick={() =>
                     setDifferentials((current) =>
                       current.filter((_, itemIndex) => itemIndex !== index),
                     )
                   }
-                  className="text-red-400 hover:text-red-600 px-2"
+                  aria-label={`Remover diferencial ${index + 1}`}
+                  disabled={isBusy}
+                  className="w-full sm:w-auto h-10 sm:h-auto text-red-400 hover:text-red-600 px-2 border border-red-100 hover:bg-red-50 sm:border-none sm:bg-transparent inline-flex items-center justify-center"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -230,8 +264,10 @@ export function DifferentialsCard({
             ))}
           </div>
           <button
+            type="button"
             onClick={() => setDifferentials((current) => [...current, ''])}
-            className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+            disabled={isBusy}
+            className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
           >
             <Plus size={12} />
             Adicionar
@@ -244,10 +280,11 @@ export function DifferentialsCard({
 
 interface TeamCardProps {
   team: AboutTeamMember[];
+  isBusy?: boolean;
   setTeam: Dispatch<SetStateAction<AboutTeamMember[]>>;
 }
 
-export function TeamCard({ team, setTeam }: TeamCardProps) {
+export function TeamCard({ team, isBusy = false, setTeam }: TeamCardProps) {
   return (
     <SectionCard title="Equipe">
       {team.length === 0 ? (
@@ -256,10 +293,12 @@ export function TeamCard({ team, setTeam }: TeamCardProps) {
           description="Adicione membros para preencher a seção de equipe da página Sobre."
           action={(
             <button
+              type="button"
               onClick={() =>
                 setTeam((current) => [...current, { name: '', role: '', description: '' }])
               }
-              className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+              disabled={isBusy}
+              className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
             >
               <Plus size={12} />
               Adicionar membro
@@ -281,6 +320,7 @@ export function TeamCard({ team, setTeam }: TeamCardProps) {
                         ),
                       )
                     }
+                    disabled={isBusy}
                   />
                 </Field>
                 <Field label="Cargo">
@@ -293,6 +333,7 @@ export function TeamCard({ team, setTeam }: TeamCardProps) {
                         ),
                       )
                     }
+                    disabled={isBusy}
                   />
                 </Field>
               </div>
@@ -302,18 +343,21 @@ export function TeamCard({ team, setTeam }: TeamCardProps) {
                   onChange={(value) =>
                     setTeam((current) =>
                       current.map((item, itemIndex) =>
-                        itemIndex === index ? { ...item, description: value } : item,
-                      ),
-                    )
-                  }
+                          itemIndex === index ? { ...item, description: value } : item,
+                        ),
+                      )
+                    }
                   rows={2}
+                  disabled={isBusy}
                 />
               </Field>
               <button
+                type="button"
                 onClick={() =>
                   setTeam((current) => current.filter((_, itemIndex) => itemIndex !== index))
                 }
-                className="text-xs text-red-400 hover:text-red-600 flex items-center gap-1"
+                disabled={isBusy}
+                className="w-full sm:w-auto h-10 sm:h-auto px-3 sm:px-0 text-xs text-red-400 hover:text-red-600 inline-flex items-center justify-center sm:justify-start gap-1 border border-red-100 hover:bg-red-50 sm:border-none sm:bg-transparent"
               >
                 <Trash2 size={11} />
                 Remover
@@ -321,10 +365,12 @@ export function TeamCard({ team, setTeam }: TeamCardProps) {
             </div>
           ))}
           <button
+            type="button"
             onClick={() =>
               setTeam((current) => [...current, { name: '', role: '', description: '' }])
             }
-            className="text-xs text-amber-700 hover:underline flex items-center gap-1"
+            disabled={isBusy}
+            className="min-h-10 w-full sm:w-auto px-2 sm:px-0 text-xs text-amber-700 hover:underline inline-flex items-center justify-center sm:justify-start gap-1"
           >
             <Plus size={12} />
             Adicionar membro

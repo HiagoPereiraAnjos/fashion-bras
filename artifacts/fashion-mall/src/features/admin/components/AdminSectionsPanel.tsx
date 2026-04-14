@@ -5,6 +5,7 @@ import AboutSection from '@/features/admin/components/sections/AboutSection';
 import BlogSection from '@/features/admin/components/sections/BlogSection';
 import HomeSection from '@/features/admin/components/sections/HomeSection';
 import LeasingSection from '@/features/admin/components/sections/LeasingSection';
+import LeadsSection from '@/features/admin/components/sections/LeadsSection';
 import PartnersSection from '@/features/admin/components/sections/PartnersSection';
 import SiteSettingsSection from '@/features/admin/components/sections/SiteSettingsSection';
 import StoresSection from '@/features/admin/components/sections/StoresSection';
@@ -16,6 +17,7 @@ const SECTION_BY_TAB: Record<AdminTabId, ComponentType> = {
   blog: BlogSection,
   partners: PartnersSection,
   leasing: LeasingSection,
+  leads: LeadsSection,
   about: AboutSection,
 };
 

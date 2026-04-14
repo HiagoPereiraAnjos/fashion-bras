@@ -9,7 +9,7 @@ import {
   resolveStorageObjectPath,
   uploadAdminMedia,
 } from '@/services/media/adminMediaApi';
-import { ApiRequestError } from '@/services/api/request';
+import { resolveUserFacingError } from '@/services/errors/userFacingError';
 
 interface AdminMediaInputProps {
   value: string;
@@ -23,17 +23,12 @@ interface AdminMediaInputProps {
 const ACCEPTED_IMAGE_TYPES = ADMIN_MEDIA_ALLOWED_TYPES.join(',');
 
 function getMediaErrorMessage(error: unknown, fallback: string): string {
-  if (error instanceof ApiRequestError) {
-    if (error.status === 401) {
-      return 'Sessao expirada. Faca login novamente para gerenciar imagens.';
-    }
-    if (error.status === 413) {
-      return 'Arquivo excede 8MB.';
-    }
-    return error.message || fallback;
-  }
-
-  return error instanceof Error ? error.message : fallback;
+  return resolveUserFacingError(error, {
+    unexpectedMessage: fallback,
+    validationMessage: fallback,
+    authenticationMessage: 'Sessao expirada. Faca login novamente para gerenciar imagens.',
+    networkMessage: 'Nao foi possivel concluir a operacao de imagem. Verifique sua conexao.',
+  }).message;
 }
 
 export function AdminMediaInput({
@@ -146,7 +141,7 @@ export function AdminMediaInput({
           type="button"
           onClick={openPicker}
           disabled={!canUpload || isUploading || isDeleting}
-          title={canUpload ? 'Enviar imagem' : 'Upload indisponivel neste modo'}
+          title={canUpload ? 'Enviar imagem' : 'Upload indisponivel neste ambiente'}
           className={`w-full sm:w-auto h-10 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-medium uppercase tracking-wider border transition-colors whitespace-nowrap ${
             canUpload && !isUploading && !isDeleting
               ? 'border-amber-300 text-amber-700 hover:bg-amber-50'
