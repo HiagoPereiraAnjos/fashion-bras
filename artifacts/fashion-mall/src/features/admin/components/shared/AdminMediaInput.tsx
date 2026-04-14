@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useId, useState, type ChangeEvent } from 'react';
 import { Loader2, Trash2, Upload } from 'lucide-react';
 import { useAdminAuth } from '@/context/auth/AdminAuthProvider';
 import { InlineNotice, Input } from '@/features/admin/components/shared/AdminFormControls';
@@ -39,7 +39,7 @@ export function AdminMediaInput({
   showPreview = false,
   previewClassName = 'w-full h-32 object-cover border border-stone-100',
 }: AdminMediaInputProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadInputId = useId();
   const { isRemoteMode, isConfigured, getAccessToken } = useAdminAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -49,11 +49,9 @@ export function AdminMediaInput({
 
   const canUpload = isRemoteMode && isConfigured;
 
-  const openPicker = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+
     const selectedFile = event.target.files?.[0];
     event.target.value = '';
     if (!selectedFile) return;
@@ -137,11 +135,15 @@ export function AdminMediaInput({
     <div className="space-y-2">
       <div className="flex flex-col gap-2 sm:flex-row">
         <Input value={value} onChange={onChange} placeholder={placeholder} className="flex-1" />
-        <button
-          type="button"
-          onClick={openPicker}
-          disabled={!canUpload || isUploading || isDeleting}
+        <label
+          htmlFor={uploadInputId}
+          aria-disabled={!canUpload || isUploading || isDeleting}
           title={canUpload ? 'Enviar imagem' : 'Upload indisponivel neste ambiente'}
+          onClick={(event) => {
+            if (!canUpload || isUploading || isDeleting) {
+              event.preventDefault();
+            }
+          }}
           className={`w-full sm:w-auto h-10 inline-flex items-center justify-center gap-1.5 px-3 text-xs font-medium uppercase tracking-wider border transition-colors whitespace-nowrap ${
             canUpload && !isUploading && !isDeleting
               ? 'border-amber-300 text-amber-700 hover:bg-amber-50'
@@ -150,7 +152,7 @@ export function AdminMediaInput({
         >
           {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
           {isUploading ? 'Enviando...' : 'Upload'}
-        </button>
+        </label>
         <button
           type="button"
           onClick={handleRemoveImage}
@@ -168,11 +170,12 @@ export function AdminMediaInput({
       </div>
 
       <input
-        ref={fileInputRef}
+        id={uploadInputId}
         type="file"
         accept={ACCEPTED_IMAGE_TYPES}
+        disabled={!canUpload || isUploading || isDeleting}
         onChange={handleFileSelection}
-        className="hidden"
+        className="sr-only"
       />
 
       {showPreview && value && <img src={value} alt="" className={previewClassName} />}
