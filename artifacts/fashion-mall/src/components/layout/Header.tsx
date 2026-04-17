@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingBag, Settings } from 'lucide-react';
+import { X, ShoppingBag, Settings } from 'lucide-react';
 import { useSiteContent } from '@/services/content';
+
+function HamburgerIcon() {
+  return (
+    <span aria-hidden="true" className="relative block h-4 w-4">
+      <span className="absolute left-0 top-[1px] h-[2px] w-4 rounded-full bg-current" />
+      <span className="absolute left-0 top-[6px] h-[2px] w-4 rounded-full bg-current" />
+      <span className="absolute left-0 top-[11px] h-[2px] w-4 rounded-full bg-current" />
+    </span>
+  );
+}
 
 export default function Header() {
   const { navigationLinks, branding } = useSiteContent();
@@ -25,7 +35,7 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 pt-[env(safe-area-inset-top)] transition-colors duration-500 ${
         isTransparent
           ? 'bg-transparent'
           : 'bg-white/95 backdrop-blur-sm shadow-sm border-b border-stone-100'
@@ -107,13 +117,22 @@ export default function Header() {
               </motion.span>
             </Link>
             <button
-              className={`md:hidden transition-colors duration-300 ${
-                isTransparent ? 'text-white' : 'text-stone-900'
+              type="button"
+              className={`md:hidden inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm p-0 leading-none overflow-visible transition-all duration-300 ${
+                isTransparent
+                  ? 'text-white bg-black/25 ring-1 ring-white/30 shadow-[0_4px_14px_rgba(0,0,0,0.25)]'
+                  : 'text-stone-900 hover:bg-stone-100'
               }`}
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-main-nav"
             >
-              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+              {menuOpen ? (
+                <X size={20} strokeWidth={2.2} />
+              ) : (
+                <HamburgerIcon />
+              )}
             </button>
           </div>
         </div>
@@ -128,7 +147,7 @@ export default function Header() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-white border-t border-stone-100 overflow-hidden"
           >
-            <nav className="flex flex-col px-6 py-4 gap-4">
+            <nav id="mobile-main-nav" className="flex flex-col px-6 py-4 gap-4">
               {navigationLinks.map((link) => (
                 <Link key={link.href} href={link.href}>
                   <span

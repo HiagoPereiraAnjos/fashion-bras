@@ -13,6 +13,7 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
   const { isRemoteMode, isConfigured, isLoading, session, signOut, getAccessToken } = useAdminAuth();
   const [accessStatus, setAccessStatus] = useState<AccessStatus>('idle');
   const [accessMessage, setAccessMessage] = useState<string | null>(null);
+  const [isRevalidatingAccess, setIsRevalidatingAccess] = useState(false);
 
   useEffect(() => {
     if (!isRemoteMode) {
@@ -37,7 +38,12 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
     }
 
     let isCancelled = false;
-    setAccessStatus('checking');
+    setIsRevalidatingAccess(true);
+
+    // Keep already authorized UI mounted during background token/profile revalidation.
+    if (accessStatus !== 'allowed') {
+      setAccessStatus('checking');
+    }
     setAccessMessage(null);
 
     void (async () => {
@@ -82,6 +88,10 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
 
         setAccessStatus('api_unavailable');
         setAccessMessage(message);
+      } finally {
+        if (!isCancelled) {
+          setIsRevalidatingAccess(false);
+        }
       }
     })();
 
@@ -114,7 +124,10 @@ export function AdminRouteGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (isLoading || accessStatus === 'checking' || accessStatus === 'idle') {
+  const shouldBlockRenderingAdmin =
+    isLoading || accessStatus === 'idle' || accessStatus === 'checking';
+
+  if (shouldBlockRenderingAdmin) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
         <div className="bg-white border border-stone-200 px-4 py-3 inline-flex items-center gap-2 text-sm text-stone-600">
